@@ -1,0 +1,234 @@
+{
+  "series": [
+    {
+      "seriesId": "amazing-spider-man-1963",
+      "title": "The Amazing Spider-Man",
+      "publisher": "Marvel Comics",
+      "startYear": 1963,
+      "description": "The flagship Spider-Man comic series",
+      "aliases": ["asm", "amazing spider-man", "amazing spiderman"]
+    },
+    {
+      "seriesId": "batman-1940",
+      "title": "Batman",
+      "publisher": "DC Comics",
+      "startYear": 1940,
+      "description": "The original Batman comic series",
+      "aliases": ["batman", "the batman"]
+    },
+    {
+      "seriesId": "x-men-1963",
+      "title": "The X-Men",
+      "publisher": "Marvel Comics",
+      "startYear": 1963,
+      "description": "The original X-Men comic series",
+      "aliases": ["x-men", "xmen", "uncanny x-men"]
+    }
+  ],
+  "issues": [
+    {
+      "issueId": "amazing-spider-man-1963-300",
+      "seriesId": "amazing-spider-man-1963",
+      "issueNumber": "300",
+      "coverDate": "1988-05",
+      "startYear": 1963,
+      "keyNotes": "First appearance of Venom (symbiote costume)"
+    },
+    {
+      "issueId": "batman-1940-181",
+      "seriesId": "batman-1940",
+      "issueNumber": "181",
+      "coverDate": "1966-06",
+      "startYear": 1940,
+      "keyNotes": "First appearance of Poison Ivy"
+    },
+    {
+      "issueId": "x-men-1963-101",
+      "seriesId": "x-men-1963",
+      "issueNumber": "101",
+      "coverDate": "1976-10",
+      "startYear": 1963,
+      "keyNotes": "First appearance of Phoenix"
+    },
+    {
+      "issueId": "amazing-spider-man-1963-129",
+      "seriesId": "amazing-spider-man-1963",
+      "issueNumber": "129",
+      "coverDate": "1974-02",
+      "startYear": 1963,
+      "keyNotes": "First appearance of The Punisher"
+    },
+    {
+      "issueId": "batman-1940-357",
+      "seriesId": "batman-1940",
+      "issueNumber": "357",
+      "coverDate": "1983-03",
+      "startYear": 1940,
+      "keyNotes": "First appearance of Jason Todd as Robin"
+    }
+  ],
+  "grades": [
+    {
+      "gradeId": "cgc-9-4-nm",
+      "scale": "CGC",
+      "numeric": 9.4,
+      "label": "NM",
+      "certBody": "CGC",
+      "description": "Near Mint condition with minor imperfections"
+    },
+    {
+      "gradeId": "cgc-9-8-nm-mt",
+      "scale": "CGC",
+      "numeric": 9.8,
+      "label": "NM/MT",
+      "certBody": "CGC",
+      "description": "Near Mint/Mint condition"
+    },
+    {
+      "gradeId": "cgc-8-5-vf",
+      "scale": "CGC",
+      "numeric": 8.5,
+      "label": "VF+",
+      "certBody": "CGC",
+      "description": "Very Fine Plus condition"
+    },
+    {
+      "gradeId": "raw-nm",
+      "scale": "RAW",
+      "numeric": 9.0,
+      "label": "NM",
+      "certBody": "UNGRADED",
+      "description": "Raw Near Mint condition (ungraded)"
+    }
+  ],
+  "marketValues": [
+    {
+      "marketValueId": "asm-300-cgc-94-30d",
+      "issueId": "amazing-spider-man-1963-300",
+      "gradeId": "cgc-9-4-nm",
+      "windowDays": 30,
+      "sampleCount": 12,
+      "medianGBP": 285.50,
+      "meanGBP": 290.75,
+      "stdDevGBP": 25.80,
+      "minGBP": 250.00,
+      "maxGBP": 340.00,
+      "lastUpdated": "2025-08-22T14:30:00Z"
+    },
+    {
+      "marketValueId": "batman-181-cgc-85-30d",
+      "issueId": "batman-1940-181",
+      "gradeId": "cgc-8-5-vf",
+      "windowDays": 30,
+      "sampleCount": 8,
+      "medianGBP": 425.00,
+      "meanGBP": 438.25,
+      "stdDevGBP": 42.15,
+      "minGBP": 380.00,
+      "maxGBP": 495.00,
+      "lastUpdated": "2025-08-22T14:30:00Z"
+    },
+    {
+      "marketValueId": "xmen-101-cgc-98-30d",
+      "issueId": "x-men-1963-101",
+      "gradeId": "cgc-9-8-nm-mt",
+      "windowDays": 30,
+      "sampleCount": 5,
+      "medianGBP": 180.00,
+      "meanGBP": 185.60,
+      "stdDevGBP": 18.90,
+      "minGBP": 165.00,
+      "maxGBP": 210.00,
+      "lastUpdated": "2025-08-22T14:30:00Z"
+    },
+    {
+      "marketValueId": "asm-129-raw-nm-30d",
+      "issueId": "amazing-spider-man-1963-129",
+      "gradeId": "raw-nm",
+      "windowDays": 30,
+      "sampleCount": 15,
+      "medianGBP": 95.00,
+      "meanGBP": 102.50,
+      "stdDevGBP": 12.75,
+      "minGBP": 75.00,
+      "maxGBP": 125.00,
+      "lastUpdated": "2025-08-22T14:30:00Z"
+    }
+  ],
+  "dealScores": [
+    {
+      "dealScoreId": "deal-asm300-ebay123456",
+      "listingId": "ebay-uk-123456789",
+      "issueId": "amazing-spider-man-1963-300",
+      "gradeId": "cgc-9-4-nm",
+      "marketValueGBP": 290.75,
+      "totalPriceGBP": 225.00,
+      "dealScore": 23,
+      "computedAt": "2025-08-22T15:45:30Z"
+    },
+    {
+      "dealScoreId": "deal-batman181-ebay789012",
+      "listingId": "ebay-uk-789012345",
+      "issueId": "batman-1940-181",
+      "gradeId": "cgc-8-5-vf",
+      "marketValueGBP": 438.25,
+      "totalPriceGBP": 320.00,
+      "dealScore": 27,
+      "computedAt": "2025-08-22T15:45:30Z"
+    },
+    {
+      "dealScoreId": "deal-xmen101-ebay345678",
+      "listingId": "ebay-uk-345678901",
+      "issueId": "x-men-1963-101",
+      "gradeId": "cgc-9-8-nm-mt",
+      "marketValueGBP": 185.60,
+      "totalPriceGBP": 150.00,
+      "dealScore": 19,
+      "computedAt": "2025-08-22T15:45:30Z"
+    },
+    {
+      "dealScoreId": "deal-asm129-ebay567890",
+      "listingId": "ebay-uk-567890123",
+      "issueId": "amazing-spider-man-1963-129",
+      "gradeId": "raw-nm",
+      "marketValueGBP": 102.50,
+      "totalPriceGBP": 68.00,
+      "dealScore": 34,
+      "computedAt": "2025-08-22T15:45:30Z"
+    },
+    {
+      "dealScoreId": "deal-batman357-ebay901234",
+      "listingId": "ebay-uk-901234567",
+      "issueId": "batman-1940-357",
+      "gradeId": "cgc-9-4-nm",
+      "marketValueGBP": 75.00,
+      "totalPriceGBP": 55.00,
+      "dealScore": 27,
+      "computedAt": "2025-08-22T15:45:30Z"
+    }
+  ],
+  "alertRules": [
+    {
+      "alertRuleId": "alert-asm300-cgc94-25pct",
+      "userId": "user-collector-uk-001",
+      "issueId": "amazing-spider-man-1963-300",
+      "gradeId": "cgc-9-4-nm",
+      "minDealScore": 25,
+      "isActive": true,
+      "notes": "Looking for investment-grade copy below £250",
+      "createdAt": "2025-08-22T10:30:00Z",
+      "updatedAt": "2025-08-22T10:30:00Z"
+    },
+    {
+      "alertRuleId": "alert-batman181-cgc85-20pct",
+      "userId": "user-collector-uk-001",
+      "issueId": "batman-1940-181",
+      "gradeId": "cgc-8-5-vf",
+      "minDealScore": 20,
+      "isActive": true,
+      "notes": "Classic villain first appearance",
+      "createdAt": "2025-08-22T10:30:00Z",
+      "updatedAt": "2025-08-22T10:30:00Z"
+    }
+  ]
+}
