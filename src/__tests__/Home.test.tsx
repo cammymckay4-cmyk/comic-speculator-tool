@@ -51,13 +51,13 @@ vi.mock('../components/Navigation', () => ({
 
 // Mock table and card components
 vi.mock('../components/DealTable', () => ({
-  default: ({ deals }: { deals: any[] }) => (
+  default: ({ deals }: { deals: unknown[] }) => (
     <div data-testid="deal-table">Deal Table with {deals.length} deals</div>
   )
 }));
 
 vi.mock('../components/DealCard', () => ({
-  default: ({ deal }: { deal: any }) => (
+  default: ({ deal }: { deal: { title: string } }) => (
     <div data-testid="deal-card">{deal.title}</div>
   )
 }));
