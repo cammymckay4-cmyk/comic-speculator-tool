@@ -1,41 +1,107 @@
-import { ParsedTitle, NormalizedListing, ConfidenceScore } from './types';
+/**
+ * Title and Grade Normalisation Engine
+ * 
+ * Parses raw comic listing titles to extract series, issue number, and grade information
+ * with confidence scoring based on pattern matching quality.
+ */
 
-// Series aliases for common abbreviations and variations
+// Types based on schema
+export interface NormalizedListing {
+  seriesId: string;
+  issueNumber: string;
+  grade: string;
+  confidence: number; // 0 to 1
+  notes?: string;
+}
+
+export interface ConfidenceScore {
+  series: number;
+  issue: number;
+  grade: number;
+  overall: number;
+}
+
+// Alias dictionary for series name normalization
 export const SERIES_ALIASES: Record<string, string> = {
+  // Amazing Spider-Man variants
   'asm': 'amazing-spider-man-1963',
   'amazing spider-man': 'amazing-spider-man-1963',
   'amazing spiderman': 'amazing-spider-man-1963',
+  'the amazing spider-man': 'amazing-spider-man-1963',
+  'amazing spider man': 'amazing-spider-man-1963',
+  'spider-man': 'amazing-spider-man-1963',
+  'spiderman': 'amazing-spider-man-1963',
+  
+  // Batman variants
   'batman': 'batman-1940',
+  'the batman': 'batman-1940',
   'detective comics': 'detective-comics-1937',
   'detective': 'detective-comics-1937',
   'dc': 'detective-comics-1937',
-  'ff': 'fantastic-four-1961',
-  'fantastic four': 'fantastic-four-1961',
-  'fantastic 4': 'fantastic-four-1961',
+  
+  // X-Men variants
   'x-men': 'x-men-1963',
   'xmen': 'x-men-1963',
+  'the x-men': 'x-men-1963',
   'uncanny x-men': 'x-men-1963',
+  'uncanny xmen': 'x-men-1963',
+  
+  // Fantastic Four variants
+  'fantastic four': 'fantastic-four-1961',
+  'ff': 'fantastic-four-1961',
+  'f4': 'fantastic-four-1961',
+  'fantastic 4': 'fantastic-four-1961',
+  
+  // Iron Man variants
+  'iron man': 'iron-man-1968',
+  'ironman': 'iron-man-1968',
+  'invincible iron man': 'iron-man-1968',
+  
+  // Hulk variants
+  'hulk': 'incredible-hulk-1962',
+  'incredible hulk': 'incredible-hulk-1962',
+  'the hulk': 'incredible-hulk-1962',
+  
+  // Captain America variants
+  'captain america': 'captain-america-1968',
+  'cap america': 'captain-america-1968',
+  'cap': 'captain-america-1968',
+  
+  // Thor variants
+  'thor': 'thor-1966',
+  'mighty thor': 'thor-1966',
+  'the mighty thor': 'thor-1966',
+  
+  // Avengers variants
+  'avengers': 'avengers-1963',
+  'the avengers': 'avengers-1963',
+  
+  // Superman variants
   'superman': 'superman-1939',
   'action comics': 'action-comics-1938',
   'action': 'action-comics-1938',
-  'iron man': 'iron-man-1968',
-  'ironman': 'iron-man-1968',
-  'cap america': 'captain-america-1968',
-  'captain america': 'captain-america-1968',
-  'cap': 'captain-america-1968',
-  'thor': 'thor-1962',
-  'mighty thor': 'thor-1962',
-  'hulk': 'hulk-1962',
-  'incredible hulk': 'hulk-1962',
-  'avengers': 'avengers-1963',
+  
+  // Wonder Woman variants
+  'wonder woman': 'wonder-woman-1942',
+  'ww': 'wonder-woman-1942',
+  
+  // Flash variants
+  'flash': 'flash-1959',
+  'the flash': 'flash-1959',
+  
+  // Green Lantern variants
+  'green lantern': 'green-lantern-1960',
+  'gl': 'green-lantern-1960',
+  
+  // Justice League variants
   'justice league': 'justice-league-1960',
   'jla': 'justice-league-1960',
-  'jl': 'justice-league-1960',
+  'justice league of america': 'justice-league-1960',
 };
 
-// Grade patterns with confidence scores
-export const GRADE_PATTERNS = [
-  // CGC Grades - highest confidence
+// Grade patterns and their normalized values
+export const GRADE_PATTERNS: Array<{ pattern: RegExp; grade: string; confidence: number }> = [
+  // CGC Grades - more specific patterns
   { pattern: /cgc\s*9\.8/i, grade: 'cgc-9-8-nm-mt', confidence: 1.0 },
   { pattern: /9\.8\s*cgc/i, grade: 'cgc-9-8-nm-mt', confidence: 1.0 },
   { pattern: /cgc\s+graded\s*9\.8/i, grade: 'cgc-9-8-nm-mt', confidence: 1.0 },
@@ -54,26 +120,30 @@ export const GRADE_PATTERNS = [
   { pattern: /cgc\s*8\.5/i, grade: 'cgc-8-5-vf', confidence: 1.0 },
   { pattern: /8\.5\s*cgc/i, grade: 'cgc-8-5-vf', confidence: 1.0 },
   { pattern: /cgc\s+graded\s*8\.5/i, grade: 'cgc-8-5-vf', confidence: 1.0 },
+  { pattern: /cgc\s*8\.0/i, grade: 'cgc-8-0-vf', confidence: 1.0 },
+  { pattern: /8\.0\s*cgc/i, grade: 'cgc-8-0-vf', confidence: 1.0 },
+  { pattern: /cgc\s+graded\s*8\.0/i, grade: 'cgc-8-0-vf', confidence: 1.0 },
   
-  // Raw grades - medium confidence
-  { pattern: /\b(vf-nm|very fine near mint)\b/i, grade: 'raw-vf-nm', confidence: 0.8 },
-  { pattern: /\b(nm|near mint)\b/i, grade: 'raw-nm', confidence: 0.8 },
-  { pattern: /\b(nm-|near mint-)\b/i, grade: 'raw-nm-', confidence: 0.8 },
-  { pattern: /\b(vf|very fine)\b/i, grade: 'raw-vf', confidence: 0.8 },
-  { pattern: /\b(fn|fine)\b/i, grade: 'raw-fn', confidence: 0.7 },
-  { pattern: /\b(vg|very good)\b/i, grade: 'raw-vg', confidence: 0.7 },
-  { pattern: /\b(gd|good)\b/i, grade: 'raw-gd', confidence: 0.7 },
-  { pattern: /\b(fr|fair)\b/i, grade: 'raw-fr', confidence: 0.7 },
-  { pattern: /\b(pr|poor)\b/i, grade: 'raw-pr', confidence: 0.7 },
-  { pattern: /\braw\b/i, grade: 'raw-nm', confidence: 0.6 },
-  { pattern: /\bungraded\b/i, grade: 'raw-nm', confidence: 0.5 },
+  // Raw grades
+  { pattern: /raw\s*nm/i, grade: 'raw-nm', confidence: 0.8 },
+  { pattern: /nm\s*raw/i, grade: 'raw-nm', confidence: 0.8 },
+  { pattern: /raw\s*vf/i, grade: 'raw-vf', confidence: 0.8 },
+  { pattern: /vf\s*raw/i, grade: 'raw-vf', confidence: 0.8 },
+  { pattern: /ungraded/i, grade: 'raw-nm', confidence: 0.6 },
+  { pattern: /\braw\b/i, grade: 'raw-nm', confidence: 0.5 },
+  
+  // Grade abbreviations (lower confidence) - more specific word boundaries
+  { pattern: /\bnm\b/i, grade: 'raw-nm', confidence: 0.7 },
+  { pattern: /\bvf\b/i, grade: 'raw-vf', confidence: 0.7 },
+  { pattern: /\bfn\b/i, grade: 'raw-fn', confidence: 0.7 },
+  { pattern: /\bgd\b/i, grade: 'raw-gd', confidence: 0.7 },
 ];
 
-// Issue number patterns with confidence scores
-export const ISSUE_PATTERNS = [
-  // Standard formats - highest confidence
-  { pattern: /#(\d+(?:\.\d+)?)\b/i, confidence: 1.0 },
-  { pattern: /issue\s*#?(\d+(?:\.\d+)?)/i, confidence: 0.9 },
+// Issue number patterns
+export const ISSUE_PATTERNS: Array<{ pattern: RegExp; confidence: number }> = [
+  // Standard issue numbers
+  { pattern: /#(\d+(?:\.\d+)?)/i, confidence: 1.0 },
+  { pattern: /issue\s*(\d+(?:\.\d+)?)/i, confidence: 0.9 },
   { pattern: /no\.?\s*(\d+(?:\.\d+)?)/i, confidence: 0.9 },
   { pattern: /number\s*(\d+(?:\.\d+)?)/i, confidence: 0.8 },
   
@@ -92,7 +162,7 @@ export const ISSUE_PATTERNS = [
 /**
  * Parse a raw title string to extract normalized comic information
  */
-export function parseNormalizedTitle(rawTitle: string): NormalizedListing {
+export function parseTitle(rawTitle: string): NormalizedListing {
   const title = rawTitle.toLowerCase().trim();
   const confidenceScores: ConfidenceScore = {
     series: 0,
@@ -148,116 +218,37 @@ export function parseNormalizedTitle(rawTitle: string): NormalizedListing {
 }
 
 /**
- * Backward compatible parseTitle function for existing code
- * Parses a comic book title to extract series and issue information
- * @param title - The raw title string to parse
- * @returns Parsed title components
- */
-export function parseTitle(title: string): ParsedTitle {
-  // Use the new sophisticated parser internally but return legacy format
-  const normalized = parseNormalizedTitle(title);
-  
-  // Convert seriesId back to alias format for backward compatibility
-  let series = normalized.seriesId;
-  
-  // Handle known series mappings to return aliases expected by existing code
-  if (normalized.seriesId === 'amazing-spider-man-1963') {
-    series = 'asm';
-  } else if (normalized.seriesId === 'batman-1940') {
-    series = 'batman';
-  } else if (normalized.seriesId === 'x-men-1963') {
-    series = 'x-men';
-  } else if (normalized.seriesId === 'fantastic-four-1961') {
-    series = 'ff';
-  } else if (normalized.seriesId === 'iron-man-1968') {
-    series = 'iron man';
-  } else if (normalized.seriesId === 'thor-1962') {
-    series = 'thor';
-  } else if (normalized.seriesId === 'hulk-1962') {
-    series = 'hulk';
-  } else if (normalized.seriesId === 'avengers-1963') {
-    series = 'avengers';
-  } else if (normalized.seriesId === 'captain-america-1968') {
-    series = 'captain america';
-  } else if (normalized.seriesId === 'superman-1939') {
-    series = 'superman';
-  } else if (normalized.seriesId === 'detective-comics-1937') {
-    series = 'detective comics';
-  } else if (normalized.seriesId === 'action-comics-1938') {
-    series = 'action comics';
-  } else if (normalized.seriesId === 'justice-league-1960') {
-    series = 'justice league';
-  } else if (normalized.seriesId.endsWith('-unknown-year')) {
-    // Strip the -unknown-year suffix and convert back to readable format
-    series = normalized.seriesId
-      .replace(/-unknown-year$/, '')
-      .replace(/-/g, ' ');
-  } else if (normalized.seriesId === 'unknown') {
-    series = title; // Fallback to original title
-  }
-
-  return {
-    series: series,
-    issueNumber: normalized.issueNumber,
-    variant: undefined, // Could extract from notes if needed
-  };
-}
-
-/**
  * Extract series information from title
  */
 function extractSeries(title: string): { seriesId: string; confidence: number; notes?: string } {
-  // Check for exact matches and aliases first - highest confidence
+  // Try exact alias matches first
   for (const [alias, seriesId] of Object.entries(SERIES_ALIASES)) {
     if (title.includes(alias)) {
-      return {
-        seriesId,
-        confidence: 0.9,
-        notes: `Matched alias: ${alias}`,
+      return { seriesId, confidence: 1.0 };
+    }
+  }
+
+  // Try partial matches with lower confidence
+  const words = title.split(/\s+/);
+  for (const [alias, seriesId] of Object.entries(SERIES_ALIASES)) {
+    const aliasWords = alias.split(/\s+/);
+    const matchCount = aliasWords.filter(word => words.includes(word)).length;
+    const matchRatio = matchCount / aliasWords.length;
+    
+    if (matchRatio >= 0.6) {
+      return { 
+        seriesId, 
+        confidence: matchRatio * 0.8,
+        notes: `Partial series match: ${alias}`,
       };
     }
   }
 
-  // Try to extract series name by removing issue and grade info
-  let cleanTitle = title
-    .replace(/#\d+.*$/, '') // Remove issue number and everything after
-    .replace(/\b(cgc|raw|nm|vf|fn|gd|pr|fr)\b.*$/, '') // Remove grade info
-    .replace(/\b\d+(\.\d+)?\b/, '') // Remove standalone numbers
-    .trim();
-
-  // Only proceed if we have a meaningful length string, contains real words, and doesn't look like generic text
-  if (cleanTitle.length > 6 && /[a-zA-Z]{3,}/.test(cleanTitle) && !isGenericText(cleanTitle)) {
-    // Convert to series ID format
-    const seriesId = cleanTitle
-      .replace(/[^\w\s-]/g, '') // Remove special chars except hyphens
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .toLowerCase();
-    
-    return {
-      seriesId: seriesId + '-unknown-year',
-      confidence: 0.6,
-      notes: `Extracted from title: ${cleanTitle}`,
-    };
-  }
-
-  return {
-    seriesId: 'unknown',
+  return { 
+    seriesId: '', 
     confidence: 0,
     notes: 'No series match found',
   };
-}
-
-/**
- * Check if text appears to be generic/unrelated to comics
- */
-function isGenericText(text: string): boolean {
-  const genericTerms = [
-    'completely', 'unrelated', 'text', 'random', 'some',
-    'just', 'test', 'sample', 'example', 'demo'
-  ];
-  
-  const lowerText = text.toLowerCase();
-  return genericTerms.some(term => lowerText.includes(term));
 }
 
 /**
@@ -267,18 +258,27 @@ function extractIssueNumber(title: string): { issueNumber: string; confidence: n
   for (const pattern of ISSUE_PATTERNS) {
     const match = title.match(pattern.pattern);
     if (match && match[1]) {
-      return {
-        issueNumber: match[1],
+      return { 
+        issueNumber: match[1], 
         confidence: pattern.confidence,
-        notes: `Matched pattern: ${pattern.pattern.source}`,
       };
     }
   }
 
-  return {
-    issueNumber: '1',
+  // Try to find any number as fallback
+  const numberMatch = title.match(/\b(\d+(?:\.\d+)?)\b/);
+  if (numberMatch) {
+    return { 
+      issueNumber: numberMatch[1], 
+      confidence: 0.3,
+      notes: 'Fallback number extraction',
+    };
+  }
+
+  return { 
+    issueNumber: '', 
     confidence: 0,
-    notes: 'No issue number found, defaulting to 1',
+    notes: 'No issue number found',
   };
 }
 
@@ -288,18 +288,17 @@ function extractIssueNumber(title: string): { issueNumber: string; confidence: n
 function extractGrade(title: string): { grade: string; confidence: number; notes?: string } {
   for (const pattern of GRADE_PATTERNS) {
     if (pattern.pattern.test(title)) {
-      return {
-        grade: pattern.grade,
+      return { 
+        grade: pattern.grade, 
         confidence: pattern.confidence,
-        notes: `Matched grade pattern: ${pattern.pattern.source}`,
       };
     }
   }
 
-  return {
-    grade: 'raw-nm',
-    confidence: 0.2,
-    notes: 'No grade found, defaulting to raw-nm',
+  return { 
+    grade: '', 
+    confidence: 0,
+    notes: 'No grade found',
   };
 }
 
@@ -307,13 +306,9 @@ function extractGrade(title: string): { grade: string; confidence: number; notes
  * Calculate overall confidence based on individual component scores
  */
 function calculateOverallConfidence(scores: ConfidenceScore): number {
-  // Weighted average - series and issue are most important
-  const weights = {
-    series: 0.4,
-    issue: 0.3,
-    grade: 0.3,
-  };
-
+  // Weighted average: series is most important, then issue, then grade
+  const weights = { series: 0.5, issue: 0.3, grade: 0.2 };
+  
   return (
     scores.series * weights.series +
     scores.issue * weights.issue +
