@@ -49,7 +49,7 @@ export async function getTopDeals(
       try {
         // Parse title to identify series and issue (for additional validation)
         const parsedTitle = parseTitle(listing.title);
-        console.log(`Processing listing: ${listing.title} -> ${parsedTitle.series} #${parsedTitle.issueNumber}`);
+        console.log(`Processing listing: ${listing.title} -> ${parsedTitle.seriesId} #${parsedTitle.issueNumber}`);
         
         // Step 3: Fetch recent sales for market value calculation
         const soldListings = await fetchSoldListings(listing.issueId, listing.gradeId);
