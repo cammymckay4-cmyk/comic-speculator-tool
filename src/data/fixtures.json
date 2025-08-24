@@ -230,5 +230,109 @@
       "createdAt": "2025-08-22T10:30:00Z",
       "updatedAt": "2025-08-22T10:30:00Z"
     }
+  ],
+  "deals": [
+    {
+      "series": {
+        "seriesId": "amazing-spider-man-1963",
+        "title": "The Amazing Spider-Man",
+        "publisher": "Marvel Comics",
+        "startYear": 1963
+      },
+      "issue": {
+        "issueId": "amazing-spider-man-1963-300",
+        "seriesId": "amazing-spider-man-1963",
+        "issueNumber": "300",
+        "coverDate": "1988-05",
+        "startYear": 1963,
+        "keyNotes": "First appearance of Venom"
+      },
+      "grade": {
+        "gradeId": "cgc-9-4-nm",
+        "scale": "CGC",
+        "numeric": 9.4,
+        "label": "NM"
+      },
+      "marketValue": {
+        "currency": "GBP",
+        "mean": 600,
+        "median": 580,
+        "sample": 18
+      },
+      "deal": {
+        "listingId": "ebay-uk-asm300-001",
+        "totalPriceGBP": 455,
+        "marketValueGBP": 590,
+        "dealScore": 23
+      }
+    },
+    {
+      "series": {
+        "seriesId": "x-men-1963",
+        "title": "The X-Men",
+        "publisher": "Marvel Comics",
+        "startYear": 1963
+      },
+      "issue": {
+        "issueId": "x-men-1963-1",
+        "seriesId": "x-men-1963",
+        "issueNumber": "1",
+        "coverDate": "1963-09",
+        "startYear": 1963,
+        "keyNotes": "First appearance of the X-Men and Magneto"
+      },
+      "grade": {
+        "gradeId": "raw-gd-2-0",
+        "scale": "Raw",
+        "numeric": null,
+        "label": "GD 2.0"
+      },
+      "marketValue": {
+        "currency": "GBP",
+        "mean": 2800,
+        "median": 2700,
+        "sample": 6
+      },
+      "deal": {
+        "listingId": "ebay-uk-xmen1-001",
+        "totalPriceGBP": 2300,
+        "marketValueGBP": 2750,
+        "dealScore": 16
+      }
+    },
+    {
+      "series": {
+        "seriesId": "batman-1940",
+        "title": "Batman",
+        "publisher": "DC Comics",
+        "startYear": 1940
+      },
+      "issue": {
+        "issueId": "batman-1940-181",
+        "seriesId": "batman-1940",
+        "issueNumber": "181",
+        "coverDate": "1966-06",
+        "startYear": 1940,
+        "keyNotes": "First appearance of Poison Ivy"
+      },
+      "grade": {
+        "gradeId": "cgc-8-5-vf",
+        "scale": "CGC",
+        "numeric": 8.5,
+        "label": "VF+"
+      },
+      "marketValue": {
+        "currency": "GBP",
+        "mean": 950,
+        "median": 900,
+        "sample": 10
+      },
+      "deal": {
+        "listingId": "ebay-uk-bat181-001",
+        "totalPriceGBP": 760,
+        "marketValueGBP": 925,
+        "dealScore": 18
+      }
+    }
   ]
 }

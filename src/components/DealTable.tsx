@@ -2,30 +2,23 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from '@/components/ui/table';
 import { ExternalLink, TrendingUp, Clock } from 'lucide-react';
+import { formatGBP } from '@/lib/format';
 
-interface Deal {
-  dealScoreId: string;
+interface DealRow {
+  id: string;
+  listingId?: string;
   issueId: string;
-  gradeId: string;
-  marketValueGBP: number;
-  totalPriceGBP: number;
-  dealScore: number;
   title: string;
-  savings: number;
-  grade?: {
-    scale: string;
-    numeric: number;
-    label: string;
-  };
-  series?: {
-    publisher: string;
-  };
+  gradeDisplay: string;
+  totalPriceGBP: number;
+  marketValueGBP: number;
+  dealScore: number;
 }
 
 interface DealTableProps {
-  deals: Deal[];
+  deals: DealRow[];
 }
 
 const DealTable = ({ deals }: DealTableProps) => {
@@ -47,60 +40,48 @@ const DealTable = ({ deals }: DealTableProps) => {
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
+            <TableCaption>Current comic deals</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Comic</TableHead>
-                <TableHead>Grade</TableHead>
-                <TableHead className="text-right">Current Price</TableHead>
-                <TableHead className="text-right">Market Value</TableHead>
-                <TableHead className="text-right">Deal Score</TableHead>
-                <TableHead className="text-right">Savings</TableHead>
-                <TableHead className="text-center">Time Left</TableHead>
-                <TableHead className="text-center">Action</TableHead>
+                <TableHead scope="col">Comic</TableHead>
+                <TableHead scope="col">Grade</TableHead>
+                <TableHead scope="col" className="text-right">Current Price (GBP)</TableHead>
+                <TableHead scope="col" className="text-right">Market Value (GBP)</TableHead>
+                <TableHead scope="col" className="text-right">Deal Score %</TableHead>
+                <TableHead scope="col" className="text-center">Time Left</TableHead>
+                <TableHead scope="col" className="text-center">View</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {deals.map((deal) => (
-                <TableRow key={deal.dealScoreId} className="hover:bg-muted/50">
+                <TableRow key={deal.id} className="hover:bg-muted/50">
                   <TableCell>
                     <div className="space-y-1">
                       <Link 
-                        to={`/item/${deal.issueId}`}
-                        className="font-medium hover:text-primary hover:underline"
+                        to={`/item/${deal.listingId ?? deal.issueId}`}
+                        className="font-medium hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         {deal.title}
                       </Link>
-                      <div className="text-sm text-muted-foreground">
-                        {deal.series?.publisher}
-                      </div>
                     </div>
                   </TableCell>
                   
                   <TableCell>
                     <Badge variant="outline">
-                      {deal.grade?.scale} {deal.grade?.numeric}
+                      {deal.gradeDisplay}
                     </Badge>
                   </TableCell>
                   
                   <TableCell className="text-right font-bold">
-                    £{deal.totalPriceGBP.toFixed(2)}
+                    {formatGBP(deal.totalPriceGBP)}
                   </TableCell>
                   
                   <TableCell className="text-right text-muted-foreground">
-                    £{deal.marketValueGBP.toFixed(2)}
+                    {formatGBP(deal.marketValueGBP)}
                   </TableCell>
                   
                   <TableCell className="text-right">
-                    <Badge 
-                      variant={deal.dealScore >= 25 ? "default" : "secondary"}
-                      className="font-bold"
-                    >
-                      {deal.dealScore}% off
-                    </Badge>
-                  </TableCell>
-                  
-                  <TableCell className="text-right font-medium text-success">
-                    £{deal.savings.toFixed(2)}
+                    <span className="font-bold">{deal.dealScore}%</span>
                   </TableCell>
                   
                   <TableCell className="text-center">
@@ -111,7 +92,7 @@ const DealTable = ({ deals }: DealTableProps) => {
                   </TableCell>
                   
                   <TableCell className="text-center">
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                       <ExternalLink className="w-4 h-4 mr-1" />
                       View
                     </Button>
