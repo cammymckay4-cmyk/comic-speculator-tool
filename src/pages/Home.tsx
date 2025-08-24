@@ -119,6 +119,7 @@ const Home = () => {
                   // Backfill minimal shape expected by DealCard if used
                   dealScoreId: deal.id,
                   issueId: deal.issueId,
+                  listingId: deal.listingId,
                   gradeId: '',
                   marketValueGBP: deal.marketValueGBP,
                   totalPriceGBP: deal.totalPriceGBP,

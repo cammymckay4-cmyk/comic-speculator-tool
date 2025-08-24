@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { formatGBP } from '../lib/format';
 import { ExternalLink, TrendingUp, Clock, DollarSign } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface EbayIntegrationDemoProps {
   issueId?: string;
@@ -62,6 +63,26 @@ const EbayIntegrationDemo: React.FC<EbayIntegrationDemoProps> = ({
     
     if (days > 0) return `${days}d ${hours}h`;
     return `${hours}h`;
+  };
+
+  const handleViewListing = (listing: Listing) => {
+    // Open eBay listing in new tab or show user feedback
+    if (listing.url) {
+      window.open(listing.url, '_blank');
+      toast.success('Redirecting to eBay listing...');
+    } else {
+      toast.info('eBay listing URL not available for demo data');
+    }
+  };
+
+  const handleViewSale = (sale: Sale) => {
+    // Open eBay sale in new tab or show user feedback
+    if (sale.url) {
+      window.open(sale.url, '_blank');
+      toast.success('Redirecting to completed sale...');
+    } else {
+      toast.info('Sale URL not available for demo data');
+    }
   };
 
   return (
@@ -123,7 +144,12 @@ const EbayIntegrationDemo: React.FC<EbayIntegrationDemoProps> = ({
                           <div className="text-sm text-muted-foreground">
                             Ends: {getTimeRemaining(listing.endTime)}
                           </div>
-                          <Button size="sm" variant="outline" className="mt-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="mt-2"
+                            onClick={() => handleViewListing(listing)}
+                          >
                             <ExternalLink className="w-3 h-3 mr-1" />
                             View
                           </Button>
@@ -161,7 +187,11 @@ const EbayIntegrationDemo: React.FC<EbayIntegrationDemoProps> = ({
                             {new Date(sale.dateOfSale).toLocaleDateString()}
                           </Badge>
                         </div>
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleViewSale(sale)}
+                        >
                           <ExternalLink className="w-3 h-3 mr-1" />
                           View Sale
                         </Button>

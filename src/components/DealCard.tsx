@@ -93,10 +93,12 @@ const DealCard = ({ deal }: DealCardProps) => {
         </div>
         
         <div className="flex gap-2">
-          <Button className="flex-1" size="sm">
-            <ExternalLink className="w-4 h-4 mr-2" />
-            View Deal
-          </Button>
+          <Link to={`/item/${deal.listingId ?? deal.issueId}`} className="flex-1">
+            <Button className="w-full" size="sm">
+              <ExternalLink className="w-4 h-4 mr-2" />
+              View Deal
+            </Button>
+          </Link>
           <Link to={`/item/${deal.listingId ?? deal.issueId}`}>
             <Button variant="outline" size="sm">
               Details

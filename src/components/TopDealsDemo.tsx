@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { TopDeal } from '../lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -143,10 +144,12 @@ const TopDealsDemo: React.FC = () => {
                   <div>Source: {deal.listing.source}</div>
                 </div>
                 
-                <Button className="w-full" size="sm">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  View Deal
-                </Button>
+                <Link to={`/item/${deal.listing.listingId}`} className="w-full">
+                  <Button className="w-full" size="sm">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Deal
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ))}
