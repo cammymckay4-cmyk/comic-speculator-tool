@@ -29,7 +29,35 @@ const Home = () => {
     });
   }, []);
 
-  const totalSavings = dealsForTable.reduce((sum, deal) => sum + (deal.marketValueGBP - deal.totalPriceGBP), 0);
+  // Enhanced summary statistics calculations
+  const summaryStats = useMemo(() => {
+    const totalSavings = dealsForTable.reduce((sum, deal) => sum + (deal.marketValueGBP - deal.totalPriceGBP), 0);
+    const averageListingPrice = dealsForTable.length > 0 
+      ? dealsForTable.reduce((sum, deal) => sum + deal.totalPriceGBP, 0) / dealsForTable.length 
+      : 0;
+    const averageMarketValue = dealsForTable.length > 0
+      ? dealsForTable.reduce((sum, deal) => sum + deal.marketValueGBP, 0) / dealsForTable.length
+      : 0;
+    const averageDealScore = dealsForTable.length > 0
+      ? dealsForTable.reduce((sum, deal) => sum + deal.dealScore, 0) / dealsForTable.length
+      : 0;
+    
+    // Find the best deal (highest deal score)
+    const bestDeal = dealsForTable.length > 0
+      ? dealsForTable.reduce((best, current) => 
+          current.dealScore > best.dealScore ? current : best
+        )
+      : null;
+    
+    return {
+      totalListings: dealsForTable.length,
+      totalSavings,
+      averageListingPrice,
+      averageMarketValue,
+      averageDealScore,
+      bestDeal,
+    };
+  }, [dealsForTable]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,16 +92,16 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Enhanced Summary Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Active Deals
+                  Total Listings
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dealsForTable.length}</div>
+                <div className="text-2xl font-bold">{summaryStats.totalListings}</div>
               </CardContent>
             </Card>
             
@@ -84,9 +112,54 @@ const Home = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-success">
-                  {formatGBP(totalSavings)}
+                <div className="text-2xl font-bold text-green-600">
+                  {formatGBP(summaryStats.totalSavings)}
                 </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Avg. Listing Price
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatGBP(summaryStats.averageListingPrice)}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Avg. Deal Score
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">
+                  {Math.round(summaryStats.averageDealScore)}%
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Secondary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Average Market Value
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-muted-foreground">
+                  {formatGBP(summaryStats.averageMarketValue)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Based on {summaryStats.totalListings} listings
+                </p>
               </CardContent>
             </Card>
             
@@ -97,14 +170,23 @@ const Home = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-sm font-bold">
-                    {dealsForTable[0]?.dealScore}%
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {dealsForTable[0]?.title}
-                  </span>
-                </div>
+                {summaryStats.bestDeal ? (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-sm font-bold">
+                        {summaryStats.bestDeal.dealScore}%
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        {summaryStats.bestDeal.title}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Save {formatGBP(summaryStats.bestDeal.marketValueGBP - summaryStats.bestDeal.totalPriceGBP)}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">No deals available</div>
+                )}
               </CardContent>
             </Card>
           </div>
