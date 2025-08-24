@@ -70,6 +70,21 @@ export interface ParsedTitle {
   publisher?: string;
 }
 
+export interface NormalizedListing {
+  seriesId: string;
+  issueNumber: string;
+  grade: string;
+  confidence: number;
+  notes?: string;
+}
+
+export interface ConfidenceScore {
+  series: number;
+  issue: number;
+  grade: number;
+  overall: number;
+}
+
 export interface TopDeal {
   listing: Listing;
   marketValue: MarketValue;
