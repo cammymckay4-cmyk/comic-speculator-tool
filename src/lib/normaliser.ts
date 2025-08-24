@@ -64,8 +64,10 @@ export const SERIES_ALIASES: Record<string, string> = {
   // Common abbreviations
   'avengers': 'avengers-1963',
   'iron man': 'iron-man-1968',
+  'ironman': 'iron-man-1968',
   'thor': 'thor-1962',
   'captain america': 'captain-america-1968',
+  'cap america': 'captain-america-1968',
   'hulk': 'hulk-1962',
   'incredible hulk': 'hulk-1962',
   'the incredible hulk': 'hulk-1962',
@@ -242,9 +244,12 @@ function extractSeries(title: string): { seriesId: string; confidence: number; n
   const seriesMatch = title.match(/^([^#]+?)(?:\s*#|\s+\d|\s+vol|\s+issue|\s+no\.)/i);
   if (seriesMatch) {
     const potentialSeries = seriesMatch[1].trim();
+    // Check if this looks like a real series name vs generic text
+    const hasUnknown = /unknown|generic|comic|book|issue|series/i.test(potentialSeries);
+    const confidence = hasUnknown ? 0.1 : 0.3;
     return {
       seriesId: normalizeSeriesName(potentialSeries),
-      confidence: 0.3,
+      confidence,
       notes: `Extracted from title: "${potentialSeries}"`,
     };
   }
@@ -313,6 +318,10 @@ function extractGrade(title: string): { grade: string; confidence: number; notes
 function calculateOverallConfidence(scores: ConfidenceScore): number {
   // Weight series matching more heavily
   const weightedScore = (scores.series * 0.5) + (scores.issue * 0.3) + (scores.grade * 0.2);
+  // Reduce confidence for very low-quality matches
+  if (scores.series < 0.5 && scores.issue < 0.5 && scores.grade < 0.5) {
+    return Math.min(weightedScore * 0.8, 1.0);
+  }
   return Math.min(weightedScore, 1.0);
 }
 
