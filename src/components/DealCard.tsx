@@ -7,6 +7,7 @@ import { ExternalLink, Clock } from 'lucide-react';
 interface Deal {
   dealScoreId: string;
   issueId: string;
+  listingId?: string;
   gradeId: string;
   marketValueGBP: number;
   totalPriceGBP: number;
@@ -55,7 +56,7 @@ const DealCard = ({ deal }: DealCardProps) => {
       <CardContent className="space-y-4">
         <div>
           <Link 
-            to={`/item/${deal.issueId}`}
+            to={`/item/${deal.listingId ?? deal.issueId}`}
             className="font-bold text-lg hover:text-primary hover:underline block"
           >
             {deal.title}
@@ -96,7 +97,7 @@ const DealCard = ({ deal }: DealCardProps) => {
             <ExternalLink className="w-4 h-4 mr-2" />
             View Deal
           </Button>
-          <Link to={`/item/${deal.issueId}`}>
+          <Link to={`/item/${deal.listingId ?? deal.issueId}`}>
             <Button variant="outline" size="sm">
               Details
             </Button>

@@ -6,36 +6,30 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import fixtureData from '../data/fixtures.json';
+import { formatGBP } from '@/lib/format';
 
 const Home = () => {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
   // Combine deal data with related information
-  const enrichedDeals = useMemo(() => {
-    return fixtureData.dealScores
-      .map(deal => {
-        const issue = fixtureData.issues.find(i => i.issueId === deal.issueId);
-        const series = issue ? fixtureData.series.find(s => s.seriesId === issue.seriesId) : null;
-        const grade = fixtureData.grades.find(g => g.gradeId === deal.gradeId);
-        const marketValue = fixtureData.marketValues.find(mv => 
-          mv.issueId === deal.issueId && mv.gradeId === deal.gradeId
-        );
-
-        return {
-          ...deal,
-          issue,
-          series,
-          grade,
-          marketValue,
-          title: series ? `${series.title} #${issue?.issueNumber}` : 'Unknown Comic',
-          savings: deal.marketValueGBP - deal.totalPriceGBP
-        };
-      })
-      .sort((a, b) => b.dealScore - a.dealScore)
-      .slice(0, 10);
+  const dealsForTable = useMemo(() => {
+    return fixtureData.deals.map((d, idx) => {
+      const title = `${d.series.title} #${d.issue.issueNumber}`;
+      const gradeDisplay = `${d.grade.scale} ${d.grade.numeric ?? d.grade.label}`;
+      return {
+        id: `${d.issue.issueId}-${idx}`,
+        listingId: d.deal.listingId,
+        issueId: d.issue.issueId,
+        title,
+        gradeDisplay,
+        totalPriceGBP: d.deal.totalPriceGBP,
+        marketValueGBP: d.deal.marketValueGBP,
+        dealScore: d.deal.dealScore,
+      };
+    });
   }, []);
 
-  const totalSavings = enrichedDeals.reduce((sum, deal) => sum + deal.savings, 0);
+  const totalSavings = dealsForTable.reduce((sum, deal) => sum + (deal.marketValueGBP - deal.totalPriceGBP), 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,7 +73,7 @@ const Home = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{enrichedDeals.length}</div>
+                <div className="text-2xl font-bold">{dealsForTable.length}</div>
               </CardContent>
             </Card>
             
@@ -91,7 +85,7 @@ const Home = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-success">
-                  £{totalSavings.toFixed(2)}
+                  {formatGBP(totalSavings)}
                 </div>
               </CardContent>
             </Card>
@@ -105,10 +99,10 @@ const Home = () => {
               <CardContent>
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary" className="text-sm font-bold">
-                    {enrichedDeals[0]?.dealScore}% off
+                    {dealsForTable[0]?.dealScore}%
                   </Badge>
                   <span className="text-sm text-muted-foreground">
-                    {enrichedDeals[0]?.title}
+                    {dealsForTable[0]?.title}
                   </span>
                 </div>
               </CardContent>
@@ -117,11 +111,21 @@ const Home = () => {
 
           {/* Content */}
           {viewMode === 'table' ? (
-            <DealTable deals={enrichedDeals} />
+            <DealTable deals={dealsForTable} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {enrichedDeals.map((deal) => (
-                <DealCard key={deal.dealScoreId} deal={deal} />
+              {dealsForTable.map((deal) => (
+                <DealCard key={deal.id} deal={{
+                  // Backfill minimal shape expected by DealCard if used
+                  dealScoreId: deal.id,
+                  issueId: deal.issueId,
+                  gradeId: '',
+                  marketValueGBP: deal.marketValueGBP,
+                  totalPriceGBP: deal.totalPriceGBP,
+                  dealScore: deal.dealScore,
+                  title: deal.title,
+                  savings: deal.marketValueGBP - deal.totalPriceGBP,
+                }} />
               ))}
             </div>
           )}
