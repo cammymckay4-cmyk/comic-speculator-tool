@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+      "seed:gcd": "tsx scripts/gcd-seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
