@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
    base: '/',
   
   plugins: [
-  b
+  
     
     react(),
     mode === 'development' &&
