@@ -31,7 +31,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: production
+        name: github-pages
     steps:
       - id: deploy
         uses: actions/deploy-pages@v4
