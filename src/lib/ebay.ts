@@ -8,6 +8,14 @@ export interface EbayItem {
   condition: string;
 }
 
+interface EbayItemSummary {
+  itemId: string;
+  title: string;
+  price: { value: number; currency: string };
+  itemWebUrl: string;
+  condition?: string;
+}
+
 export async function searchComics(
   query: string,
   limit = 10
@@ -33,11 +41,11 @@ export async function searchComics(
     const message = data?.errors?.[0]?.message || response.statusText;
     throw new Error(`eBay search failed: ${message}`);
   }
-  return (data.itemSummaries || []).map((item: any) => ({
+  return (data.itemSummaries || []).map((item: EbayItemSummary) => ({
     itemId: item.itemId,
     title: item.title,
     price: item.price,
     itemWebUrl: item.itemWebUrl,
-    condition: item.condition,
+    condition: item.condition || 'Unknown',
   })) as EbayItem[];
 }

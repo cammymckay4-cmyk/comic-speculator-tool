@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TopDeal } from '../lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +16,7 @@ const TopDealsDemo: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [minScore, setMinScore] = useState(10);
 
-  const fetchTopDeals = async () => {
+  const fetchTopDeals = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -34,11 +34,11 @@ const TopDealsDemo: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [minScore]);
 
   useEffect(() => {
     fetchTopDeals();
-  }, [minScore]);
+  }, [fetchTopDeals]);
 
   const handleRefresh = () => {
     fetchTopDeals();

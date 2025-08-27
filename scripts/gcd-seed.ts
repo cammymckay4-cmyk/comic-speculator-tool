@@ -34,10 +34,13 @@ function pageUrl(base: string, page: number) {
 }
 
 // Parse series from downloaded JSON
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseSeriesFromJson(raw: any, publisherName?: string) {
   if (!raw || !Array.isArray(raw.items)) return [];
   return raw.items
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .filter((s: any) => (s.year ?? 0) >= 1980)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((s: any) => ({
       ext_id: String(s.id),
       name: s.name,
@@ -48,6 +51,7 @@ function parseSeriesFromJson(raw: any, publisherName?: string) {
 }
 
 // Upsert series into staging table
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function upsertSeries(rows: any[]) {
   if (!rows.length) return;
   const { error } = await supabase

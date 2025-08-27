@@ -6,10 +6,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import fixtureData from '../data/fixtures.json';
+import { Issue, Grade } from '@/lib/types';
+
+interface AlertData {
+  issueId?: string;
+  gradeId?: string;
+  minDealScore?: number;
+  notes?: string;
+}
 
 interface AlertFormProps {
-  initialData?: any;
-  onSubmit: (data: any) => void;
+  initialData?: AlertData;
+  onSubmit: (data: AlertData) => void;
   onCancel: () => void;
 }
 
@@ -39,12 +47,12 @@ const AlertForm = ({ initialData, onSubmit, onCancel }: AlertFormProps) => {
     });
   };
 
-  const getIssueDisplay = (issue: any) => {
+  const getIssueDisplay = (issue: Issue) => {
     const series = fixtureData.series.find(s => s.seriesId === issue.seriesId);
     return `${series?.title} #${issue.issueNumber}`;
   };
 
-  const getGradeDisplay = (grade: any) => {
+  const getGradeDisplay = (grade: Grade) => {
     return `${grade.scale} ${grade.numeric} (${grade.label})`;
   };
 

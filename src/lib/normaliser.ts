@@ -174,7 +174,7 @@ export function parseTitle(rawTitle: string): NormalizedListing {
   let seriesId = '';
   let issueNumber = '';
   let grade = '';
-  let notes: string[] = [];
+  const notes: string[] = [];
 
   // 1. Extract series information
   const seriesResult = extractSeries(title);
