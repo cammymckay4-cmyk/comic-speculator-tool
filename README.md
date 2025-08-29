@@ -1,120 +1,90 @@
-# ComicScout UK - Comic Deal Finder
+# ComicScout UK – Comic Scouting Engine
 
-A professional platform for finding the best comic book deals in the UK market. ComicScout analyzes market prices and identifies exceptional value opportunities for collectors and investors.
+## Overview
+ComicScout UK is an end-to-end platform for discovering undervalued comic books in the UK market. It scrapes and normalizes listings from sources like eBay, collects historic sales data from GoCollect, calculates market values using advanced statistics, and surfaces the best deals to collectors and investors. Alert rules allow users to be notified about new deals matching their criteria, and the platform exposes a REST API for integration with other services.
 
-## Features
+## Current status
+This project is transitioning from a prototype based on mock data to a production-ready system. The current codebase includes a React front‑end using fixture data for demonstration. Upcoming phases include cleaning up the existing code, migrating data models to a relational database (PostgreSQL via Supabase), building a backend API with proper authentication, integrating real data sources, and refactoring the front‑end to consume the API.
 
-- **Top Deals Dashboard**: Data-dense table showing the best comic deals with real-time savings calculations
-- **Market Analysis**: Individual comic pages with price history charts and market value breakdowns
-- **Deal Alerts**: Set custom alerts for specific comics and deal thresholds
-- **UK-Focused**: Prices in GBP with UK marketplace integration
+rchitecture overv
 
-## Tech Stack
+##  overview
 
-- React 18+ with TypeScript
-- Vite for build tooling and development
-- Tailwind CSS for styling
-- React Router for navigation
-- Shadcn/ui component library
+The ComicScout platform will follow a modular architecture with the following components:
 
-## Setup Instructions
+- **Frontend:** A React + TypeScript single-page application using Vite, Tailwind CSS and shadcn/ui. It consumes the REST API for data and displays top deals, price charts and alerts. The codebase is structured by features with reusable UI components and hooks.
+- **API server:** A backend written in Node.js using Express or Fastify. It exposes REST endpoints for top deals, listings, market data, notifications and user management. It integrates with the database, caching layer and external services. The API will be secured with JWT-based authentication and RBAC.
+- **Database:** PostgreSQL provided by Supabase. Tables will store series, issues, listings, grades, market values, deals, users and alerts. The database schema is managed via SQL migrations and row-level security policies to enforce user access control.
+- **Data ingestion & normalisation:** A separate scraping and normalisation engine written in TypeScript or Python. It fetches listings from marketplaces like eBay and sales data from GoCollect, normalises titles and grades, calculates market values and sends new deals to the API.
+- **Background workers:** Jobs handle tasks such as scheduled scraping, market value recalculation, alert dispatch and email sending.
 
-### Prerequisites
-- Node.js 18+ 
-- npm (comes with Node.js)
+These components communicate via HTTP APIs and share a common codebase structure. The design prioritises separation of concerns, scalability and testability.
 
-### Installation
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd comicscout-uk
-```
+## Key features
 
-2. Install dependencies:
-```bash
-npm install
-```
+- **Deal discovery:** Analyse current listings, compare them to historic sales and surface undervalued comic books with high savings.
+- **Price charts & analytics:** Provide interactive charts of historic sales, market value trends and statistics for each comic.
+- **Advanced search & filters:** Allow users to search by title, issue, grade, price range and sort by savings, time left and popularity.
+- **Alerts & notifications:** Let users create alert rules based on series, issue and desired price or savings threshold and receive notifications via email.
+- **Authentication:** Provide secure user registration and login with role-based access control to manage personal alerts and view purchase history.
 
-3. Start the development server:
-```bash
-npm run dev
-```
 
-4. Open your browser to `http://localhost:8080`
+## Technology stack
 
-### Build for Production
+- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, React Router and React Query for data fetching.
+- **Backend:** Node.js 20, Express or Fastify, Supabase client and PostgreSQL.
+- **Database:** PostgreSQL with Supabase for hosting, real-time subscriptions and row-level security.
+- **Data ingestion:** TypeScript or Python for scraping, with headless browsers and third-party API clients.
+- **Testing:** Vitest and React Testing Library for front-end tests, Jest or Tap for back-end tests, ESLint and Prettier for linting/formatting.
 
-```bash
-npm run build
-```
 
-## Project Structure
+## External integrations
 
-```
-/public/          # Static assets
-/src/
-  /components/    # Reusable UI components
-  /pages/         # Page components (Home, ItemDetail, Alerts)
-  /lib/           # Utility functions
-  /data/          # Mock data fixtures
-  /styles/        # CSS and design system
-```
+The platform integrates with several external services:
 
-## Mock Data
+- **eBay:** For current listing data via official APIs.
+- **GoCollect:** For historic sales and market value calculations.
+- **Resend:** For sending email notifications when alerts are triggered.
+- **Supabase:** For database, authentication and real-time subscriptions.
 
-This application uses fixture data located in `/src/data/fixtures.json` for demonstration purposes. The data includes:
+Additional integrations like Twilio or Slack may be added for multi-channel notifications.
 
-- Comic series information (Amazing Spider-Man, Batman, X-Men)
-- Individual issue details with key notes
-- Grading information (CGC and raw grades)
-- Market value calculations
-- Deal scores and pricing analysis
-- Sample alert rules
+## Development phases
 
-**Important**: This is mock data for development and demonstration only. Real market data integration would be required for production use.
+The project will progress through the following phases:
 
-## Accessibility
+1. **Analysis & cleanup:** Audit the current codebase, remove unused code, unify formatting and prepare for modularisation.
+2. **Database migration:** Design relational schema, migrate mock data to PostgreSQL via Supabase and implement row-level security.
+3. **Backend development:** Build the REST API with endpoints for top deals, listings, market values, alerts and authentication.
+4. **Frontend refactoring:** Update the front-end to consume the API, implement state management and restructure components by feature.
+5. **Testing & integration:** Write comprehensive unit, integration and end-to-end tests, set up CI/CD and deploy to the chosen platform.
+6. **Production hardening:** Address performance, caching, monitoring, logging and security before launch.
 
-ComicScout follows web accessibility standards:
-- Semantic HTML structure with proper headings
-- Keyboard navigation support
-- High contrast design for readability
-- Screen reader compatibility
-- Alt text for images
-- Focus indicators for interactive elements
+## Installation & setup
 
-## Handoff Note
+To run the project locally:
 
-**After scaffolding**: Sync this project to GitHub and continue development in your local IDE. Remove the `lovable-tagger` dependency from package.json before deploying to production, as it's only needed for the Lovable development environment.
+1. Clone this repository.
+2. Install dependencies with `npm install`.
+3. Copy `.env.example` to `.env` and fill in your Supabase credentials, database URL and API keys for eBay, GoCollect and Resend.
+4. Start the development server with `npm run dev`.
+5. (Optional) Start the Supabase local development environment using `supabase start`.
+6. Access the app at `http://localhost:5173` and the Supabase studio at `http://localhost:54322`.
 
-## Development Guidelines
+For production deployment, build the front-end with `npm run build` and deploy the API server and database to your cloud of choice.
 
-- All colors are defined in the design system (`src/index.css` and `tailwind.config.ts`)
-- Use semantic design tokens instead of direct color values
-- Maintain the utilitarian, data-focused design approach
-- Prioritize information density and clarity over visual polish
-- Follow TypeScript best practices for type safety
+## Contributing
 
-## Pages
+Contributions are welcome! Please:
 
-### Home (`/`)
-Dashboard showing top comic deals with sortable data table and card views. Displays deal scores, savings calculations, and market comparisons.
+- Fork the repository and create a feature branch.
+- Write clear commits and follow conventional commit messages (`feat:`, `fix:`, `docs:`, etc.).
+- Ensure new code is covered by tests and lints pass (`npm run test`).
+- Submit a pull request describing the changes and referencing any relevant issues.
 
-### Item Detail (`/item/:issueId`)
-Individual comic analysis page with:
-- Price history visualization
-- Market value breakdown by grade
-- Current deal listings
-- Key issue information
-
-### Alerts (`/alerts`)
-Alert management interface for:
-- Creating custom deal alerts
-- Setting deal score thresholds
-- Managing active/inactive alerts
-- Alert rule editing and deletion
+We use ESLint, Prettier and Husky for code quality; please run the pre-commit hooks before submitting.
 
 ## License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
