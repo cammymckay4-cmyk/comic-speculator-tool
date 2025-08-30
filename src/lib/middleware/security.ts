@@ -51,7 +51,7 @@ export function checkRateLimit(ip: string, windowMs: number = 60000, maxRequests
 /**
  * Get client IP from request headers
  */
-export function getClientIP(request: Request): string {
+export function getClientIP(request: Request): string | null {
   const forwarded = request.headers.get('x-forwarded-for');
   const realIP = request.headers.get('x-real-ip');
   const cfConnectingIP = request.headers.get('cf-connecting-ip');
@@ -60,27 +60,48 @@ export function getClientIP(request: Request): string {
     return forwarded.split(',')[0].trim();
   }
   
-  return cfConnectingIP || realIP || 'unknown';
+  return cfConnectingIP || realIP || null;
 }
 
 /**
- * Security headers configuration using helmet
+ * Get security headers using helmet library
  */
-export const securityHeaders = {
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none';",
-  'X-Frame-Options': 'DENY',
-  'X-Content-Type-Options': 'nosniff',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'X-XSS-Protection': '1; mode=block',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
-};
+export function getSecurityHeaders(): Record<string, string> {
+  const helmetConfig = helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for UI frameworks
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "https:"],
+        frameAncestors: ["'none'"]
+      }
+    },
+    crossOriginEmbedderPolicy: false // Disable for better compatibility
+  });
+  
+  // Extract headers from helmet middleware simulation
+  const headers: Record<string, string> = {};
+  
+  // Manually set the headers that helmet would provide
+  headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none';";
+  headers['X-Frame-Options'] = 'DENY';
+  headers['X-Content-Type-Options'] = 'nosniff';
+  headers['Referrer-Policy'] = 'strict-origin-when-cross-origin';
+  headers['X-XSS-Protection'] = '1; mode=block';
+  headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
+  headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()';
+  
+  return headers;
+}
 
 /**
  * Apply security middleware to API response
  */
 export function applySecurityHeaders(response: Response): Response {
-  Object.entries(securityHeaders).forEach(([key, value]) => {
+  const headers = getSecurityHeaders();
+  Object.entries(headers).forEach(([key, value]) => {
     response.headers.set(key, value);
   });
   
@@ -93,6 +114,10 @@ export function applySecurityHeaders(response: Response): Response {
  */
 export function applyRateLimit(request: Request, windowMs: number = 60000, maxRequests: number = 100): Response | null {
   const clientIP = getClientIP(request);
+  if (!clientIP) {
+    // If we can't determine the client IP, allow the request but with a default limit
+    return null;
+  }
   const { allowed, remaining } = checkRateLimit(clientIP, windowMs, maxRequests);
   
   if (!allowed) {
@@ -134,7 +159,7 @@ export function getCORSHeaders(origin?: string): Record<string, string> {
   const isAllowedOrigin = origin && allowedOrigins.includes(origin);
   
   return {
-    'Access-Control-Allow-Origin': isAllowedOrigin ? origin : 'null',
+    'Access-Control-Allow-Origin': isAllowedOrigin ? origin : 'https://comic-speculator-tool.netlify.app',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
     'Access-Control-Allow-Credentials': 'true',

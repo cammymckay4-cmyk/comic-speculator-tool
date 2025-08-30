@@ -19,10 +19,7 @@ CREATE TABLE IF NOT EXISTS user_activity_log (
   session_id UUID,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   
-  -- Indexes for performance
-  INDEX idx_user_activity_log_user_id ON user_activity_log(user_id),
-  INDEX idx_user_activity_log_created_at ON user_activity_log(created_at),
-  INDEX idx_user_activity_log_activity_type ON user_activity_log(activity_type)
+  -- Note: Indexes will be created after table creation
 );
 
 -- System Metrics Table
@@ -38,10 +35,7 @@ CREATE TABLE IF NOT EXISTS system_metrics (
   tags JSONB DEFAULT '{}',
   recorded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   
-  -- Indexes for performance
-  INDEX idx_system_metrics_name_recorded_at ON system_metrics(metric_name, recorded_at),
-  INDEX idx_system_metrics_category ON system_metrics(metric_category),
-  INDEX idx_system_metrics_recorded_at ON system_metrics(recorded_at)
+  -- Note: Indexes will be created after table creation
 );
 
 -- User Preferences Table
@@ -78,9 +72,19 @@ CREATE TABLE IF NOT EXISTS user_preferences (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   
-  -- Indexes for performance
-  INDEX idx_user_preferences_user_id ON user_preferences(user_id)
+  -- Note: Indexes will be created after table creation
 );
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_user_activity_log_user_id ON user_activity_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_activity_log_created_at ON user_activity_log(created_at);
+CREATE INDEX IF NOT EXISTS idx_user_activity_log_activity_type ON user_activity_log(activity_type);
+
+CREATE INDEX IF NOT EXISTS idx_system_metrics_name_recorded_at ON system_metrics(metric_name, recorded_at);
+CREATE INDEX IF NOT EXISTS idx_system_metrics_category ON system_metrics(metric_category);
+CREATE INDEX IF NOT EXISTS idx_system_metrics_recorded_at ON system_metrics(recorded_at);
+
+CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id);
 
 -- Row Level Security (RLS) Policies
 
