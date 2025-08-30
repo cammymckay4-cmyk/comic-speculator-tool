@@ -16,7 +16,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-      "seed:gcd": "tsx scripts/gcd-seed.ts"
+      "seed:gcd": "tsx scripts/gcd-seed.ts",
+    "seed:comics": "tsx scripts/seed-comics-data.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -69,7 +70,10 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
     "zod": "^3.25.76",
-"@supabase/supabase-js": "^2.56.0"  },
+    "@supabase/supabase-js": "^2.56.0",
+    "mysql2": "^3.11.4",
+    "dotenv": "^16.4.7"
+  },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
