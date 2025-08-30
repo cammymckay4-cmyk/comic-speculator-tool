@@ -1,0 +1,62 @@
+
+Product Requirements Document (PRD)
+
+Project: ComicScoutUK
+Version: 1.0 (Refactor)
+Goal: To transform an existing repository into a robust, market-ready application for UK comic collectors and speculators.
+________________________________________
+1. Introduction & Vision
+•	Vision: To be the essential digital tool for UK comic collectors and speculators, combining personal collection management with powerful, data-driven market analysis and live eBay integration.
+•	Core Mission: To fill a clear gap in the UK market by providing collectors with the fastest, most direct way to find, track, and be notified about specific comics for sale on eBay.
+•	Unique Selling Proposition (USP): A powerful scouting tool that provides proactive, real-time alerts and ranks eBay listings by "best deal," eliminating the need for constant manual searching.
+________________________________________
+2. Core Architectural Principles
+•	Decoupled Architecture: The backend will function as a standalone REST API. This ensures the frontend is completely interchangeable, allowing the user's custom-built frontend to replace any basic placeholder UI.
+•	eBay ToS Compliance: All features displaying market listings will link directly back to eBay to ensure compliance with their Terms of Service.
+•	Preservation of Critical Integrations: The existing, verified Resend email integration will be preserved and integrated into the new architecture.
+________________________________________
+3. Target Audience
+•	The Speculator/Investor: Needs robust market data, value trends, portfolio analysis, and "sell" alerts to maximize ROI.
+•	The Dedicated Collector: Needs a powerful wishlist and alert system to find specific comics to complete their collection, often with specific grade requirements.
+•	The Casual Hobbyist: Needs easy-to-use tools to catalogue their collection and explore the market.
+________________________________________
+4. Feature Set (Version 1.0)
+•	User Accounts & Social Features:
+o	Standard user profiles with a privacy toggle for their collection.
+o	Ability to follow other users and view their public collections (Social Speculation).
+o	Comic-Specific Comment Threads for discussion on individual issue pages (Premium).
+•	Collection Management ('Digital Comic Box'):
+o	Add comics via database search or a mobile app with barcode scanning.
+o	Track key data: purchase price, grade, grader, personal photos.
+o	View a calculated profit/loss for each owned comic.
+•	The Scouting Engine & Alert System:
+o	A backend engine that continuously polls the eBay API.
+o	A Deal Scoring Algorithm that ranks listings by comparing their price to the GoCollect Fair Market Value (FMV).
+o	'Scout Results' Page: A live, ranked list of all available deals for a wishlist item (Premium).
+o	Alert Triggers: Configurable push notifications for:
+	New Top Deals (e.g., >20% below FMV).
+	Ending Soon listings.
+	Stale Listings (e.g., active for 20+ days).
+o	'Sell Alerts': Notify a user when a comic they own surpasses a target market value (Premium).
+o	Alert Controls: A "Global with Per-Item Overrides" settings model.
+•	Speculator Dashboard (Premium):
+o	A central hub for market analysis.
+o	Includes Total Collection Value, a Value Over Time graph, a Market Heat Index, and a curated Speculation News Feed.
+o	Features an advanced Collection Portfolio Analysis (breakdown by publisher, era, etc.).
+•	Gamification & Engagement:
+o	A "Trophy" system modeled after PlayStation Trophies.
+o	Collection Goals to track progress toward completing series or story arcs.
+o	Example Trophies: "Full Series Owner," "Collection Value Exceeds £1,000."
+•	Utilities:
+o	LCS Locator: Finds nearby Local Comic Shops based on user location.
+o	Missing Comic Request System: Allows users to request that a comic be added to the database.
+________________________________________
+5. Monetization
+•	A Freemium model with three tiers (Free, Medium, Pro).
+•	Premium features include the full Speculator Dashboard, Sell Alerts, Comment Threads, the Scout Results page, and advanced alert configurations.
+________________________________________
+6. Future Roadmap (Post-v1.0)
+•	Affiliate Links for Supplies: An additional revenue stream.
+•	Series Tracker / Digital Pull List: A feature for tracking new comic releases.
+
+

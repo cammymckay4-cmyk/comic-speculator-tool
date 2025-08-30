@@ -1,35 +1,148 @@
-# ComicScout UK — Comic Scouting Engine
+ComicScoutUK
+The Essential Digital Tool for UK Comic Collectors and Speculators
+ComicScoutUK is a comprehensive platform that combines personal collection management with powerful, data-driven market analysis and live eBay integration. Designed specifically for the UK market, it provides collectors with the fastest, most direct way to find, track, and be notified about specific comics for sale.
 
-## Vision and mission
-ComicScout UK aims to democratise access to the UK comic book market by surfacing undervalued issues and hidden gems. By aggregating listings from multiple marketplaces, normalising data and providing real‑time market analytics, the platform empowers collectors and investors to make informed decisions.
+🎯 Vision & Mission
+Vision: To be the essential digital tool for UK comic collectors and speculators, combining personal collection management with powerful, data-driven market analysis and live eBay integration.
 
-## Overview
-ComicScout is an end‑to‑end platform for discovering and tracking comic book deals. It scrapes listings from sources like eBay, collects historic sales data from GoCollect, calculates fair market values and trends, and sends notifications when interesting deals appear. Users can browse opportunities in a web UI or programmatically via a REST API. The system is built with a modern front‑end (React/TypeScript with shadcn/ui), a backend API written in Node.js, and a relational database managed via Supabase.
+Core Mission: To fill a clear gap in the UK market by providing collectors with the fastest, most direct way to find, track, and be notified about specific comics for sale on eBay.
 
-## Current status
-This project is transitioning from a prototype based on mock data to a production‑ready application. The current codebase includes a basic React front‑end using fixture data for demonstration. Upcoming work includes:
-- Cleaning up the existing code and removing obsolete prototype files.
-- Migrating data models from TypeScript interfaces to a relational schema in PostgreSQL/Supabase.
-- Building a backend API with proper authentication and RBAC.
-- Integrating real eBay listing feeds and GoCollect sales data.
-- Refactoring the front‑end to consume the API and support deal alerts.
+Unique Selling Proposition: A powerful scouting tool that provides proactive, real-time alerts and ranks eBay listings by "best deal," eliminating the need for constant manual searching.
 
-## Key features
-- **Deal discovery:** Analyse current listings, compare them to historic sales and fair values, and surface undervalued comic books with high savings.
-- **Price charts & analytics:** Provide interactive charts of historic sales data, market value trends and statistics for each comic.
-- **Price watch lists:** Allow users to create watch lists for specific titles, issues, grades or artists and get notified when matching deals appear.
-- **Notifications & alerts:** Support configurable alert rules (price thresholds, percentage undervalue, timeframe, etc.) with delivery via email and in‑app notifications.
-- **REST API:** Expose endpoints for querying deals, titles, issues, valuations and user alerts so other applications can integrate with ComicScout data.
+🏗️ Architecture
+ComicScoutUK follows a decoupled architecture design:
 
-## Target architecture
-The ComicScout platform follows a modular architecture. Major components include:
-- **Frontend:** A React/TypeScript single‑page application that consumes the REST API and displays top deals, alerts, price charts and user settings.
-- **API server:** A Node.js backend (Express or Fastify) that exposes REST endpoints for deals, listings, valuations, titles, users and alerts. It handles authentication, authorisation and validation, and orchestrates communication with the database and background services.
-- **Database:** A relational PostgreSQL database (managed by Supabase) storing users, titles, issues, listings, grades, valuations, alerts and notifications. Database schema changes are managed via SQL migrations.
-- **Data ingestion & normalisation:** A separate scraping and normalisation service written in TypeScript or Python. It fetches listing data from marketplaces (eBay, etc.), historic sales from GoCollect, and normalises titles and grades to our canonical representation.
-- **Background workers:** Jobs for tasks such as scheduled scraping, price calculations, alert dispatch and email sending.
+Backend: Standalone REST API built with TypeScript and Node.js
 
-Detailed diagrams and component boundaries can be found in [ARCHITECTURE.md](./ARCHITECTURE.md).
+Database: PostgreSQL via Supabase
 
-## Contributing
-We welcome contributions! Please read [REFACTORING_PLAN.md](./REFACTORING_PLAN.md) to understand the current roadmap, then open an issue to discuss your proposed changes. When submitting a pull request, use descriptive branch names (e.g. `docs/initial-documentation` or `feat/api-endpoints`) and ensure that your changes are covered by appropriate tests. We adhere to the conventional commits specification for commit messages.
+Frontend: Interchangeable client (React-based custom frontend)
+
+External APIs: eBay API, GoCollect API, Resend API
+
+This architecture ensures the frontend is completely interchangeable, allowing custom-built frontends to replace any basic placeholder UI.
+
+🎯 Target Audience
+The Speculator/Investor: Needs robust market data, value trends, portfolio analysis, and "sell" alerts to maximize ROI
+
+The Dedicated Collector: Needs a powerful wishlist and alert system to find specific comics with grade requirements
+
+The Casual Hobbyist: Needs easy-to-use tools to catalogue their collection and explore the market
+
+✨ Core Features
+📚 Collection Management ("Digital Comic Box")
+
+Add comics via database search or mobile barcode scanning
+
+Track purchase price, grade, grader, and personal photos
+
+View calculated profit/loss for each owned comic
+
+🔍 The Scouting Engine & Alert System
+
+Continuous eBay API polling for new listings
+
+Deal Scoring Algorithm comparing prices to GoCollect Fair Market Value (FMV)
+
+Live, ranked "Scout Results" page showing best deals
+
+Configurable alerts for New Top Deals, Ending Soon listings, and Stale Listings
+
+"Sell Alerts" when owned comics surpass target market values
+
+📊 Speculator Dashboard (Premium)
+
+Central hub for market analysis
+
+Total Collection Value tracking
+
+Value Over Time graphs
+
+Market Heat Index
+
+Speculation News Feed
+
+Advanced Collection Portfolio Analysis
+
+👥 Social Features
+
+User profiles with privacy toggles
+
+Follow other users and view public collections
+
+Comic-specific comment threads (Premium)
+
+🏆 Gamification
+
+PlayStation Trophy-style achievement system
+
+Collection Goals for series completion
+
+Example Trophies: "Full Series Owner," "Collection Value Exceeds £1,000"
+
+🛠️ Utilities
+
+LCS (Local Comic Shop) Locator
+
+Missing Comic Request System
+
+💰 Monetization
+Freemium Model with three tiers:
+
+Free: Basic collection management
+
+Medium: Enhanced features and alerts
+
+Pro: Full Speculator Dashboard, Sell Alerts, Comment Threads, Scout Results
+
+🚀 Development Status
+This project is currently undergoing a major refactor to transform the existing codebase into a market-ready application. The refactoring process follows a structured, phase-based approach:
+
+Current Phase: Analysis & Cleanup
+
+Repository analysis and documentation updates
+
+Obsolete file removal and code audit
+
+Architecture planning and schema design
+
+Upcoming Phases:
+
+Database Migration - Transform existing Supabase schema
+
+API Development - Build REST API endpoints
+
+Core Feature Implementation - Scouting engine, alerts, gamification
+
+Frontend Integration - Connect with custom React frontend
+
+Testing & Polish - Comprehensive testing and optimization
+
+🔧 Technical Stack
+Backend: TypeScript, Node.js, Express
+
+Database: PostgreSQL (Supabase)
+
+APIs: eBay API, GoCollect API, Resend API
+
+Frontend: React (custom implementation)
+
+Authentication: Supabase Auth
+
+Email: Resend API
+
+📋 Getting Started
+Note: Development setup instructions will be added as the refactor progresses.
+
+🤝 Contributing
+This project is currently in active refactoring. Contribution guidelines will be established once the core architecture is stable.
+
+📄 License
+License information to be determined.
+
+🔗 External Compliance
+All features displaying market listings link directly back to eBay to ensure full compliance with eBay's Terms of Service.
+
+Project Status: 🚧 Under Active Refactoring
+Version: 1.0 (Refactor in Progress)
+Last Updated: August 2025

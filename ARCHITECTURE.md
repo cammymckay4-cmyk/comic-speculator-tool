@@ -1,51 +1,367 @@
-# Architecture Overview
+# ComicScoutUK System Architecture
+**Version:** 1.0  
+**Last Updated:** August 2025
 
-## System Design and Objectives
+## 🏗️ Overview
+ComicScoutUK follows a decoupled architecture pattern, separating concerns between data management, business logic, and presentation layers. This design ensures maximum flexibility, scalability, and maintainability.
 
-ComicScout UK is designed as a modular platform that ingests raw comic book listings, normalises their metadata, computes fair market values and deal scores, and exposes this information through a user ‑friendly web interface and API. The goal of the refactor is to evolve the existing prototype into a production ‑ready system with clear separation of concerns and scalable components.
+## 🎯 Architectural Principles
 
-## Domain Boundaries
+### 1. Decoupled Design
+* **Backend:** Standalone REST API handling all business logic
+* **Frontend:** Interchangeable client applications
+* **Database:** Managed PostgreSQL via Supabase
+* **External Services:** Isolated integration points
 
-The system is divided into several bounded contexts following domain ‑driven design:
+### 2. API-First Approach
+* All functionality exposed through REST endpoints
+* JSON-based communication
+* Comprehensive API documentation
+* Version-controlled API contracts
 
-- **Data Ingestion** – Handles integration with external data sources such as eBay, GoCollect and community feeds. Responsible for fetching and updating raw listings and sale data. Uses cron jobs and webhooks for scheduling.
-- **Normalisation & Parsing** – Parses raw titles and descriptions to extract structured fields like series, issue, grade and special attributes. Normalises series aliases using a dictionary and heuristics. Provides a clean record for valuation.
-- **Valuation & Analytics** – Calculates market values using historical sale data (mean, median, min, max, standard deviation). Computes deal scores (percentage savings) and ranking metrics. Supports configurable thresholds and weighting functions.
-- **Alerts & Notifications** – Evaluates user‑defined rules and sends alerts via email using services like Resend. Supports scheduling and rate limiting.
-- **API & Backend Services** – Exposes REST and GraphQL endpoints for front‑end consumption and third‑party integrations. Contains authentication, authorisation and business rules.
-- **Frontend Application** – A responsive React/Next.js client that displays top deals, price trends and user alerts. Interacts with the API via client libraries.
-- **Database Layer** – Centralised data storage built on PostgreSQL (via Supabase) with row‑level security. Stores series, issues, grades, listings, market values, deals, users and alerts.
+### 3. Scalable Infrastructure
+* Stateless backend services
+* Database connection pooling
+* Cacheable responses
+* Horizontal scaling capability
 
-## Data Flow and Interaction
+### 4. Security by Design
+* JWT-based authentication
+* Role-based access control
+* Input validation and sanitization
+* Rate limiting and abuse prevention
 
-1. **Ingestion → Normalisation:** The ingestion service collects raw listings and forwards them to the normalisation service via an internal queue. Normalised records are stored in a canonical format with consistent series, issue and grade details.
-2. **Normalisation → Valuation:** The valuation service retrieves normalised records and historical sale data from the database to compute fair market values and deal scores. The results are written back to the database.
-3. **Valuation → Alerts:** When valuations and deals are updated, an events stream triggers the alert evaluation service to check user‑defined rules. Alerts are queued for notification delivery.
-4. **API → Frontend:** The API layer exposes endpoints for retrieving listings, deals and valuations. The front‑end application calls these endpoints to render the user interface.
+## 🔧 Technology Stack
 
-## Draft Database Schema
+### Backend Services
+┌─────────────────────────────────────────────────────────────────┐
+│                          Backend API                          │
+├─────────────────────────────────────────────────────────────────┤
+│ • Runtime: Node.js 18+                                          │
+│ • Language: TypeScript 5+                                       │
+│ • Framework: Express.js                                         │
+│ • Validation: Joi/Zod                                           │
+│ • Authentication: Supabase Auth                                 │
+│ • ORM: Supabase-js Client                                       │
+└─────────────────────────────────────────────────────────────────┘
 
-- `series` — id, title, publisher.
-- `issues` — id, series_id, number, name, variant, release_date, etc.
-- `grades` — id, grade_code, description.
-- `listings_raw` — id, source, title, raw_data, created_at.
-- `listings` — id, series_id, issue_id, grade_id, price, seller_id, listing_url, etc.
-- `sales` — id, listing_id, sold_price, sold_date.
-- `market_values` — id, issue_id, grade_id, avg, min, max, stddev, updated_at.
-- `deal_scores` — id, listing_id, score, savings_percent, rank, updated_at.
-- `users` — id, email, hashed_password, preferences.
-- `alerts` — id, user_id, issue_id, grade_id, threshold, created_at.
 
-## External Integrations
+### Database Layer
+┌─────────────────────────────────────────────────────────────────┐
+│                        Database Layer                         │
+├─────────────────────────────────────────────────────────────────┤
+│ • Database: PostgreSQL 15+                                      │
+│ • Platform: Supabase                                            │
+│ • Features: RLS, Real-time subscriptions, Auth integration      │
+│ • Migrations: Supabase CLI                                      │
+│ • Backup: Automated daily snapshots                             │
+└─────────────────────────────────────────────────────────────────┘
 
-- **eBay API** – For retrieving current listings and sale transactions.
-- **GoCollect** – For price guide and sale data.
-- **Supabase** – Database storage, authentication and row‑level security.
-- **Resend** – Email notification service.
 
-## Design Principles
+### External Integrations
+┌─────────────────────────────────────────────────────────────────┐
+│                     External Services                         │
+├─────────────────────────────────────────────────────────────────┤
+│ • eBay API: Trading & Finding APIs                              │
+│ • GoCollect API: Fair Market Value data                         │
+│ • Resend API: Transactional email delivery                      │
+│ • Google Maps API: LCS location services                        │
+└─────────────────────────────────────────────────────────────────┘
 
-- **Modularity & Maintainability:** Each bounded context is decoupled and can evolve independently, enabling easier testing and deployment.
-- **Scalability:** Use asynchronous queues and event streams to decouple compute‑intensive tasks. Support horizontal scaling of ingestion and valuation workers.
-- **Security:** Employ Supabase row‑level security for multi‑tenancy. Use environment variables for API credentials and secrets.
-- **Observability:** Incorporate logging, metrics and tracing to monitor service health and performance.
+
+## 📊 System Components
+
+### 1. API Gateway Layer
+// Express.js application structure
+app/
+├── middleware/
+│   ├── auth.ts          // JWT validation
+│   ├── rateLimiter.ts   // Request rate limiting
+│   ├── validator.ts     // Input validation
+│   └── cors.ts          // CORS configuration
+├── routes/
+│   ├── auth.ts          // Authentication endpoints
+│   ├── collection.ts    // Collection management
+│   ├── wishlist.ts      // Wishlist operations
+│   ├── scouting.ts      // Scout results & alerts
+│   └── dashboard.ts     // Analytics & reporting
+└── app.ts               // Express app configuration
+
+2. Business Logic Layer
+TypeScript
+
+// Service layer organization
+services/
+├── auth/
+│   ├── AuthService.ts           // User authentication
+│   └── PermissionService.ts     // Authorization logic
+├── collection/
+│   ├── CollectionService.ts     // Collection management
+│   └── WishlistService.ts       // Wishlist operations
+├── scouting/
+│   ├── ScoutingEngine.ts        // eBay polling system
+│   ├── DealScorer.ts            // Deal ranking algorithm
+│   └── AlertService.ts          // Alert generation
+├── gamification/
+│   ├── TrophyEngine.ts          // Achievement system
+│   └── GoalTracker.ts           // Collection goals
+└── external/
+    ├── EbayClient.ts            // eBay API integration
+    ├── GoCollectClient.ts       // Market data API
+    └── ResendClient.ts          // Email service
+    
+3. Data Access Layer
+TypeScript
+
+// Database interaction layer
+data/
+├── models/
+│   ├── User.ts              // User entity
+│   ├── Comic.ts             // Comic entity
+│   ├── Collection.ts        // User collection
+│   ├── Wishlist.ts          // Wishlist items
+│   ├── Alert.ts             // Alert settings
+│   └── Trophy.ts            // Achievement system
+├── repositories/
+│   ├── UserRepository.ts    // User data operations
+│   ├── ComicRepository.ts   // Comic data operations
+│   └── CollectionRepository.ts
+└── migrations/
+    ├── 001_initial_schema.sql
+    ├── 002_add_trophies.sql
+    └── 003_alert_system.sql
+    
+🔄 Data Flow Architecture
+1. Request Processing Flow
+Code snippet
+
+graph TD
+    A[Client Request] --> B[API Gateway]
+    B --> C[Authentication Middleware]
+    C --> D[Validation Middleware]
+    D --> E[Rate Limiting]
+    E --> F[Route Handler]
+    F --> G[Service Layer]
+    G --> H[Data Repository]
+    H --> I[Supabase Database]
+    I --> H
+    H --> G
+    G --> F
+    F --> J[JSON Response]
+    J --> A
+    
+2. Scouting Engine Flow
+Code snippet
+
+graph TD
+    A[Cron Scheduler] --> B[Scouting Engine]
+    B --> C[Fetch Active Wishlists]
+    C --> D[Query eBay API]
+    D --> E[Match Listings to Wants]
+    E --> F[Calculate Deal Scores]
+    F --> G[Generate Alerts]
+    G --> H[Send Notifications]
+    H --> I[Update Alert History]
+    
+3. Alert System Flow
+Code snippet
+
+graph TD
+    A[Alert Trigger] --> B[Alert Service]
+    B --> C[Check User Preferences]
+    C --> D[Validate Alert Conditions]
+    D --> E[Generate Alert Message]
+    E --> F[Queue Email Notification]
+    F --> G[Send via Resend API]
+    G --> H[Log Alert Delivery]
+    
+🗄️ Database Architecture
+Entity Relationship Diagram
+SQL
+
+-- Core Entities
+Users ||--o{ User_Collection : owns
+Users ||--o{ Wishlist_Items : wants
+Users ||--o{ Alert_Settings : configures
+Users ||--o{ User_Trophies : earned
+
+Comics ||--o{ User_Collection : collected
+Comics ||--o{ Wishlist_Items : wanted
+
+Trophies ||--o{ User_Trophies : awarded
+
+-- Relationships
+User_Collection }o--|| Comics : contains
+Wishlist_Items }o--|| Comics : references
+Alert_Settings }o--o| Wishlist_Items : monitors
+
+Indexing Strategy
+SQL
+
+-- Performance-critical indexes
+CREATE INDEX idx_user_collection_user_id ON User_Collection(user_id);
+CREATE INDEX idx_wishlist_user_id ON Wishlist_Items(user_id);
+CREATE INDEX idx_comics_title_issue ON Comics(title, issue_number);
+CREATE INDEX idx_alert_settings_active ON Alert_Settings(is_active, user_id);
+
+🔒 Security Architecture
+Authentication Flow
+User Registration/Login → Supabase Auth
+
+JWT Token Generation → Supabase returns signed JWT
+
+Request Authentication → Validate JWT on each API call
+
+Authorization Check → Verify user permissions for resources
+
+Security Layers
+TypeScript
+
+// Security middleware stack
+app.use(helmet());               // Security headers
+app.use(cors(corsOptions));      // CORS configuration
+app.use(rateLimiter);            // Rate limiting
+app.use(authMiddleware);         // JWT validation
+app.use(rbacMiddleware);         // Role-based access control
+
+Data Protection
+Encryption at Rest: Supabase managed encryption
+
+Encryption in Transit: HTTPS/TLS for all communications
+
+Input Sanitization: Joi/Zod schema validation
+
+SQL Injection Prevention: Parameterized queries via Supabase-js
+
+📈 Scalability Considerations
+Horizontal Scaling
+Stateless API Design: No server-side session storage
+
+Database Connection Pooling: Efficient connection management
+
+Caching Strategy: Redis for frequently accessed data
+
+CDN Integration: Static asset delivery optimization
+
+Performance Optimization
+Response Caching: HTTP cache headers for static data
+
+Database Query Optimization: Indexed queries and query analysis
+
+Background Job Processing: Queue-based alert processing
+
+API Response Compression: Gzip compression for large responses
+
+
+🔧 Development Environment
+Local Setup Architecture
+YAML
+
+# Docker Compose Development Stack
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+  
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=comicscout_dev
+    ports:
+      - "5432:5432"
+  
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+Testing Architecture
+Unit Tests: Jest + TypeScript
+
+Integration Tests: Supertest for API endpoints
+
+Database Tests: Test database with migrations
+
+E2E Tests: Playwright for full user scenarios
+
+🚀 Deployment Architecture
+Production Environment
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Load Balancer │    │  API Instances  │    │    Database     │
+│                 │────│                 │────│                 │
+│  • SSL Term     │    │ • Node.js Apps  │    │ • Supabase      │
+│  • Rate Limit   │    │ • Auto Scaling  │    │ • Backups       │
+│  • Health Check │    │ • Health Checks │    │ • Monitoring    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+Monitoring & Observability
+Application Metrics: Custom metrics for business KPIs
+
+Error Tracking: Structured logging and error aggregation
+
+Performance Monitoring: API response time tracking
+
+Uptime Monitoring: Health check endpoints and alerts
+
+🔄 Integration Patterns
+External API Integration
+TypeScript
+
+// Circuit breaker pattern for external APIs
+class EbayClient {
+  private circuitBreaker = new CircuitBreaker(this.makeRequest, {
+    timeout: 5000,
+    errorThresholdPercentage: 50,
+    resetTimeout: 30000
+  });
+
+  async searchListings(query: SearchQuery): Promise<ListingResult[]> {
+    return this.circuitBreaker.fire(query);
+  }
+}
+Event-Driven Architecture
+TypeScript
+
+// Event system for decoupled components
+enum EventType {
+  COMIC_ADDED = 'comic.added',
+  DEAL_FOUND = 'deal.found',
+  TROPHY_EARNED = 'trophy.earned'
+}
+
+EventEmitter.on(EventType.COMIC_ADDED, async (event) => {
+  await TrophyEngine.checkAchievements(event.userId);
+});
+📋 API Design Standards
+RESTful Conventions
+GET    /api/collection/{userId}           # Get user collection
+POST   /api/collection                    # Add comic to collection
+PUT    /api/collection/{entryId}          # Update collection entry
+DELETE /api/collection/{entryId}          # Remove from collection
+
+GET    /api/scout/{wantId}                # Get scout results
+GET    /api/dashboard/{userId}            # Get dashboard data
+POST   /api/alerts                        # Create alert setting
+Response Format Standards
+TypeScript
+
+// Standardized API response format
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+  metadata?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+  };
+}
+This architecture provides a solid foundation for building a scalable, maintainable, and secure comic collection and scouting platform that can grow with user demand and feature requirements.

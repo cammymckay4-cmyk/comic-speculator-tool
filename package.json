@@ -1,7 +1,11 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "comic-scout-uk",
+
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Speculation tool for tracking and valuing comic book listings.",
+
+,
   "type": "module",
   "scripts": {
     "dev": "vite",
