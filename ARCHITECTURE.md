@@ -1,71 +1,78 @@
-ComicScoutUK System Architecture
-Version: 1.0
-Last Updated: August 2025
-🏗️ Overview
+# ComicScoutUK System Architecture
+**Version:** 1.0  
+**Last Updated:** August 2025
+
+## 🏗️ Overview
 ComicScoutUK follows a decoupled architecture pattern, separating concerns between data management, business logic, and presentation layers. This design ensures maximum flexibility, scalability, and maintainability.
-🎯 Architectural Principles
-1. Decoupled Design
 
-Backend: Standalone REST API handling all business logic
-Frontend: Interchangeable client applications
-Database: Managed PostgreSQL via Supabase
-External Services: Isolated integration points
+## 🎯 Architectural Principles
 
-2. API-First Approach
+### 1. Decoupled Design
+* **Backend:** Standalone REST API handling all business logic
+* **Frontend:** Interchangeable client applications
+* **Database:** Managed PostgreSQL via Supabase
+* **External Services:** Isolated integration points
 
-All functionality exposed through REST endpoints
-JSON-based communication
-Comprehensive API documentation
-Version-controlled API contracts
+### 2. API-First Approach
+* All functionality exposed through REST endpoints
+* JSON-based communication
+* Comprehensive API documentation
+* Version-controlled API contracts
 
-3. Scalable Infrastructure
+### 3. Scalable Infrastructure
+* Stateless backend services
+* Database connection pooling
+* Cacheable responses
+* Horizontal scaling capability
 
-Stateless backend services
-Database connection pooling
-Cacheable responses
-Horizontal scaling capability
+### 4. Security by Design
+* JWT-based authentication
+* Role-based access control
+* Input validation and sanitization
+* Rate limiting and abuse prevention
 
-4. Security by Design
+## 🔧 Technology Stack
 
-JWT-based authentication
-Role-based access control
-Input validation and sanitization
-Rate limiting and abuse prevention
-
-🔧 Technology Stack
-Backend Services
+### Backend Services
 ┌─────────────────────────────────────────────────────────────────┐
-│                          Backend API                            │
+│                          Backend API                          │
 ├─────────────────────────────────────────────────────────────────┤
-│ • Runtime: Node.js 18+                                        │
-│ • Language: TypeScript 5+                                     │
-│ • Framework: Express.js                                       │
-│ • Validation: Joi/Zod                                         │
-│ • Authentication: Supabase Auth                               │
-│ • ORM: Supabase-js Client                                     │
+│ • Runtime: Node.js 18+                                          │
+│ • Language: TypeScript 5+                                       │
+│ • Framework: Express.js                                         │
+│ • Validation: Joi/Zod                                           │
+│ • Authentication: Supabase Auth                                 │
+│ • ORM: Supabase-js Client                                       │
 └─────────────────────────────────────────────────────────────────┘
-Database Layer
+
+
+### Database Layer
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Database Layer                           │
+│                        Database Layer                         │
 ├─────────────────────────────────────────────────────────────────┤
-│ • Database: PostgreSQL 15+                                    │
-│ • Platform: Supabase                                          │
-│ • Features: RLS, Real-time subscriptions, Auth integration    │
-│ • Migrations: Supabase CLI                                    │
-│ • Backup: Automated daily snapshots                           │
+│ • Database: PostgreSQL 15+                                      │
+│ • Platform: Supabase                                            │
+│ • Features: RLS, Real-time subscriptions, Auth integration      │
+│ • Migrations: Supabase CLI                                      │
+│ • Backup: Automated daily snapshots                             │
 └─────────────────────────────────────────────────────────────────┘
-External Integrations
+
+
+### External Integrations
 ┌─────────────────────────────────────────────────────────────────┐
-│                    External Services                            │
+│                     External Services                         │
 ├─────────────────────────────────────────────────────────────────┤
-│ • eBay API: Trading & Finding APIs                            │
-│ • GoCollect API: Fair Market Value data                       │
-│ • Resend API: Transactional email delivery                    │
-│ • Google Maps API: LCS location services                      │
+│ • eBay API: Trading & Finding APIs                              │
+│ • GoCollect API: Fair Market Value data                         │
+│ • Resend API: Transactional email delivery                      │
+│ • Google Maps API: LCS location services                        │
 └─────────────────────────────────────────────────────────────────┘
-📊 System Components
-1. API Gateway Layer
-typescript// Express.js application structure
+
+
+## 📊 System Components
+
+### 1. API Gateway Layer
+// Express.js application structure
 app/
 ├── middleware/
 │   ├── auth.ts          // JWT validation
@@ -79,8 +86,11 @@ app/
 │   ├── scouting.ts      // Scout results & alerts
 │   └── dashboard.ts     // Analytics & reporting
 └── app.ts               // Express app configuration
+
 2. Business Logic Layer
-typescript// Service layer organization
+TypeScript
+
+// Service layer organization
 services/
 ├── auth/
 │   ├── AuthService.ts           // User authentication
@@ -90,7 +100,7 @@ services/
 │   └── WishlistService.ts       // Wishlist operations
 ├── scouting/
 │   ├── ScoutingEngine.ts        // eBay polling system
-│   ├── DealScorer.ts           // Deal ranking algorithm
+│   ├── DealScorer.ts            // Deal ranking algorithm
 │   └── AlertService.ts          // Alert generation
 ├── gamification/
 │   ├── TrophyEngine.ts          // Achievement system
@@ -99,8 +109,11 @@ services/
     ├── EbayClient.ts            // eBay API integration
     ├── GoCollectClient.ts       // Market data API
     └── ResendClient.ts          // Email service
+    
 3. Data Access Layer
-typescript// Database interaction layer
+TypeScript
+
+// Database interaction layer
 data/
 ├── models/
 │   ├── User.ts              // User entity
@@ -117,9 +130,12 @@ data/
     ├── 001_initial_schema.sql
     ├── 002_add_trophies.sql
     └── 003_alert_system.sql
+    
 🔄 Data Flow Architecture
 1. Request Processing Flow
-mermaidgraph TD
+Code snippet
+
+graph TD
     A[Client Request] --> B[API Gateway]
     B --> C[Authentication Middleware]
     C --> D[Validation Middleware]
@@ -133,8 +149,11 @@ mermaidgraph TD
     G --> F
     F --> J[JSON Response]
     J --> A
+    
 2. Scouting Engine Flow
-mermaidgraph TD
+Code snippet
+
+graph TD
     A[Cron Scheduler] --> B[Scouting Engine]
     B --> C[Fetch Active Wishlists]
     C --> D[Query eBay API]
@@ -143,8 +162,11 @@ mermaidgraph TD
     F --> G[Generate Alerts]
     G --> H[Send Notifications]
     H --> I[Update Alert History]
+    
 3. Alert System Flow
-mermaidgraph TD
+Code snippet
+
+graph TD
     A[Alert Trigger] --> B[Alert Service]
     B --> C[Check User Preferences]
     C --> D[Validate Alert Conditions]
@@ -152,9 +174,12 @@ mermaidgraph TD
     E --> F[Queue Email Notification]
     F --> G[Send via Resend API]
     G --> H[Log Alert Delivery]
+    
 🗄️ Database Architecture
 Entity Relationship Diagram
-sql-- Core Entities
+SQL
+
+-- Core Entities
 Users ||--o{ User_Collection : owns
 Users ||--o{ Wishlist_Items : wants
 Users ||--o{ Alert_Settings : configures
@@ -169,52 +194,70 @@ Trophies ||--o{ User_Trophies : awarded
 User_Collection }o--|| Comics : contains
 Wishlist_Items }o--|| Comics : references
 Alert_Settings }o--o| Wishlist_Items : monitors
+
 Indexing Strategy
-sql-- Performance-critical indexes
+SQL
+
+-- Performance-critical indexes
 CREATE INDEX idx_user_collection_user_id ON User_Collection(user_id);
 CREATE INDEX idx_wishlist_user_id ON Wishlist_Items(user_id);
 CREATE INDEX idx_comics_title_issue ON Comics(title, issue_number);
 CREATE INDEX idx_alert_settings_active ON Alert_Settings(is_active, user_id);
+
 🔒 Security Architecture
 Authentication Flow
-
 User Registration/Login → Supabase Auth
+
 JWT Token Generation → Supabase returns signed JWT
+
 Request Authentication → Validate JWT on each API call
+
 Authorization Check → Verify user permissions for resources
 
 Security Layers
-typescript// Security middleware stack
-app.use(helmet());                    // Security headers
-app.use(cors(corsOptions));          // CORS configuration
-app.use(rateLimiter);                // Rate limiting
-app.use(authMiddleware);             // JWT validation
-app.use(rbacMiddleware);             // Role-based access control
-Data Protection
+TypeScript
 
+// Security middleware stack
+app.use(helmet());               // Security headers
+app.use(cors(corsOptions));      // CORS configuration
+app.use(rateLimiter);            // Rate limiting
+app.use(authMiddleware);         // JWT validation
+app.use(rbacMiddleware);         // Role-based access control
+
+Data Protection
 Encryption at Rest: Supabase managed encryption
+
 Encryption in Transit: HTTPS/TLS for all communications
+
 Input Sanitization: Joi/Zod schema validation
+
 SQL Injection Prevention: Parameterized queries via Supabase-js
 
 📈 Scalability Considerations
 Horizontal Scaling
-
 Stateless API Design: No server-side session storage
+
 Database Connection Pooling: Efficient connection management
+
 Caching Strategy: Redis for frequently accessed data
+
 CDN Integration: Static asset delivery optimization
 
 Performance Optimization
-
 Response Caching: HTTP cache headers for static data
+
 Database Query Optimization: Indexed queries and query analysis
+
 Background Job Processing: Queue-based alert processing
+
 API Response Compression: Gzip compression for large responses
+
 
 🔧 Development Environment
 Local Setup Architecture
-yaml# Docker Compose Development Stack
+YAML
+
+# Docker Compose Development Stack
 version: '3.8'
 services:
   api:
@@ -238,10 +281,12 @@ services:
     ports:
       - "6379:6379"
 Testing Architecture
-
 Unit Tests: Jest + TypeScript
+
 Integration Tests: Supertest for API endpoints
+
 Database Tests: Test database with migrations
+
 E2E Tests: Playwright for full user scenarios
 
 🚀 Deployment Architecture
@@ -254,15 +299,19 @@ Production Environment
 │  • Health Check │    │ • Health Checks │    │ • Monitoring    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 Monitoring & Observability
-
 Application Metrics: Custom metrics for business KPIs
+
 Error Tracking: Structured logging and error aggregation
+
 Performance Monitoring: API response time tracking
+
 Uptime Monitoring: Health check endpoints and alerts
 
 🔄 Integration Patterns
 External API Integration
-typescript// Circuit breaker pattern for external APIs
+TypeScript
+
+// Circuit breaker pattern for external APIs
 class EbayClient {
   private circuitBreaker = new CircuitBreaker(this.makeRequest, {
     timeout: 5000,
@@ -275,7 +324,9 @@ class EbayClient {
   }
 }
 Event-Driven Architecture
-typescript// Event system for decoupled components
+TypeScript
+
+// Event system for decoupled components
 enum EventType {
   COMIC_ADDED = 'comic.added',
   DEAL_FOUND = 'deal.found',
@@ -296,7 +347,9 @@ GET    /api/scout/{wantId}                # Get scout results
 GET    /api/dashboard/{userId}            # Get dashboard data
 POST   /api/alerts                        # Create alert setting
 Response Format Standards
-typescript// Standardized API response format
+TypeScript
+
+// Standardized API response format
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -311,5 +364,4 @@ interface ApiResponse<T> {
     limit?: number;
   };
 }
-
 This architecture provides a solid foundation for building a scalable, maintainable, and secure comic collection and scouting platform that can grow with user demand and feature requirements.
