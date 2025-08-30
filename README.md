@@ -1,90 +1,107 @@
-# ComicScout UK – Comic Scouting Engine
+ComicScoutUK
+The Essential Digital Tool for UK Comic Collectors and Speculators
+ComicScoutUK is a comprehensive platform that combines personal collection management with powerful, data-driven market analysis and live eBay integration. Designed specifically for the UK market, it provides collectors with the fastest, most direct way to find, track, and be notified about specific comics for sale.
+🎯 Vision & Mission
+Vision: To be the essential digital tool for UK comic collectors and speculators, combining personal collection management with powerful, data-driven market analysis and live eBay integration.
+Core Mission: To fill a clear gap in the UK market by providing collectors with the fastest, most direct way to find, track, and be notified about specific comics for sale on eBay.
+Unique Selling Proposition: A powerful scouting tool that provides proactive, real-time alerts and ranks eBay listings by "best deal," eliminating the need for constant manual searching.
+🏗️ Architecture
+ComicScoutUK follows a decoupled architecture design:
 
-## Overview
-ComicScout UK is an end-to-end platform for discovering undervalued comic books in the UK market. It scrapes and normalizes listings from sources like eBay, collects historic sales data from GoCollect, calculates market values using advanced statistics, and surfaces the best deals to collectors and investors. Alert rules allow users to be notified about new deals matching their criteria, and the platform exposes a REST API for integration with other services.
+Backend: Standalone REST API built with TypeScript and Node.js
+Database: PostgreSQL via Supabase
+Frontend: Interchangeable client (React-based custom frontend)
+External APIs: eBay API, GoCollect API, Resend API
 
-## Current status
-This project is transitioning from a prototype based on mock data to a production-ready system. The current codebase includes a React front‑end using fixture data for demonstration. Upcoming phases include cleaning up the existing code, migrating data models to a relational database (PostgreSQL via Supabase), building a backend API with proper authentication, integrating real data sources, and refactoring the front‑end to consume the API.
+This architecture ensures the frontend is completely interchangeable, allowing custom-built frontends to replace any basic placeholder UI.
+🎯 Target Audience
 
-rchitecture overv
+The Speculator/Investor: Needs robust market data, value trends, portfolio analysis, and "sell" alerts to maximize ROI
+The Dedicated Collector: Needs a powerful wishlist and alert system to find specific comics with grade requirements
+The Casual Hobbyist: Needs easy-to-use tools to catalogue their collection and explore the market
 
-##  overview
+✨ Core Features
+📚 Collection Management ("Digital Comic Box")
 
-The ComicScout platform will follow a modular architecture with the following components:
+Add comics via database search or mobile barcode scanning
+Track purchase price, grade, grader, and personal photos
+View calculated profit/loss for each owned comic
 
-- **Frontend:** A React + TypeScript single-page application using Vite, Tailwind CSS and shadcn/ui. It consumes the REST API for data and displays top deals, price charts and alerts. The codebase is structured by features with reusable UI components and hooks.
-- **API server:** A backend written in Node.js using Express or Fastify. It exposes REST endpoints for top deals, listings, market data, notifications and user management. It integrates with the database, caching layer and external services. The API will be secured with JWT-based authentication and RBAC.
-- **Database:** PostgreSQL provided by Supabase. Tables will store series, issues, listings, grades, market values, deals, users and alerts. The database schema is managed via SQL migrations and row-level security policies to enforce user access control.
-- **Data ingestion & normalisation:** A separate scraping and normalisation engine written in TypeScript or Python. It fetches listings from marketplaces like eBay and sales data from GoCollect, normalises titles and grades, calculates market values and sends new deals to the API.
-- **Background workers:** Jobs handle tasks such as scheduled scraping, market value recalculation, alert dispatch and email sending.
+🔍 The Scouting Engine & Alert System
 
-These components communicate via HTTP APIs and share a common codebase structure. The design prioritises separation of concerns, scalability and testability.
+Continuous eBay API polling for new listings
+Deal Scoring Algorithm comparing prices to GoCollect Fair Market Value (FMV)
+Live, ranked "Scout Results" page showing best deals
+Configurable alerts for New Top Deals, Ending Soon listings, and Stale Listings
+"Sell Alerts" when owned comics surpass target market values
 
+📊 Speculator Dashboard (Premium)
 
-## Key features
+Central hub for market analysis
+Total Collection Value tracking
+Value Over Time graphs
+Market Heat Index
+Speculation News Feed
+Advanced Collection Portfolio Analysis
 
-- **Deal discovery:** Analyse current listings, compare them to historic sales and surface undervalued comic books with high savings.
-- **Price charts & analytics:** Provide interactive charts of historic sales, market value trends and statistics for each comic.
-- **Advanced search & filters:** Allow users to search by title, issue, grade, price range and sort by savings, time left and popularity.
-- **Alerts & notifications:** Let users create alert rules based on series, issue and desired price or savings threshold and receive notifications via email.
-- **Authentication:** Provide secure user registration and login with role-based access control to manage personal alerts and view purchase history.
+👥 Social Features
 
+User profiles with privacy toggles
+Follow other users and view public collections
+Comic-specific comment threads (Premium)
 
-## Technology stack
+🏆 Gamification
 
-- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, React Router and React Query for data fetching.
-- **Backend:** Node.js 20, Express or Fastify, Supabase client and PostgreSQL.
-- **Database:** PostgreSQL with Supabase for hosting, real-time subscriptions and row-level security.
-- **Data ingestion:** TypeScript or Python for scraping, with headless browsers and third-party API clients.
-- **Testing:** Vitest and React Testing Library for front-end tests, Jest or Tap for back-end tests, ESLint and Prettier for linting/formatting.
+PlayStation Trophy-style achievement system
+Collection Goals for series completion
+Example Trophies: "Full Series Owner," "Collection Value Exceeds £1,000"
 
+🛠️ Utilities
 
-## External integrations
+LCS (Local Comic Shop) Locator
+Missing Comic Request System
 
-The platform integrates with several external services:
+💰 Monetization
+Freemium Model with three tiers:
 
-- **eBay:** For current listing data via official APIs.
-- **GoCollect:** For historic sales and market value calculations.
-- **Resend:** For sending email notifications when alerts are triggered.
-- **Supabase:** For database, authentication and real-time subscriptions.
+Free: Basic collection management
+Medium: Enhanced features and alerts
+Pro: Full Speculator Dashboard, Sell Alerts, Comment Threads, Scout Results
 
-Additional integrations like Twilio or Slack may be added for multi-channel notifications.
+🚀 Development Status
+This project is currently undergoing a major refactor to transform the existing codebase into a market-ready application. The refactoring process follows a structured, phase-based approach:
+Current Phase: Analysis & Cleanup
 
-## Development phases
+Repository analysis and documentation updates
+Obsolete file removal and code audit
+Architecture planning and schema design
 
-The project will progress through the following phases:
+Upcoming Phases:
 
-1. **Analysis & cleanup:** Audit the current codebase, remove unused code, unify formatting and prepare for modularisation.
-2. **Database migration:** Design relational schema, migrate mock data to PostgreSQL via Supabase and implement row-level security.
-3. **Backend development:** Build the REST API with endpoints for top deals, listings, market values, alerts and authentication.
-4. **Frontend refactoring:** Update the front-end to consume the API, implement state management and restructure components by feature.
-5. **Testing & integration:** Write comprehensive unit, integration and end-to-end tests, set up CI/CD and deploy to the chosen platform.
-6. **Production hardening:** Address performance, caching, monitoring, logging and security before launch.
+Database Migration - Transform existing Supabase schema
+API Development - Build REST API endpoints
+Core Feature Implementation - Scouting engine, alerts, gamification
+Frontend Integration - Connect with custom React frontend
+Testing & Polish - Comprehensive testing and optimization
 
-## Installation & setup
+🔧 Technical Stack
 
-To run the project locally:
+Backend: TypeScript, Node.js, Express
+Database: PostgreSQL (Supabase)
+APIs: eBay API, GoCollect API, Resend API
+Frontend: React (custom implementation)
+Authentication: Supabase Auth
+Email: Resend API
 
-1. Clone this repository.
-2. Install dependencies with `npm install`.
-3. Copy `.env.example` to `.env` and fill in your Supabase credentials, database URL and API keys for eBay, GoCollect and Resend.
-4. Start the development server with `npm run dev`.
-5. (Optional) Start the Supabase local development environment using `supabase start`.
-6. Access the app at `http://localhost:5173` and the Supabase studio at `http://localhost:54322`.
+📋 Getting Started
+Note: Development setup instructions will be added as the refactor progresses.
+🤝 Contributing
+This project is currently in active refactoring. Contribution guidelines will be established once the core architecture is stable.
+📄 License
+License information to be determined.
+🔗 External Compliance
+All features displaying market listings link directly back to eBay to ensure full compliance with eBay's Terms of Service.
 
-For production deployment, build the front-end with `npm run build` and deploy the API server and database to your cloud of choice.
-
-## Contributing
-
-Contributions are welcome! Please:
-
-- Fork the repository and create a feature branch.
-- Write clear commits and follow conventional commit messages (`feat:`, `fix:`, `docs:`, etc.).
-- Ensure new code is covered by tests and lints pass (`npm run test`).
-- Submit a pull request describing the changes and referencing any relevant issues.
-
-We use ESLint, Prettier and Husky for code quality; please run the pre-commit hooks before submitting.
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+Project Status: 🚧 Under Active Refactoring
+Version: 1.0 (Refactor in Progress)
+Last Updated: August 2025
