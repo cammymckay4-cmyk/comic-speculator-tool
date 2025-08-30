@@ -3,7 +3,7 @@
  * As per PRD requirements
  */
 
-import type { EnrichedData } from './enrichment';
+import type { EnrichedData } from './types';
 
 export interface Listing {
   price: number;
