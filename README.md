@@ -121,7 +121,7 @@ Testing & Polish - Comprehensive testing and optimization
 🔧 Technical Stack
 Backend: TypeScript, Node.js, Express
 
-Database: PostgreSQL (Supabase)
+Database: PostgreSQL (Supabase) with enriched comic metadata
 
 APIs: eBay API, GoCollect API, Resend API
 
@@ -130,6 +130,37 @@ Frontend: React (custom implementation)
 Authentication: Supabase Auth
 
 Email: Resend API
+
+## 🚀 Enhanced Database Features
+
+ComicScout UK now features an enriched comic database with:
+
+- **12,887 Marvel/DC series** with comprehensive metadata
+- **2,905 Wikidata links** (22.5% coverage) for semantic web integration
+- **External identifiers** for ComicVine and Grand Comics Database
+- **Enhanced search** with series aliases and alternative names
+- **Rich metadata** stored in JSONB format for flexible querying
+
+### New API Endpoints
+
+- `GET /api/series/enriched` - Get enriched series only
+- `GET /api/search/enhanced?q=spider-man` - Search with alias support  
+- `GET /api/stats/enrichment` - View enrichment statistics
+
+### Database Queries
+
+```sql
+-- Get enrichment statistics
+SELECT * FROM enrichment_statistics;
+
+-- Search with enhanced function
+SELECT * FROM search_enriched_series('Spider-Man');
+
+-- Find series with Wikidata links
+SELECT name, enriched_data->>'wikidata_url' as wikidata_link
+FROM comic_series 
+WHERE enriched_data ? 'wikidata_qid';
+```
 
 📋 Getting Started
 Note: Development setup instructions will be added as the refactor progresses.

@@ -3,9 +3,16 @@
  * As per PRD requirements
  */
 
+import type { EnrichedData } from './enrichment';
+
 export interface Listing {
   price: number;
   shippingCost: number;
+}
+
+export interface SeriesInfo {
+  enriched_data?: EnrichedData | null;
+  is_enriched?: boolean;
 }
 
 export interface MarketValue {
@@ -105,5 +112,52 @@ export function computeDealScore(listing: Listing, marketValue: MarketValue): De
     priceAboveMarket,
     flags: flags.length > 0 ? flags : undefined,
     notes: notes.length > 0 ? notes.join('; ') : undefined,
+  };
+}
+
+/**
+ * Enhanced deal scoring that considers enrichment data
+ * Provides bonus scores for Wikidata-verified series and external data availability
+ */
+export function computeEnhancedDealScore(
+  listing: Listing, 
+  marketValue: MarketValue, 
+  series?: SeriesInfo
+): DealScoreInfo {
+  // Get base score
+  const baseDealScore = computeDealScore(listing, marketValue);
+  
+  if (!series?.is_enriched || !series.enriched_data) {
+    return baseDealScore;
+  }
+
+  let enhancedScore = baseDealScore.score;
+  const additionalFlags: string[] = [];
+  const additionalNotes: string[] = [];
+
+  // Boost for Wikidata-verified series (higher confidence in value)
+  if (series.enriched_data.wikidata_qid) {
+    enhancedScore += 10; // 10-point bonus for Wikidata verification
+    additionalFlags.push('WIKIDATA_VERIFIED');
+    additionalNotes.push('Series verified via Wikidata semantic web');
+  }
+
+  // Boost for series with external pricing references
+  if (series.enriched_data.comicvine_id) {
+    enhancedScore += 5; // 5-point bonus for ComicVine cross-reference potential
+    additionalFlags.push('COMICVINE_LINKED');
+    additionalNotes.push('ComicVine data available for price validation');
+  }
+
+  // Clamp enhanced score to 0-100
+  enhancedScore = Math.max(0, Math.min(100, enhancedScore));
+
+  return {
+    ...baseDealScore,
+    score: Math.round(enhancedScore * 100) / 100,
+    flags: [...(baseDealScore.flags || []), ...additionalFlags],
+    notes: [baseDealScore.notes, ...additionalNotes]
+      .filter(Boolean)
+      .join('; ') || undefined,
   };
 }
