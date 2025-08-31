@@ -16,7 +16,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-      "seed:gcd": "tsx scripts/gcd-seed.ts",
+    "deploy": "gh-pages -d dist",
+    "seed:gcd": "tsx scripts/gcd-seed.ts",
     "seed:comics": "tsx scripts/seed-comics-data.ts"
   },
   "dependencies": {
@@ -90,6 +91,7 @@
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "gh-pages": "^6.2.0",
     "globals": "^15.15.0",
     "jsdom": "^26.1.0",
     "lovable-tagger": "^1.1.9",

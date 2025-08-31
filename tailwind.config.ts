@@ -19,6 +19,14 @@ export default {
 		},
 		extend: {
 			colors: {
+				// Comic Book Theme Colors
+				'parchment': '#FDF6E3',
+				'ink-black': '#1C1C1C',
+				'stan-lee-blue': '#003049',
+				'kirby-red': '#D62828',
+				'golden-age-yellow': '#F7B538',
+				
+				// Existing colors
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -70,6 +78,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			fontFamily: {
+				'heading': ['Fruktur', 'serif'],
+				'body': ['Inter', 'sans-serif'],
+			},
+			boxShadow: {
+				'comic': '3px 3px 0px #1C1C1C',
+				'comic-hover': '5px 5px 0px #1C1C1C',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
