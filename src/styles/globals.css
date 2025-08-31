@@ -1,226 +1,215 @@
-/* ComicScoutUK Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Bangers:wght@400&family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Google Fonts Imports */
-@import url('https://fonts.googleapis.com/css2?family=Fruktur:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-/* CSS Variables for Comic Book Theme */
-:root {
-  /* Color Palette */
-  --parchment: #FDF6E3;
-  --ink-black: #1C1C1C;
-  --stan-lee-blue: #003049;
-  --kirby-red: #D62828;
-  --golden-age-yellow: #F7B538;
-  
-  /* Font Families */
-  --font-heading: 'Fruktur', serif; /* Approximation for "Super Squad" */
-  --font-body: 'Inter', sans-serif;  /* Approximation for "Persona Aura" */
-  
-  /* Comic Book Shadows and Effects */
-  --comic-shadow: 3px 3px 0px var(--ink-black);
-  --comic-shadow-hover: 5px 5px 0px var(--ink-black);
-  --comic-border: 2px solid var(--ink-black);
-}
-
-/* Reset and Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: var(--font-body);
-  background-color: var(--parchment);
-  color: var(--ink-black);
-  line-height: 1.6;
-}
-
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  color: var(--stan-lee-blue);
-}
-
-h1 {
-  font-size: 3rem;
-  margin-bottom: 1.5rem;
-}
-
-h2 {
-  font-size: 2.5rem;
-  margin-bottom: 1.25rem;
-}
-
-h3 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-/* Comic Book UI Elements */
-.comic-card {
-  background: white;
-  border: var(--comic-border);
-  box-shadow: var(--comic-shadow);
-  transition: all 0.2s ease;
-}
-
-.comic-card:hover {
-  box-shadow: var(--comic-shadow-hover);
-  transform: translate(-2px, -2px);
-}
-
-.comic-button {
-  background: var(--golden-age-yellow);
-  border: var(--comic-border);
-  box-shadow: var(--comic-shadow);
-  padding: 0.75rem 1.5rem;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  color: var(--ink-black);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.comic-button:hover {
-  box-shadow: var(--comic-shadow-hover);
-  transform: translate(-2px, -2px);
-}
-
-.comic-button-primary {
-  background: var(--stan-lee-blue);
-  color: white;
-}
-
-.comic-button-danger {
-  background: var(--kirby-red);
-  color: white;
-}
-
-/* Comic Panel Styles */
-.comic-panel {
-  background: white;
-  border: 3px solid var(--ink-black);
-  padding: 1.5rem;
-  margin: 1rem 0;
-  position: relative;
-}
-
-.comic-panel::before {
-  content: '';
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  right: -3px;
-  bottom: -3px;
-  background: var(--golden-age-yellow);
-  z-index: -1;
-  transform: translate(5px, 5px);
-}
-
-/* Navigation Styles */
-.comic-nav {
-  background: var(--stan-lee-blue);
-  border-bottom: 3px solid var(--ink-black);
-}
-
-.comic-nav a {
-  color: white;
-  text-decoration: none;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  padding: 1rem 1.5rem;
-  display: inline-block;
-  transition: all 0.2s ease;
-}
-
-.comic-nav a:hover {
-  background: var(--golden-age-yellow);
-  color: var(--ink-black);
-  transform: translateY(-2px);
-}
-
-/* Form Styles */
-.comic-input {
-  border: var(--comic-border);
-  padding: 0.75rem;
-  font-family: var(--font-body);
-  background: white;
-  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
-}
-
-.comic-input:focus {
-  outline: none;
-  border-color: var(--stan-lee-blue);
-  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1), 0 0 0 2px var(--stan-lee-blue);
-}
-
-/* Loading and Animation States */
-.loading-comic {
-  animation: comicBounce 1s infinite;
-}
-
-@keyframes comicBounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
+/* Global Base Styles */
+@layer base {
+  html {
+    font-family: 'Inter', sans-serif;
+    background-color: #FDF6E3; /* Parchment background */
   }
-  40% {
-    transform: translateY(-10px);
+  
+  body {
+    color: #1C1C1C; /* Ink black text */
+    background-color: #FDF6E3; /* Parchment background */
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
   }
-  60% {
-    transform: translateY(-5px);
+  
+  /* Heading styles with Bangers font */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Bangers', cursive;
+    text-transform: uppercase;
+    color: #1C1C1C;
+    letter-spacing: 1px;
+  }
+  
+  h1 { font-size: 3rem; line-height: 1.1; }
+  h2 { font-size: 2.5rem; line-height: 1.1; }
+  h3 { font-size: 2rem; line-height: 1.2; }
+  h4 { font-size: 1.5rem; line-height: 1.3; }
+  h5 { font-size: 1.25rem; line-height: 1.4; }
+  h6 { font-size: 1.125rem; line-height: 1.4; }
+  
+  /* Form elements base styling */
+  input, textarea, select {
+    font-family: 'Inter', sans-serif;
+    color: #1C1C1C;
+    background-color: #FDF6E3;
+  }
+  
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    outline: 3px solid #F7B538; /* Golden Age Yellow */
+    outline-offset: 2px;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Custom Component Styles */
+@layer components {
+  /* Comic-style input fields */
+  .comic-input {
+    @apply comic-border bg-parchment text-ink-black px-4 py-3 font-inter;
+    @apply focus:outline-none focus:ring-2 focus:ring-golden-age-yellow focus:ring-offset-2;
+    @apply transition-all duration-200;
+  }
+  
+  .comic-input:focus {
+    transform: translate(-1px, -1px);
+    box-shadow: 7px 7px 0px #1C1C1C, 0 0 0 2px #F7B538;
+  }
+  
+  /* Comic-style cards */
+  .comic-card {
+    @apply comic-border bg-parchment p-6;
+    @apply hover:transform hover:-translate-x-1 hover:-translate-y-1;
+    @apply hover:shadow-comic-hover transition-all duration-200;
+    @apply cursor-pointer;
+  }
+  
+  /* Comic-style tabs */
+  .comic-tab {
+    @apply px-6 py-3 font-inter font-semibold uppercase tracking-wide;
+    @apply border-comic border-ink-black bg-parchment text-ink-black;
+    @apply hover:bg-golden-age-yellow hover:transform hover:-translate-y-1;
+    @apply transition-all duration-200 cursor-pointer;
+  }
+  
+  .comic-tab.active {
+    @apply bg-kirby-red text-parchment shadow-comic;
+    transform: translate(-2px, -2px);
+  }
+  
+  /* Comic-style alert/notification boxes */
+  .comic-alert {
+    @apply comic-border p-4 font-inter;
+    @apply relative overflow-hidden;
+  }
+  
+  .comic-alert.error {
+    @apply bg-red-50 border-kirby-red text-kirby-red;
+    box-shadow: 6px 6px 0px #D62828;
+  }
+  
+  .comic-alert.success {
+    @apply bg-green-50 border-green-600 text-green-700;
+    box-shadow: 6px 6px 0px #059669;
+  }
+  
+  .comic-alert.warning {
+    @apply bg-yellow-50 border-golden-age-yellow text-yellow-800;
+    box-shadow: 6px 6px 0px #F7B538;
+  }
+  
+  /* Comic-style data table */
+  .comic-table {
+    @apply w-full comic-border bg-parchment;
+  }
+  
+  .comic-table th {
+    @apply bg-stan-lee-blue text-parchment px-4 py-3 font-bangers uppercase tracking-wide text-left;
+    @apply border-b-comic border-ink-black;
+  }
+  
+  .comic-table td {
+    @apply px-4 py-3 border-b border-ink-black font-inter;
+  }
+  
+  .comic-table tr:hover {
+    @apply bg-golden-age-yellow bg-opacity-20;
+  }
+  
+  /* Loading animation styles */
+  .comic-loading-pulse {
+    animation: comicPulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes comicPulse {
+    0%, 100% { 
+      opacity: 1; 
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 0.7; 
+      transform: scale(1.05);
+    }
+  }
+  
+  /* Comic speech bubble for error messages */
+  .comic-speech-bubble {
+    @apply relative bg-parchment comic-border p-3 font-inter text-sm;
+  }
+  
+  .comic-speech-bubble::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #1C1C1C;
+  }
+  
+  .comic-speech-bubble::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 22px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #FDF6E3;
   }
 }
 
 /* Utility Classes */
-.text-comic-shadow {
-  text-shadow: 2px 2px 0px var(--ink-black);
-}
-
-.bg-parchment {
-  background-color: var(--parchment);
-}
-
-.bg-ink-black {
-  background-color: var(--ink-black);
-}
-
-.bg-stan-lee-blue {
-  background-color: var(--stan-lee-blue);
-}
-
-.bg-kirby-red {
-  background-color: var(--kirby-red);
-}
-
-.bg-golden-age-yellow {
-  background-color: var(--golden-age-yellow);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  h1 {
-    font-size: 2.5rem;
+@layer utilities {
+  /* Text styling utilities */
+  .text-comic-heading {
+    font-family: 'Bangers', cursive;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
   
-  h2 {
-    font-size: 2rem;
+  .text-comic-body {
+    font-family: 'Inter', sans-serif;
   }
   
-  h3 {
-    font-size: 1.5rem;
+  /* Animation utilities */
+  .hover-comic-lift:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px #1C1C1C;
   }
   
-  .comic-panel {
-    padding: 1rem;
-    margin: 0.5rem 0;
+  .active-comic-press:active {
+    transform: translate(2px, 2px);
+    box-shadow: 3px 3px 0px #1C1C1C;
   }
   
-  .comic-nav a {
-    padding: 0.75rem 1rem;
+  /* Background patterns (optional comic-style textures) */
+  .bg-comic-dots {
+    background-image: radial-gradient(circle, #1C1C1C 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.1;
+  }
+  
+  .bg-comic-lines {
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      #1C1C1C 2px,
+      #1C1C1C 4px
+    );
+    opacity: 0.05;
   }
 }
