@@ -1,139 +1,231 @@
-ComicScoutUK
+# ComicScoutUK
+
 The Essential Digital Tool for UK Comic Collectors and Speculators
+
 ComicScoutUK is a comprehensive platform that combines personal collection management with powerful, data-driven market analysis and live eBay integration. Designed specifically for the UK market, it provides collectors with the fastest, most direct way to find, track, and be notified about specific comics for sale.
 
-🎯 Vision & Mission
-Vision: To be the essential digital tool for UK comic collectors and speculators, combining personal collection management with powerful, data-driven market analysis and live eBay integration.
+## 🎯 Vision & Mission
 
-Core Mission: To fill a clear gap in the UK market by providing collectors with the fastest, most direct way to find, track, and be notified about specific comics for sale on eBay.
+**Vision:** To be the essential digital tool for UK comic collectors and speculators, combining personal collection management with powerful, data-driven market analysis and live eBay integration.
 
-Unique Selling Proposition: A powerful scouting tool that provides proactive, real-time alerts and ranks eBay listings by "best deal," eliminating the need for constant manual searching.
+**Core Mission:** To fill a clear gap in the UK market by providing collectors with the fastest, most direct way to find, track, and be notified about specific comics for sale on eBay.
 
-🏗️ Architecture
-ComicScoutUK follows a decoupled architecture design:
+**Unique Selling Proposition:** A powerful scouting tool that provides proactive, real-time alerts and ranks eBay listings by "best deal," eliminating the need for constant manual searching.
 
-Backend: Standalone REST API built with TypeScript and Node.js
+## 🎨 Design System
 
-Database: PostgreSQL via Supabase
+ComicScoutUK features a distinctive comic book-inspired design with a carefully crafted color palette and typography:
 
-Frontend: Interchangeable client (React-based custom frontend)
+### Color Palette
+- **Parchment** (#FDF6E3) - Background color reminiscent of aged comic pages
+- **Ink Black** (#1C1C1C) - Primary text and borders
+- **Stan Lee Blue** (#003049) - Primary navigation and headings
+- **Kirby Red** (#D62828) - Accent color for warnings and highlights
+- **Golden Age Yellow** (#F7B538) - Interactive elements and buttons
 
-External APIs: eBay API, GoCollect API, Resend API
+### Typography
+- **Headings:** "Fruktur" - Comic book style serif font for headings and titles
+- **Body Text:** "Inter" - Clean, readable sans-serif for body content
 
-This architecture ensures the frontend is completely interchangeable, allowing custom-built frontends to replace any basic placeholder UI.
+### Comic Book Styling Features
+- Bold black borders with drop shadows
+- Comic panel-style layouts
+- Halftone pattern overlays
+- Speech bubble-inspired tooltips
+- Vintage comic book color schemes
 
-🎯 Target Audience
-The Speculator/Investor: Needs robust market data, value trends, portfolio analysis, and "sell" alerts to maximize ROI
+## 🚀 Quick Start
 
-The Dedicated Collector: Needs a powerful wishlist and alert system to find specific comics with grade requirements
+### Prerequisites
+- Node.js 18 or higher
+- npm or yarn
 
-The Casual Hobbyist: Needs easy-to-use tools to catalogue their collection and explore the market
+### Installation
 
-✨ Core Features
-📚 Collection Management ("Digital Comic Box")
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/cammymckay4-cmyk/comic-speculator-tool.git
+   cd comic-speculator-tool
+   ```
 
-Add comics via database search or mobile barcode scanning
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-Track purchase price, grade, grader, and personal photos
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
 
-View calculated profit/loss for each owned comic
+4. **Open your browser:**
+   Navigate to `http://localhost:8080`
 
-🔍 The Scouting Engine & Alert System
+## 📜 Available Scripts
 
-Continuous eBay API polling for new listings
+### Development
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build locally
 
-Deal Scoring Algorithm comparing prices to GoCollect Fair Market Value (FMV)
+### Testing & Quality
+- `npm run test` - Run tests in watch mode
+- `npm run test:run` - Run all tests once
+- `npm run test:ui` - Open test UI
+- `npm run lint` - Run ESLint
 
-Live, ranked "Scout Results" page showing best deals
+### Deployment
+- `npm run deploy` - Deploy to GitHub Pages
+- `npm run build && npm run deploy` - Build and deploy in one command
 
-Configurable alerts for New Top Deals, Ending Soon listings, and Stale Listings
+## 🏗️ Project Structure
 
-"Sell Alerts" when owned comics surpass target market values
+```
+src/
+├── components/
+│   ├── ComicScoutUKApp.tsx    # Main application component
+│   └── ui/                    # Shared UI components
+├── styles/
+│   └── globals.css           # Global styles and comic theme
+├── App.tsx                   # Application entry point
+└── main.tsx                  # Vite entry point
 
-📊 Speculator Dashboard (Premium)
+public/                       # Static assets
+.github/
+└── workflows/
+    └── deploy.yml           # GitHub Actions deployment
+```
 
-Central hub for market analysis
+## ✨ Core Features
 
-Total Collection Value tracking
+### 📚 Collection Management ("Digital Comic Box")
+- Add comics via database search or mobile barcode scanning
+- Track purchase price, grade, grader, and personal photos
+- View calculated profit/loss for each owned comic
 
-Value Over Time graphs
+### 🔍 The Scouting Engine & Alert System
+- Continuous eBay API polling for new listings
+- Deal Scoring Algorithm comparing prices to GoCollect Fair Market Value (FMV)
+- Live, ranked "Scout Results" page showing best deals
+- Configurable alerts for New Top Deals, Ending Soon listings, and Stale Listings
+- "Sell Alerts" when owned comics surpass target market values
 
-Market Heat Index
+### 📊 Speculator Dashboard (Premium)
+- Central hub for market analysis
+- Total Collection Value tracking
+- Value Over Time graphs
+- Market Heat Index
+- Speculation News Feed
+- Advanced Collection Portfolio Analysis
 
-Speculation News Feed
+### 👥 Social Features
+- User profiles with privacy toggles
+- Follow other users and view public collections
+- Comic-specific comment threads (Premium)
 
-Advanced Collection Portfolio Analysis
+### 🏆 Gamification
+- PlayStation Trophy-style achievement system
+- Collection Goals for series completion
+- Example Trophies: "Full Series Owner," "Collection Value Exceeds £1,000"
 
-👥 Social Features
+## 🌐 Deployment
 
-User profiles with privacy toggles
+### Automatic Deployment (Recommended)
+The project is configured for automatic deployment to GitHub Pages:
 
-Follow other users and view public collections
+1. **Push to main branch:**
+   ```bash
+   git push origin main
+   ```
 
-Comic-specific comment threads (Premium)
+2. **GitHub Actions will automatically:**
+   - Install dependencies
+   - Run tests
+   - Build the application
+   - Deploy to GitHub Pages
 
-🏆 Gamification
+### Manual Deployment
+```bash
+npm run build
+npm run deploy
+```
 
-PlayStation Trophy-style achievement system
+### GitHub Pages Setup
 
-Collection Goals for series completion
+1. **Enable GitHub Pages:**
+   - Go to your repository settings
+   - Navigate to "Pages" section
+   - Select "Deploy from a branch"
+   - Choose "gh-pages" branch
 
-Example Trophies: "Full Series Owner," "Collection Value Exceeds £1,000"
+2. **Custom Domain (Optional):**
+   - Add your custom domain in repository settings
+   - Update the `cname` field in `.github/workflows/deploy.yml`
 
-🛠️ Utilities
+## 🔧 Technical Stack
 
-LCS (Local Comic Shop) Locator
+### Frontend
+- **React 18** - Modern React with hooks and functional components
+- **TypeScript** - Type safety and better developer experience
+- **Tailwind CSS** - Utility-first CSS framework with custom comic theme
+- **Vite** - Fast build tool and development server
+- **Lucide React** - Beautiful icons
+- **Recharts** - Charts and data visualization
 
-Missing Comic Request System
+### Development Tools
+- **ESLint** - Code linting
+- **Vitest** - Fast unit testing
+- **PostCSS** - CSS processing
+- **Autoprefixer** - CSS vendor prefixing
 
-💰 Monetization
-Freemium Model with three tiers:
+## 🧪 Testing
 
-Free: Basic collection management
+The project includes comprehensive testing setup:
 
-Medium: Enhanced features and alerts
+### Running Tests
+```bash
+# Run tests in watch mode
+npm run test
 
-Pro: Full Speculator Dashboard, Sell Alerts, Comment Threads, Scout Results
+# Run all tests once
+npm run test:run
 
-🚀 Development Status
-This project is currently undergoing a major refactor to transform the existing codebase into a market-ready application. The refactoring process follows a structured, phase-based approach:
+# Open test UI
+npm run test:ui
+```
 
-Current Phase: Analysis & Cleanup
+### Test Structure
+- Unit tests for components
+- Integration tests for user flows
+- Mock data for development and testing
 
-Repository analysis and documentation updates
+## 🎯 Target Audience
 
-Obsolete file removal and code audit
+### The Speculator/Investor
+Needs robust market data, value trends, portfolio analysis, and "sell" alerts to maximize ROI
 
-Architecture planning and schema design
+### The Dedicated Collector
+Needs a powerful wishlist and alert system to find specific comics with grade requirements
 
-Upcoming Phases:
+### The Casual Hobbyist
+Needs easy-to-use tools to catalogue their collection and explore the market
 
-Database Migration - Transform existing Supabase schema
+## 💰 Monetization
 
-API Development - Build REST API endpoints
+### Freemium Model with Three Tiers:
 
-Core Feature Implementation - Scouting engine, alerts, gamification
+1. **Free** - Basic collection management
+2. **Medium** - Enhanced features and alerts
+3. **Pro** - Full Speculator Dashboard, Sell Alerts, Comment Threads, Scout Results
 
-Frontend Integration - Connect with custom React frontend
+## 🛠️ Utilities
 
-Testing & Polish - Comprehensive testing and optimization
+- **LCS (Local Comic Shop) Locator**
+- **Missing Comic Request System**
 
-🔧 Technical Stack
-Backend: TypeScript, Node.js, Express
+## 📈 Enhanced Database Features
 
-Database: PostgreSQL (Supabase) with enriched comic metadata
-
-APIs: eBay API, GoCollect API, Resend API
-
-Frontend: React (custom implementation)
-
-Authentication: Supabase Auth
-
-Email: Resend API
-
-## 🚀 Enhanced Database Features
-
-ComicScout UK now features an enriched comic database with:
+ComicScout UK features an enriched comic database with:
 
 - **12,887 Marvel/DC series** with comprehensive metadata
 - **2,905 Wikidata links** (22.5% coverage) for semantic web integration
@@ -142,38 +234,75 @@ ComicScout UK now features an enriched comic database with:
 - **Rich metadata** stored in JSONB format for flexible querying
 
 ### New API Endpoints
-
 - `GET /api/series/enriched` - Get enriched series only
 - `GET /api/search/enhanced?q=spider-man` - Search with alias support  
 - `GET /api/stats/enrichment` - View enrichment statistics
 
-### Database Queries
+## 🔐 Environment Variables
 
-```sql
--- Get enrichment statistics
-SELECT * FROM enrichment_statistics;
+Create a `.env` file in the root directory:
 
--- Search with enhanced function
-SELECT * FROM search_enriched_series('Spider-Man');
+```env
+# Database
+DATABASE_URL=your_database_url
 
--- Find series with Wikidata links
-SELECT name, enriched_data->>'wikidata_url' as wikidata_link
-FROM comic_series 
-WHERE enriched_data ? 'wikidata_qid';
+# API Keys
+EBAY_API_KEY=your_ebay_api_key
+GOCOLLECT_API_KEY=your_gocollect_api_key
+RESEND_API_KEY=your_resend_api_key
+
+# Authentication
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-📋 Getting Started
-Note: Development setup instructions will be added as the refactor progresses.
+## 📝 Component Overview
 
-🤝 Contributing
-This project is currently in active refactoring. Contribution guidelines will be established once the core architecture is stable.
+### ComicScoutUKApp
+The main application component featuring:
+- **5 Complete Pages:** Home, Collection, Comic Detail, Alerts, Account Hub
+- **Interactive Components:** Search, filters, pagination, modals
+- **Responsive Navigation:** Desktop and mobile-optimized
+- **Comic Card Layouts:** Grid and list view options
+- **Form Components:** With validation and error handling
+- **Loading States:** Smooth animations and transitions
 
-📄 License
-License information to be determined.
+### Page Components
+- **HomePage:** Search and browse comics with filtering
+- **CollectionPage:** Manage owned comics and wishlist
+- **ComicDetailPage:** Detailed comic information and market data
+- **AlertsPage:** Configure and manage price alerts
+- **AccountHubPage:** User profile, trophies, and settings
 
-🔗 External Compliance
+## 🤝 Contributing
+
+This project is currently in active development. Contribution guidelines:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 External Compliance
+
 All features displaying market listings link directly back to eBay to ensure full compliance with eBay's Terms of Service.
 
-Project Status: 🚧 Under Active Refactoring
-Version: 1.0 (Refactor in Progress)
-Last Updated: August 2025
+## 📞 Support
+
+For support and feedback:
+- Open an issue on GitHub
+- Join our Discord community
+- Email: support@comicscoutuk.com
+
+---
+
+**Project Status:** 🚧 Active Development
+**Version:** 2.0.0 (ComicScoutUK Frontend)
+**Last Updated:** August 2025
+
+Built with ❤️ for the UK comic collecting community
