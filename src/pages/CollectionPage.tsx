@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { 
   Filter, 
   Grid, 
@@ -22,15 +22,19 @@ const CollectionPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedSort, setSelectedSort] = useState('title')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [sortOrder, setSortOrder] = useState('title')
+  const [activeFilters, setActiveFilters] = useState({
+    publishers: [] as string[],
+    conditions: [] as string[],
+    priceRange: { min: '', max: '' },
+    yearRange: { min: '', max: '' },
+  })
   
   // Fetch user collection data
   const { data: collectionComics, isLoading, isError, error } = useCollectionQuery()
   
   const itemsPerPage = 12
-  const totalItems = collectionComics?.length || 0
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
   
   // Calculate collection statistics
   const stats = collectionComics ? getCollectionStats(collectionComics) : {
@@ -41,19 +45,110 @@ const CollectionPage: React.FC = () => {
   }
   
   // Transform collection comics for display (matching the old structure)
-  const displayComics = collectionComics?.map(collectionComic => ({
+  const allDisplayComics = collectionComics?.map(collectionComic => ({
     id: collectionComic.comic.id,
     title: collectionComic.comic.title,
     issue: collectionComic.comic.issue,
     publisher: collectionComic.comic.publisher,
     coverImage: collectionComic.comic.coverImage,
     value: `£${collectionComic.comic.marketValue || 0}`,
+    marketValue: collectionComic.comic.marketValue || 0,
     trend: 'neutral' as 'up' | 'down' | 'neutral', // This could be calculated based on price history
     change: '+0%', // This could be calculated based on price history
     condition: collectionComic.condition,
     purchasePrice: collectionComic.purchasePrice ? `£${collectionComic.purchasePrice}` : 'N/A',
+    purchasePriceValue: collectionComic.purchasePrice || 0,
     purchaseDate: collectionComic.purchaseDate ? new Date(collectionComic.purchaseDate).toLocaleDateString() : 'N/A',
+    purchaseDateValue: collectionComic.purchaseDate ? new Date(collectionComic.purchaseDate) : null,
+    addedDate: collectionComic.createdAt ? new Date(collectionComic.createdAt) : new Date(),
   })) || []
+
+  // Create filtered and sorted comics using useMemo
+  const filteredAndSortedComics = useMemo(() => {
+    let filtered = [...allDisplayComics]
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim()
+      filtered = filtered.filter(comic => 
+        comic.title.toLowerCase().includes(searchLower) ||
+        comic.issue.toLowerCase().includes(searchLower) ||
+        comic.publisher.toLowerCase().includes(searchLower)
+      )
+    }
+
+    // Apply publisher filter
+    if (activeFilters.publishers.length > 0) {
+      filtered = filtered.filter(comic => 
+        activeFilters.publishers.includes(comic.publisher)
+      )
+    }
+
+    // Apply condition filter
+    if (activeFilters.conditions.length > 0) {
+      filtered = filtered.filter(comic => 
+        activeFilters.conditions.includes(comic.condition)
+      )
+    }
+
+    // Apply price range filter
+    if (activeFilters.priceRange.min || activeFilters.priceRange.max) {
+      filtered = filtered.filter(comic => {
+        const price = comic.marketValue
+        const min = activeFilters.priceRange.min ? parseFloat(activeFilters.priceRange.min) : 0
+        const max = activeFilters.priceRange.max ? parseFloat(activeFilters.priceRange.max) : Infinity
+        return price >= min && price <= max
+      })
+    }
+
+    // Apply year range filter (based on purchase date for now, could be extended to publication year)
+    if (activeFilters.yearRange.min || activeFilters.yearRange.max) {
+      filtered = filtered.filter(comic => {
+        if (!comic.purchaseDateValue) return false
+        const year = comic.purchaseDateValue.getFullYear()
+        const minYear = activeFilters.yearRange.min ? parseInt(activeFilters.yearRange.min) : 0
+        const maxYear = activeFilters.yearRange.max ? parseInt(activeFilters.yearRange.max) : new Date().getFullYear()
+        return year >= minYear && year <= maxYear
+      })
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortOrder) {
+        case 'title':
+          return a.title.localeCompare(b.title)
+        case 'issue-number':
+          // Extract numeric part from issue string
+          const aIssue = parseInt(a.issue.replace(/\D/g, '')) || 0
+          const bIssue = parseInt(b.issue.replace(/\D/g, '')) || 0
+          return aIssue - bIssue
+        case 'market-value':
+          return b.marketValue - a.marketValue // Descending
+        case 'purchase-price':
+          return b.purchasePriceValue - a.purchasePriceValue // Descending
+        case 'added-date':
+          return b.addedDate.getTime() - a.addedDate.getTime() // Most recent first
+        case 'publish-date':
+          // For now, sort by purchase date as we don't have publish date
+          if (!a.purchaseDateValue || !b.purchaseDateValue) return 0
+          return b.purchaseDateValue.getTime() - a.purchaseDateValue.getTime()
+        case 'relevance':
+        default:
+          return 0 // Keep original order for relevance/default
+      }
+    })
+
+    return filtered
+  }, [allDisplayComics, searchTerm, activeFilters, sortOrder])
+
+  const displayComics = filteredAndSortedComics
+  const totalItems = displayComics.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  // Reset current page when search term or sort order changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, sortOrder])
 
   // Handle loading state
   if (isLoading) {
@@ -123,8 +218,8 @@ const CollectionPage: React.FC = () => {
             {/* Left Section - Search and Filter */}
             <div className="flex-1 flex gap-4">
               <SearchBar 
-                value={searchQuery}
-                onChange={setSearchQuery}
+                value={searchTerm}
+                onChange={setSearchTerm}
                 placeholder="Search your collection..."
                 className="flex-1"
               />
@@ -140,8 +235,8 @@ const CollectionPage: React.FC = () => {
             {/* Right Section - Sort and View Controls */}
             <div className="flex gap-4 items-center">
               <SortDropdown 
-                value={selectedSort}
-                onChange={setSelectedSort}
+                value={sortOrder}
+                onChange={setSortOrder}
               />
               
               {/* View Mode Toggle */}
@@ -175,7 +270,8 @@ const CollectionPage: React.FC = () => {
         <FilterPanel 
           onClose={() => setShowFilters(false)}
           onApply={(filters) => {
-            console.log('Applied filters:', filters)
+            setActiveFilters(filters)
+            setCurrentPage(1) // Reset to first page when filters change
             setShowFilters(false)
           }}
         />
