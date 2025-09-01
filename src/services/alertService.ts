@@ -1,0 +1,132 @@
+import { supabase } from '@/lib/supabaseClient'
+import type { UserAlert, AlertType } from '@/lib/types'
+
+// Interface for the alerts table in Supabase
+export interface SupabaseAlert {
+  id: string
+  user_id: string
+  comic_id?: string
+  name: string
+  alert_type: AlertType
+  threshold_price?: number
+  price_direction?: 'above' | 'below'
+  is_active: boolean
+  created_at: string
+  last_triggered?: string
+  trigger_count: number
+  description?: string
+}
+
+// Transform Supabase data to match our frontend types
+const transformSupabaseAlert = (supabaseAlert: SupabaseAlert): UserAlert => {
+  const userAlert: UserAlert = {
+    id: supabaseAlert.id,
+    userId: supabaseAlert.user_id,
+    comicId: supabaseAlert.comic_id,
+    type: supabaseAlert.alert_type,
+    criteria: {
+      priceThreshold: supabaseAlert.threshold_price,
+      priceDirection: supabaseAlert.price_direction,
+    },
+    isActive: supabaseAlert.is_active,
+    createdDate: supabaseAlert.created_at,
+    lastTriggered: supabaseAlert.last_triggered,
+    triggerCount: supabaseAlert.trigger_count,
+    name: supabaseAlert.name,
+    description: supabaseAlert.description,
+  }
+
+  return userAlert
+}
+
+export const fetchAlerts = async (userId: string): Promise<UserAlert[]> => {
+  if (!userId) {
+    throw new Error('User ID is required')
+  }
+
+  const { data, error } = await supabase
+    .from('alerts')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    throw new Error(`Failed to fetch alerts: ${error.message}`)
+  }
+
+  if (!data) {
+    return []
+  }
+
+  return data.map(transformSupabaseAlert)
+}
+
+export interface CreateAlertData {
+  userId: string
+  comicId?: string
+  name: string
+  alertType: AlertType
+  thresholdPrice?: number
+  priceDirection?: 'above' | 'below'
+  description?: string
+}
+
+export const createAlert = async (alertData: CreateAlertData): Promise<UserAlert> => {
+  const supabaseAlertData = {
+    user_id: alertData.userId,
+    comic_id: alertData.comicId,
+    name: alertData.name,
+    alert_type: alertData.alertType,
+    threshold_price: alertData.thresholdPrice,
+    price_direction: alertData.priceDirection,
+    description: alertData.description,
+    is_active: true,
+    trigger_count: 0,
+  }
+
+  const { data, error } = await supabase
+    .from('alerts')
+    .insert(supabaseAlertData)
+    .select()
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to create alert: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error('No data returned from alert creation')
+  }
+
+  return transformSupabaseAlert(data)
+}
+
+export const updateAlertStatus = async (alertId: string, isActive: boolean): Promise<UserAlert> => {
+  const { data, error } = await supabase
+    .from('alerts')
+    .update({ is_active: isActive })
+    .eq('id', alertId)
+    .select()
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to update alert status: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error('No data returned from alert update')
+  }
+
+  return transformSupabaseAlert(data)
+}
+
+export const deleteAlert = async (alertId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('alerts')
+    .delete()
+    .eq('id', alertId)
+
+  if (error) {
+    throw new Error(`Failed to delete alert: ${error.message}`)
+  }
+}
