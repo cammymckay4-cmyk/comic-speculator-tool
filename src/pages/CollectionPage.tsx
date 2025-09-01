@@ -60,7 +60,7 @@ const CollectionPage: React.FC = () => {
     purchasePriceValue: collectionComic.purchasePrice || 0,
     purchaseDate: collectionComic.purchaseDate ? new Date(collectionComic.purchaseDate).toLocaleDateString() : 'N/A',
     purchaseDateValue: collectionComic.purchaseDate ? new Date(collectionComic.purchaseDate) : null,
-    addedDate: collectionComic.createdAt ? new Date(collectionComic.createdAt) : new Date(),
+    addedDate: collectionComic.addedDate ? new Date(collectionComic.addedDate) : new Date(),
   })) || []
 
   // Create filtered and sorted comics using useMemo
