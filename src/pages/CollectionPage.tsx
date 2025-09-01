@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
 import { 
-  Search, 
   Filter, 
   Grid, 
   List, 
   Plus,
   Download,
   Upload,
-  SortAsc,
   Star
 } from 'lucide-react'
 import ComicCard from '@/components/ui/ComicCard'
@@ -15,21 +13,10 @@ import SearchBar from '@/components/features/SearchBar'
 import FilterPanel from '@/components/features/FilterPanel'
 import SortDropdown from '@/components/features/SortDropdown'
 import Pagination from '@/components/features/Pagination'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { useCollectionQuery } from '@/hooks/useCollectionQuery'
+import { getCollectionStats } from '@/services/collectionService'
 
-// Mock collection data
-const mockCollection = Array.from({ length: 24 }, (_, i) => ({
-  id: `comic-${i + 1}`,
-  title: ['Amazing Spider-Man', 'Batman', 'X-Men', 'Superman', 'The Walking Dead'][i % 5],
-  issue: `#${Math.floor(Math.random() * 500) + 1}`,
-  publisher: ['Marvel', 'DC', 'Image'][i % 3],
-  coverImage: `https://via.placeholder.com/200x300/${['D62828', '003049', 'F7B538'][i % 3]}/FDF6E3?text=Comic+${i + 1}`,
-  value: `£${Math.floor(Math.random() * 5000) + 100}`,
-  trend: ['up', 'down', 'neutral'][i % 3] as 'up' | 'down' | 'neutral',
-  change: `${Math.random() > 0.5 ? '+' : '-'}${Math.floor(Math.random() * 20)}%`,
-  condition: ['Mint', 'Near Mint', 'Very Fine', 'Fine'][i % 4],
-  purchasePrice: `£${Math.floor(Math.random() * 1000) + 50}`,
-  purchaseDate: new Date(2023, i % 12, (i % 28) + 1).toLocaleDateString(),
-}))
 
 const CollectionPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -38,17 +25,67 @@ const CollectionPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSort, setSelectedSort] = useState('title')
   
+  // Fetch user collection data
+  const { data: collectionComics, isLoading, isError, error } = useCollectionQuery()
+  
   const itemsPerPage = 12
-  const totalItems = mockCollection.length
+  const totalItems = collectionComics?.length || 0
   const totalPages = Math.ceil(totalItems / itemsPerPage)
   
   // Calculate collection statistics
-  const totalValue = mockCollection.reduce((sum, comic) => {
-    const value = parseInt(comic.value.replace('£', '').replace(',', ''))
-    return sum + value
-  }, 0)
+  const stats = collectionComics ? getCollectionStats(collectionComics) : {
+    totalComics: 0,
+    totalValue: 0,
+    averageValue: 0,
+    keyIssues: 0
+  }
   
-  const averageValue = Math.floor(totalValue / mockCollection.length)
+  // Transform collection comics for display (matching the old structure)
+  const displayComics = collectionComics?.map(collectionComic => ({
+    id: collectionComic.comic.id,
+    title: collectionComic.comic.title,
+    issue: collectionComic.comic.issue,
+    publisher: collectionComic.comic.publisher,
+    coverImage: collectionComic.comic.coverImage,
+    value: `£${collectionComic.comic.marketValue || 0}`,
+    trend: 'neutral' as 'up' | 'down' | 'neutral', // This could be calculated based on price history
+    change: '+0%', // This could be calculated based on price history
+    condition: collectionComic.condition,
+    purchasePrice: collectionComic.purchasePrice ? `£${collectionComic.purchasePrice}` : 'N/A',
+    purchaseDate: collectionComic.purchaseDate ? new Date(collectionComic.purchaseDate).toLocaleDateString() : 'N/A',
+  })) || []
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-parchment flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Loading your collection" />
+      </div>
+    )
+  }
+
+  // Handle error state
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-parchment flex items-center justify-center">
+        <div className="bg-white comic-border shadow-comic p-8 max-w-md text-center">
+          <h2 className="font-super-squad text-2xl text-kirby-red mb-4">Oops! Something went wrong</h2>
+          <p className="font-persona-aura text-ink-black mb-4">
+            We couldn't load your collection. Please try again later.
+          </p>
+          <p className="font-persona-aura text-sm text-gray-600">
+            Error: {error?.message}
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="comic-button mt-4"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-parchment">
@@ -61,19 +98,19 @@ const CollectionPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-none border-2 border-parchment p-4">
               <p className="font-persona-aura text-parchment opacity-80 text-sm">Total Comics</p>
-              <p className="font-super-squad text-2xl text-parchment">{mockCollection.length}</p>
+              <p className="font-super-squad text-2xl text-parchment">{stats.totalComics}</p>
             </div>
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-none border-2 border-parchment p-4">
               <p className="font-persona-aura text-parchment opacity-80 text-sm">Total Value</p>
-              <p className="font-super-squad text-2xl text-parchment">£{totalValue.toLocaleString()}</p>
+              <p className="font-super-squad text-2xl text-parchment">£{stats.totalValue.toLocaleString()}</p>
             </div>
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-none border-2 border-parchment p-4">
               <p className="font-persona-aura text-parchment opacity-80 text-sm">Average Value</p>
-              <p className="font-super-squad text-2xl text-parchment">£{averageValue.toLocaleString()}</p>
+              <p className="font-super-squad text-2xl text-parchment">£{stats.averageValue.toLocaleString()}</p>
             </div>
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-none border-2 border-parchment p-4">
               <p className="font-persona-aura text-parchment opacity-80 text-sm">Key Issues</p>
-              <p className="font-super-squad text-2xl text-parchment">12</p>
+              <p className="font-super-squad text-2xl text-parchment">{stats.keyIssues}</p>
             </div>
           </div>
         </div>
@@ -163,15 +200,28 @@ const CollectionPage: React.FC = () => {
         </div>
 
         {/* Comics Grid/List */}
-        {viewMode === 'grid' ? (
+        {displayComics.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="bg-white comic-border shadow-comic p-8 max-w-md mx-auto">
+              <h3 className="font-super-squad text-2xl text-ink-black mb-4">Your Collection is Empty</h3>
+              <p className="font-persona-aura text-gray-600 mb-6">
+                Start building your comic collection by adding your first comic!
+              </p>
+              <button className="comic-button flex items-center space-x-2 mx-auto">
+                <Plus size={18} />
+                <span>Add Your First Comic</span>
+              </button>
+            </div>
+          </div>
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {mockCollection.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((comic) => (
+            {displayComics.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((comic) => (
               <ComicCard key={comic.id} comic={comic} variant="detailed" />
             ))}
           </div>
         ) : (
           <div className="space-y-4">
-            {mockCollection.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((comic) => (
+            {displayComics.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((comic) => (
               <div key={comic.id} className="bg-white comic-border shadow-comic p-4 flex items-center space-x-4 hover:translate-x-[-2px] hover:translate-y-[-2px] transition-transform">
                 <img
                   src={comic.coverImage}
