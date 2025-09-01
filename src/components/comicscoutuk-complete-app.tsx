@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { 
-  Search, Filter, X, ChevronDown, Check, Calendar, DollarSign, Star, Tag, BookOpen,
   TrendingUp, TrendingDown, Clock, Bell, User, Settings, LogOut, Home, Newspaper,
-  AlertCircle, Menu, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, Plus, Eye,
-  Heart, Trash2, Edit, MoreHorizontal, Zap, ShoppingCart, Award, Package
+  AlertCircle, ChevronLeft, ChevronRight, Plus, Eye,
+  Heart, Trash2, Edit, Package, DollarSign, Star
 } from 'lucide-react';
+
+// Import our reusable components
+import ComicNavbar from './core/ComicNavbar';
+import { SearchBar, FilterDropdown, Pagination, ComicCard, ComicButton } from './core';
+import { QuickFilter, FilterTag, LoadMoreButton } from './features';
+import ComponentDemo from './ComponentDemo';
 
 const ComicScoutUKApp = () => {
   const [currentPage, setCurrentPage] = useState('home');
@@ -14,184 +19,6 @@ const ComicScoutUKApp = () => {
     avatar: null
   });
 
-  // Shared Navbar Component
-  const Navbar = () => {
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-    return (
-      <nav style={{
-        backgroundColor: 'rgb(0, 48, 73)',
-        borderBottom: '3px solid rgb(28, 28, 28)',
-        boxShadow: '0 3px 0px rgb(28, 28, 28)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100
-      }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '64px' }}>
-            
-            {/* Logo */}
-            <button
-              onClick={() => setCurrentPage('home')}
-              style={{
-                fontFamily: '"Super Squad", Impact, sans-serif',
-                fontSize: '28px',
-                fontWeight: '900',
-                color: 'rgb(253, 246, 227)',
-                textTransform: 'uppercase',
-                letterSpacing: '2px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                textShadow: '2px 2px 0px rgba(0,0,0,0.3)'
-              }}
-            >
-              ComicScoutUK
-            </button>
-
-            {/* Desktop Navigation */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {[
-                  { label: 'Home', key: 'home', icon: Home },
-                  { label: 'Collection', key: 'collection', icon: Package },
-                  { label: 'Alerts', key: 'alerts', icon: Bell }
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => setCurrentPage(item.key)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '8px 16px',
-                      backgroundColor: currentPage === item.key ? 'rgba(247, 181, 56, 0.2)' : 'transparent',
-                      color: currentPage === item.key ? 'rgb(247, 181, 56)' : 'rgb(253, 246, 227)',
-                      border: 'none',
-                      borderRadius: '4px',
-                      fontFamily: '"Persona Aura", system-ui, sans-serif',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (currentPage !== item.key) {
-                        e.currentTarget.style.backgroundColor = 'rgba(247, 181, 56, 0.1)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (currentPage !== item.key) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    <item.icon size={16} />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* User Profile */}
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 12px',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    color: 'rgb(253, 246, 227)',
-                    cursor: 'pointer',
-                    fontFamily: '"Persona Aura", system-ui, sans-serif',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    backgroundColor: 'rgb(253, 246, 227)',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '2px solid rgb(28, 28, 28)'
-                  }}>
-                    <User size={18} color="rgb(28, 28, 28)" />
-                  </div>
-                  <span>{user.name}</span>
-                  <ChevronDown size={16} />
-                </button>
-
-                {dropdownOpen && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '8px',
-                    width: '200px',
-                    backgroundColor: 'rgb(253, 246, 227)',
-                    border: '3px solid rgb(28, 28, 28)',
-                    boxShadow: '6px 6px 0px rgb(28, 28, 28)'
-                  }}>
-                    <button
-                      onClick={() => {
-                        setCurrentPage('account');
-                        setDropdownOpen(false);
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderBottom: '1px solid rgba(28, 28, 28, 0.1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        fontFamily: '"Persona Aura", system-ui, sans-serif',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(247, 181, 56, 0.2)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <Settings size={16} />
-                      Account Hub
-                    </button>
-                    <button
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        fontFamily: '"Persona Aura", system-ui, sans-serif',
-                        fontSize: '14px',
-                        color: 'rgb(214, 40, 40)',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <LogOut size={16} />
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-    );
-  };
 
   // Home Dashboard Page
   const HomePage = () => {
@@ -502,28 +329,13 @@ const ComicScoutUKApp = () => {
         }}>
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
             {/* Search */}
-            <div style={{ flex: '1', minWidth: '300px', position: 'relative' }}>
-              <input
-                type="text"
+            <div style={{ flex: '1', minWidth: '300px' }}>
+              <SearchBar 
                 placeholder="Search your collection..."
-                style={{
-                  width: '100%',
-                  padding: '12px 16px 12px 40px',
-                  background: 'white',
-                  border: '2px solid rgb(28, 28, 28)',
-                  boxShadow: '2px 2px 0px rgb(28, 28, 28)',
-                  fontFamily: '"Persona Aura", system-ui, sans-serif',
-                  fontSize: '14px',
-                  outline: 'none'
-                }}
+                size="md"
+                showFilters={false}
+                onChange={(value) => console.log('Search:', value)}
               />
-              <Search size={20} style={{
-                position: 'absolute',
-                left: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'rgb(107, 114, 128)'
-              }} />
             </div>
 
             {/* Quick Filters */}
@@ -671,64 +483,13 @@ const ComicScoutUKApp = () => {
         </div>
 
         {/* Pagination */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <button style={{
-            padding: '8px 12px',
-            backgroundColor: 'rgb(107, 114, 128)',
-            color: 'white',
-            border: '2px solid rgb(28, 28, 28)',
-            boxShadow: '2px 2px 0px rgb(28, 28, 28)',
-            fontFamily: '"Persona Aura", system-ui, sans-serif',
-            fontSize: '14px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            <ChevronLeft size={16} />
-            PREV
-          </button>
-
-          {[1, 2, 3, 4, 5].map((page) => (
-            <button key={page} style={{
-              minWidth: '40px',
-              padding: '8px',
-              backgroundColor: page === currentPageNum ? 'rgb(214, 40, 40)' : 'white',
-              color: page === currentPageNum ? 'white' : 'rgb(28, 28, 28)',
-              border: '2px solid rgb(28, 28, 28)',
-              boxShadow: page === currentPageNum ? '3px 3px 0px rgb(28, 28, 28)' : '2px 2px 0px rgb(28, 28, 28)',
-              fontFamily: '"Persona Aura", system-ui, sans-serif',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}>
-              {page}
-            </button>
-          ))}
-
-          <button style={{
-            padding: '8px 12px',
-            backgroundColor: 'rgb(107, 114, 128)',
-            color: 'white',
-            border: '2px solid rgb(28, 28, 28)',
-            boxShadow: '2px 2px 0px rgb(28, 28, 28)',
-            fontFamily: '"Persona Aura", system-ui, sans-serif',
-            fontSize: '14px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            NEXT
-            <ChevronRight size={16} />
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Pagination 
+            current={currentPageNum}
+            total={10}
+            variant="classic"
+            onPageChange={(page) => setCurrentPageNum(page)}
+          />
         </div>
       </div>
     );
@@ -1430,6 +1191,7 @@ const ComicScoutUKApp = () => {
       case 'detail': return <ComicDetailPage />;
       case 'alerts': return <AlertsPage />;
       case 'account': return <AccountHubPage />;
+      case 'components': return <ComponentDemo />;
       default: return <HomePage />;
     }
   };
@@ -1440,7 +1202,11 @@ const ComicScoutUKApp = () => {
       backgroundColor: 'rgb(253, 246, 227)',
       fontFamily: '"Persona Aura", system-ui, sans-serif'
     }}>
-      <Navbar />
+      <ComicNavbar 
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        user={user}
+      />
       {renderPage()}
       
       {/* Footer */}
