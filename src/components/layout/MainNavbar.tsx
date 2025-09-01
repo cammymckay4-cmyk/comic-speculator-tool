@@ -15,6 +15,8 @@ import {
   AlertCircle,
   DollarSign
 } from 'lucide-react'
+import { supabase } from '@/lib/supabaseClient'
+import { useUserStore } from '@/store/userStore'
 
 interface UserType {
   name: string
@@ -43,6 +45,7 @@ const MainNavbar: React.FC<MainNavbarProps> = ({
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const { clearUser } = useUserStore()
 
   // Navigation items configuration
   const navigationItems = [
@@ -82,11 +85,22 @@ const MainNavbar: React.FC<MainNavbarProps> = ({
   }
 
   // Handle logout
-  const handleLogout = () => {
-    setDropdownOpen(false)
-    setMobileMenuOpen(false)
-    onLogout?.()
-    navigate('/auth')
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Logout error:', error)
+        return
+      }
+      
+      clearUser()
+      setDropdownOpen(false)
+      setMobileMenuOpen(false)
+      onLogout?.()
+      navigate('/auth')
+    } catch (error) {
+      console.error('Unexpected logout error:', error)
+    }
   }
 
   return (
