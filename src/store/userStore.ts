@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 interface NavbarUserType {
   name: string
@@ -14,10 +15,17 @@ interface UserStore {
   setLoading: (loading: boolean) => void
 }
 
-export const useUserStore = create<UserStore>((set) => ({
-  user: null,
-  isLoading: false,
-  setUser: (user) => set({ user }),
-  clearUser: () => set({ user: null }),
-  setLoading: (isLoading) => set({ isLoading }),
-}))
+export const useUserStore = create<UserStore>()(
+  persist(
+    (set) => ({
+      user: null,
+      isLoading: false,
+      setUser: (user) => set({ user }),
+      clearUser: () => set({ user: null }),
+      setLoading: (isLoading) => set({ isLoading }),
+    }),
+    {
+      name: 'comicscout-user-session',
+    }
+  )
+)
