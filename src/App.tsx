@@ -5,6 +5,7 @@ import Footer from './components/layout/Footer'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import { useUserStore } from './store/userStore'
 import { supabase } from './lib/supabaseClient'
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 // Lazy load pages for better performance
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -42,7 +43,7 @@ function App() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: AuthChangeEvent, session: Session | null) => {
         if (event === 'SIGNED_OUT' || !session) {
           setUser(null)
         } else if (event === 'SIGNED_IN' && session?.user) {
