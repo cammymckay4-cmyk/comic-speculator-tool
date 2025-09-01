@@ -1,0 +1,354 @@
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { 
+  Eye, 
+  EyeOff, 
+  Mail, 
+  Lock, 
+  User, 
+  ArrowRight,
+  AlertCircle,
+  Check
+} from 'lucide-react'
+import { COMIC_EFFECTS } from '@/utils/constants'
+
+type AuthMode = 'signin' | 'signup' | 'forgot'
+
+const AuthPage: React.FC = () => {
+  const navigate = useNavigate()
+  const [mode, setMode] = useState<AuthMode>('signin')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    rememberMe: false,
+    agreeToTerms: false,
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isLoading, setIsLoading] = useState(false)
+
+  const selectedEffect = COMIC_EFFECTS[Math.floor(Math.random() * COMIC_EFFECTS.length)]
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrors({})
+    setIsLoading(true)
+
+    // Validate form
+    const newErrors: Record<string, string> = {}
+    
+    if (!formData.email) {
+      newErrors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email'
+    }
+
+    if (mode !== 'forgot') {
+      if (!formData.password) {
+        newErrors.password = 'Password is required'
+      } else if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters'
+      }
+    }
+
+    if (mode === 'signup') {
+      if (!formData.name) {
+        newErrors.name = 'Name is required'
+      }
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match'
+      }
+      if (!formData.agreeToTerms) {
+        newErrors.agreeToTerms = 'You must agree to the terms'
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      setIsLoading(false)
+      return
+    }
+
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false)
+      navigate('/')
+    }, 1500)
+  }
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData({ ...formData, [field]: value })
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' })
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-stan-lee-blue to-kirby-red flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <h1 className="font-super-squad text-5xl text-parchment mb-2">
+            {selectedEffect}
+          </h1>
+          <h2 className="font-super-squad text-3xl text-parchment">
+            COMICSCOUT UK
+          </h2>
+        </div>
+
+        {/* Auth Card */}
+        <div className="bg-white comic-border shadow-comic-lg p-8">
+          {/* Mode Tabs */}
+          <div className="flex border-b-2 border-ink-black mb-6">
+            <button
+              onClick={() => setMode('signin')}
+              className={`flex-1 py-3 font-super-squad text-sm transition-colors
+                        ${mode === 'signin' 
+                          ? 'bg-kirby-red text-parchment' 
+                          : 'text-ink-black hover:bg-golden-age-yellow hover:bg-opacity-20'}`}
+            >
+              SIGN IN
+            </button>
+            <button
+              onClick={() => setMode('signup')}
+              className={`flex-1 py-3 font-super-squad text-sm transition-colors border-l-2 border-ink-black
+                        ${mode === 'signup' 
+                          ? 'bg-kirby-red text-parchment' 
+                          : 'text-ink-black hover:bg-golden-age-yellow hover:bg-opacity-20'}`}
+            >
+              SIGN UP
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name Field (Sign Up Only) */}
+            {mode === 'signup' && (
+              <div>
+                <label className="block font-persona-aura font-semibold text-ink-black mb-2">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    className={`w-full pl-10 pr-4 py-3 comic-input ${errors.name ? 'border-kirby-red' : ''}`}
+                    placeholder="Peter Parker"
+                  />
+                </div>
+                {errors.name && (
+                  <p className="mt-1 text-kirby-red text-xs font-persona-aura flex items-center">
+                    <AlertCircle size={14} className="mr-1" />
+                    {errors.name}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Email Field */}
+            <div>
+              <label className="block font-persona-aura font-semibold text-ink-black mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className={`w-full pl-10 pr-4 py-3 comic-input ${errors.email ? 'border-kirby-red' : ''}`}
+                  placeholder="hero@comicscout.uk"
+                />
+              </div>
+              {errors.email && (
+                <p className="mt-1 text-kirby-red text-xs font-persona-aura flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {errors.email}
+                </p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            {mode !== 'forgot' && (
+              <div>
+                <label className="block font-persona-aura font-semibold text-ink-black mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    className={`w-full pl-10 pr-12 py-3 comic-input ${errors.password ? 'border-kirby-red' : ''}`}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-ink-black"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-kirby-red text-xs font-persona-aura flex items-center">
+                    <AlertCircle size={14} className="mr-1" />
+                    {errors.password}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Confirm Password Field (Sign Up Only) */}
+            {mode === 'signup' && (
+              <div>
+                <label className="block font-persona-aura font-semibold text-ink-black mb-2">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    className={`w-full pl-10 pr-12 py-3 comic-input ${errors.confirmPassword ? 'border-kirby-red' : ''}`}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-ink-black"
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-kirby-red text-xs font-persona-aura flex items-center">
+                    <AlertCircle size={14} className="mr-1" />
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Remember Me / Terms */}
+            {mode === 'signin' && (
+              <div className="flex items-center justify-between">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.rememberMe}
+                    onChange={(e) => handleInputChange('rememberMe', e.target.checked)}
+                    className="w-4 h-4 text-kirby-red border-2 border-ink-black focus:ring-0"
+                  />
+                  <span className="font-persona-aura text-sm text-ink-black">
+                    Remember me
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setMode('forgot')}
+                  className="font-persona-aura text-sm text-stan-lee-blue hover:text-kirby-red transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+
+            {mode === 'signup' && (
+              <div>
+                <label className="flex items-start space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.agreeToTerms}
+                    onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)}
+                    className="w-4 h-4 text-kirby-red border-2 border-ink-black focus:ring-0 mt-0.5"
+                  />
+                  <span className="font-persona-aura text-sm text-ink-black">
+                    I agree to the{' '}
+                    <a href="#" className="text-stan-lee-blue hover:text-kirby-red">
+                      Terms of Service
+                    </a>{' '}
+                    and{' '}
+                    <a href="#" className="text-stan-lee-blue hover:text-kirby-red">
+                      Privacy Policy
+                    </a>
+                  </span>
+                </label>
+                {errors.agreeToTerms && (
+                  <p className="mt-1 text-kirby-red text-xs font-persona-aura flex items-center">
+                    <AlertCircle size={14} className="mr-1" />
+                    {errors.agreeToTerms}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full comic-button flex items-center justify-center space-x-2"
+            >
+              {isLoading ? (
+                <span>LOADING...</span>
+              ) : (
+                <>
+                  <span>
+                    {mode === 'signin' && 'SIGN IN'}
+                    {mode === 'signup' && 'CREATE ACCOUNT'}
+                    {mode === 'forgot' && 'RESET PASSWORD'}
+                  </span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Forgot Password Link */}
+          {mode === 'forgot' && (
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setMode('signin')}
+                className="font-persona-aura text-sm text-stan-lee-blue hover:text-kirby-red transition-colors"
+              >
+                Back to Sign In
+              </button>
+            </div>
+          )}
+
+          {/* Social Login */}
+          {mode !== 'forgot' && (
+            <div className="mt-6 pt-6 border-t-2 border-gray-200">
+              <p className="font-persona-aura text-sm text-gray-600 text-center mb-4">
+                Or continue with
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <button className="py-2 px-4 border-2 border-gray-300 hover:border-ink-black hover:shadow-comic-sm transition-all font-persona-aura text-sm font-semibold">
+                  Google
+                </button>
+                <button className="py-2 px-4 border-2 border-gray-300 hover:border-ink-black hover:shadow-comic-sm transition-all font-persona-aura text-sm font-semibold">
+                  Facebook
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Text */}
+        <p className="text-center mt-6 font-persona-aura text-sm text-parchment opacity-80">
+          © 2024 ComicScoutUK. With great comics comes great responsibility.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default AuthPage

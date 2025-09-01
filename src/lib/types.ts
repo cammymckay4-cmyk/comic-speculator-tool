@@ -1,187 +1,231 @@
-// Core data types for the comic speculator tool
-
-// Enriched data structure from Wikidata and external sources
-export interface EnrichedData {
-  wikidata_qid?: string;
-  wikidata_url?: string;
-  comicvine_id?: string;
-  comicvine_url?: string;
-  gcd_id?: string;
-  gcd_url?: string;
-  description?: string;
-  first_appearance_year?: number;
-  creator_names?: string[];
-  genres?: string[];
-  tags?: string[];
-  external_links?: Record<string, string>;
-}
-
-// Enhanced series interface with enrichment support
-export interface Series {
-  seriesId: string;
-  title: string;
-  publisher: string;
-  startYear: number;
-  description?: string;
-  aliases?: string[];
-  // New enrichment fields
-  enriched_data?: EnrichedData | null;
-  is_enriched?: boolean;
-  data_source?: string;
-  last_enriched_at?: string;
-}
-
-// Database row type matching Supabase schema
-export interface ComicSeriesRow {
+// User and Authentication Types
+export interface User {
   id: string;
   name: string;
-  publisher: string;
-  description?: string | null;
-  series_id?: string | null;
-  start_year?: number | null;
-  created_at: string;
-  enriched_data?: EnrichedData | null;
-  is_enriched?: boolean | null;
-  data_source?: string | null;
-  last_enriched_at?: string | null;
-  aliases?: string[] | null;
+  email: string;
+  avatar?: string;
+  subscriptionTier: 'free' | 'pro' | 'premium';
+  subscriptionStatus: 'active' | 'inactive' | 'cancelled' | 'trial';
+  joinDate: string;
+  lastActive?: string;
+  preferences?: UserPreferences;
 }
 
-export interface Issue {
-  issueId: string;
-  seriesId: string;
-  issueNumber: string;
-  coverDate: string;
-  startYear: number;
-  keyNotes?: string;
+export interface UserPreferences {
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  theme: 'light' | 'dark' | 'auto';
+  currency: 'USD' | 'GBP' | 'EUR';
+  collectionView: 'grid' | 'list';
+  defaultCondition?: ComicCondition;
+  favoritePublishers?: string[];
+  favoriteCharacters?: string[];
 }
 
-export interface Grade {
-  gradeId: string;
-  scale: string;
-  numeric?: number;
-  label: string;
-  certBody?: string;
-  description?: string;
+export interface AuthFormData {
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  name?: string;
+  rememberMe?: boolean;
 }
 
-export interface Listing {
-  listingId: string;
-  issueId: string;
-  gradeId: string;
+// Comic and Collection Types
+export interface Comic {
+  id: string;
   title: string;
-  totalPriceGBP: number;
-  source: string;
-  endTime?: string;
-  url?: string;
-}
-
-export interface MarketValue {
-  marketValueId: string;
-  issueId: string;
-  gradeId: string;
-  windowDays: number;
-  sampleCount: number;
-  medianGBP: number;
-  meanGBP: number;
-  stdDevGBP?: number;
-  minGBP: number;
-  maxGBP: number;
+  issue: string;
+  issueNumber: number;
+  seriesId?: string;
+  publisher: string;
+  publishDate: string;
+  coverImage: string;
+  thumbnailImage?: string;
+  creators: ComicCreator[];
+  description?: string;
+  pageCount?: number;
+  format: ComicFormat;
+  isbn?: string;
+  upc?: string;
+  diamondCode?: string;
+  variantDescription?: string;
+  isVariant: boolean;
+  isKeyIssue: boolean;
+  keyIssueReason?: string;
+  storyArcs?: string[];
+  characters?: string[];
+  teams?: string[];
+  locations?: string[];
+  genres?: string[];
+  tags?: string[];
+  prices: ComicPrice[];
+  marketValue?: number;
   lastUpdated: string;
 }
 
-export interface DealScoreInfo {
-  dealScoreId: string;
-  listingId: string;
-  issueId: string;
-  gradeId: string;
-  marketValueGBP: number;
-  totalPriceGBP: number;
-  score: number;
-  computedAt: string;
-}
-
-export interface ParsedTitle {
-  series: string;
-  issueNumber: string;
-  variant?: string;
-  publisher?: string;
-}
-
-export interface NormalizedListing {
-  seriesId: string;
-  issueNumber: string;
-  grade: string;
-  confidence: number;
-  notes?: string;
-}
-
-export interface ConfidenceScore {
-  series: number;
-  issue: number;
-  grade: number;
-  overall: number;
-}
-
-export interface TopDeal {
-  listing: Listing;
-  marketValue: MarketValue;
-  dealScore: DealScoreInfo;
-  series?: ComicSeriesRow;
-  enrichmentBonus?: number;
-}
-
-// Enhanced search result with enrichment data
-export interface EnrichedSearchResult {
-  id: string;
+export interface ComicCreator {
   name: string;
-  publisher: string;
-  is_enriched: boolean;
-  wikidata_url?: string | null;
-  comicvine_url?: string | null;
-  enriched_data?: EnrichedData | null;
+  role: 'writer' | 'artist' | 'penciler' | 'inker' | 'colorist' | 'letterer' | 'cover' | 'editor';
 }
 
-// Enrichment statistics view
-export interface EnrichmentStats {
-  publisher: string;
-  total_series: number;
-  enriched_series: number;
-  wikidata_linked: number;
-  enrichment_percentage: number;
+export interface ComicPrice {
+  condition: ComicCondition;
+  price: number;
+  currency: string;
+  source: string;
+  date: string;
 }
 
-// API Response standardization
-export interface ApiResponse<T = any> {
+export type ComicFormat = 
+  | 'single-issue' 
+  | 'trade-paperback' 
+  | 'hardcover' 
+  | 'graphic-novel' 
+  | 'digital' 
+  | 'omnibus' 
+  | 'deluxe-edition'
+  | 'treasury-edition'
+  | 'magazine';
+
+export type ComicCondition = 
+  | 'mint' 
+  | 'near-mint-plus' 
+  | 'near-mint' 
+  | 'near-mint-minus'
+  | 'very-fine-plus'
+  | 'very-fine'
+  | 'very-fine-minus'
+  | 'fine-plus'
+  | 'fine'
+  | 'fine-minus'
+  | 'very-good-plus'
+  | 'very-good'
+  | 'very-good-minus'
+  | 'good-plus'
+  | 'good'
+  | 'fair'
+  | 'poor';
+
+// Alert Types
+export interface UserAlert {
+  id: string;
+  userId: string;
+  comicId?: string;
+  comic?: Comic;
+  type: AlertType;
+  criteria: AlertCriteria;
+  isActive: boolean;
+  createdDate: string;
+  lastTriggered?: string;
+  triggerCount: number;
+  name: string;
+  description?: string;
+}
+
+export type AlertType = 
+  | 'price-drop' 
+  | 'price-increase' 
+  | 'new-issue' 
+  | 'availability' 
+  | 'auction-ending'
+  | 'market-trend'
+  | 'news-mention';
+
+export interface AlertCriteria {
+  priceThreshold?: number;
+  priceDirection?: 'above' | 'below';
+  condition?: ComicCondition;
+  marketplace?: string[];
+  keywords?: string[];
+}
+
+// Collection Types
+export interface UserCollection {
+  id: string;
+  userId: string;
+  comics: CollectionComic[];
+  totalValue: number;
+  totalComics: number;
+  lastUpdated: string;
+  name?: string;
+  isPublic: boolean;
+}
+
+export interface CollectionComic {
+  comicId: string;
+  comic: Comic;
+  condition: ComicCondition;
+  purchasePrice?: number;
+  purchaseDate?: string;
+  purchaseLocation?: string;
+  notes?: string;
+  images?: string[];
+  addedDate: string;
+  tags?: string[];
+}
+
+// News Types
+export interface NewsArticle {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  publishDate: string;
+  category: NewsCategory;
+  tags: string[];
+  featuredImage?: string;
+  relatedComics?: string[];
+  isBreaking?: boolean;
+}
+
+export type NewsCategory = 
+  | 'industry-news'
+  | 'new-releases'
+  | 'creator-news'
+  | 'publisher-news'
+  | 'market-trends'
+  | 'reviews'
+  | 'interviews'
+  | 'events';
+
+// API Response Types
+export interface ApiResponse<T> {
+  data: T;
   success: boolean;
-  data?: T;
-  error?: string;
   message?: string;
-  meta?: {
-    timestamp: string;
-    total?: number;
-    page?: number;
-    limit?: number;
-    [key: string]: any;
-  };
+  errors?: string[];
+  pagination?: PaginationInfo;
 }
 
-// Enhanced authentication result
-export interface AuthResult {
-  user: any | null;
-  error?: string;
-  isActive?: boolean;
-  emailVerified?: boolean;
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
-// Security and validation types
-export enum ErrorCode {
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  FORBIDDEN = 'FORBIDDEN',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  NOT_FOUND = 'NOT_FOUND',
-  CONFLICT = 'CONFLICT',
-  RATE_LIMITED = 'RATE_LIMITED',
-  INTERNAL_ERROR = 'INTERNAL_ERROR',
-  INVALID_INPUT = 'INVALID_INPUT'
+// Search and Filter Types
+export interface SearchFilters {
+  query?: string;
+  publisher?: string[];
+  creators?: string[];
+  genres?: string[];
+  yearRange?: [number, number];
+  priceRange?: [number, number];
+  condition?: ComicCondition[];
+  format?: ComicFormat[];
+  sortBy?: SortOption;
+  sortOrder?: 'asc' | 'desc';
 }
+
+export type SortOption = 
+  | 'title'
+  | 'issue-number'
+  | 'publish-date'
+  | 'added-date'
+  | 'market-value'
+  | 'purchase-price'
+  | 'relevance';
