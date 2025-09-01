@@ -55,74 +55,121 @@
 @layer components {
   /* Comic-style input fields */
   .comic-input {
-    @apply comic-border bg-parchment text-ink-black px-4 py-3 font-inter;
-    @apply focus:outline-none focus:ring-2 focus:ring-golden-age-yellow focus:ring-offset-2;
-    @apply transition-all duration-200;
+    border: 3px solid #1C1C1C;
+    box-shadow: 6px 6px 0px #1C1C1C;
+    background-color: #FDF6E3;
+    color: #1C1C1C;
+    padding: 0.75rem 1rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: all 0.2s;
   }
   
   .comic-input:focus {
-    transform: translate(-1px, -1px);
     box-shadow: 7px 7px 0px #1C1C1C, 0 0 0 2px #F7B538;
+    transform: translate(-1px, -1px);
   }
+  
   
   /* Comic-style cards */
   .comic-card {
-    @apply comic-border bg-parchment p-6;
-    @apply hover:transform hover:-translate-x-1 hover:-translate-y-1;
-    @apply hover:shadow-comic-hover transition-all duration-200;
-    @apply cursor-pointer;
+    border: 3px solid #1C1C1C;
+    box-shadow: 6px 6px 0px #1C1C1C;
+    background-color: #FDF6E3;
+    padding: 1.5rem;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  
+  .comic-card:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px #1C1C1C;
   }
   
   /* Comic-style tabs */
   .comic-tab {
-    @apply px-6 py-3 font-inter font-semibold uppercase tracking-wide;
-    @apply border-comic border-ink-black bg-parchment text-ink-black;
-    @apply hover:bg-golden-age-yellow hover:transform hover:-translate-y-1;
-    @apply transition-all duration-200 cursor-pointer;
+    padding: 0.75rem 1.5rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 3px solid #1C1C1C;
+    background-color: #FDF6E3;
+    color: #1C1C1C;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  
+  .comic-tab:hover {
+    background-color: #F7B538;
+    transform: translateY(-1px);
   }
   
   .comic-tab.active {
-    @apply bg-kirby-red text-parchment shadow-comic;
+    background-color: #D62828;
+    color: #FDF6E3;
+    box-shadow: 3px 3px 0px #1C1C1C;
     transform: translate(-2px, -2px);
   }
   
   /* Comic-style alert/notification boxes */
   .comic-alert {
-    @apply comic-border p-4 font-inter;
-    @apply relative overflow-hidden;
+    border: 3px solid #1C1C1C;
+    box-shadow: 6px 6px 0px #1C1C1C;
+    padding: 1rem;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow: hidden;
   }
   
   .comic-alert.error {
-    @apply bg-red-50 border-kirby-red text-kirby-red;
+    background-color: #fef2f2;
+    border-color: #D62828;
+    color: #D62828;
     box-shadow: 6px 6px 0px #D62828;
   }
   
   .comic-alert.success {
-    @apply bg-green-50 border-green-600 text-green-700;
+    background-color: #f0fdf4;
+    border-color: #059669;
+    color: #047857;
     box-shadow: 6px 6px 0px #059669;
   }
   
   .comic-alert.warning {
-    @apply bg-yellow-50 border-golden-age-yellow text-yellow-800;
+    background-color: #fefce8;
+    border-color: #F7B538;
+    color: #92400e;
     box-shadow: 6px 6px 0px #F7B538;
   }
   
   /* Comic-style data table */
   .comic-table {
-    @apply w-full comic-border bg-parchment;
+    width: 100%;
+    border: 3px solid #1C1C1C;
+    box-shadow: 6px 6px 0px #1C1C1C;
+    background-color: #FDF6E3;
   }
   
   .comic-table th {
-    @apply bg-stan-lee-blue text-parchment px-4 py-3 font-bangers uppercase tracking-wide text-left;
-    @apply border-b-comic border-ink-black;
+    background-color: #003049;
+    color: #FDF6E3;
+    padding: 0.75rem 1rem;
+    font-family: 'Bangers', cursive;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: left;
+    border-bottom: 3px solid #1C1C1C;
   }
   
   .comic-table td {
-    @apply px-4 py-3 border-b border-ink-black font-inter;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #1C1C1C;
+    font-family: 'Inter', sans-serif;
   }
   
   .comic-table tr:hover {
-    @apply bg-golden-age-yellow bg-opacity-20;
+    background-color: rgba(247, 181, 56, 0.2);
   }
   
   /* Loading animation styles */
@@ -143,7 +190,13 @@
   
   /* Comic speech bubble for error messages */
   .comic-speech-bubble {
-    @apply relative bg-parchment comic-border p-3 font-inter text-sm;
+    position: relative;
+    background-color: #FDF6E3;
+    border: 3px solid #1C1C1C;
+    box-shadow: 6px 6px 0px #1C1C1C;
+    padding: 0.75rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
   }
   
   .comic-speech-bubble::before {
