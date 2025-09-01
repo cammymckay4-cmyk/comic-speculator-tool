@@ -11,6 +11,8 @@ import {
   Check
 } from 'lucide-react'
 import { COMIC_EFFECTS } from '@/utils/constants'
+import { supabase } from '@/lib/supabaseClient'
+import { useUserStore } from '@/store/userStore'
 
 type AuthMode = 'signin' | 'signup' | 'forgot'
 
@@ -29,12 +31,71 @@ const AuthPage: React.FC = () => {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+  const { setUser } = useUserStore()
 
   const selectedEffect = COMIC_EFFECTS[Math.floor(Math.random() * COMIC_EFFECTS.length)]
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        setErrors({ auth: error.message })
+        return
+      }
+
+      if (data.user) {
+        setUser({
+          name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
+          email: data.user.email || '',
+          avatar: data.user.user_metadata?.avatar_url || null,
+        })
+        navigate('/')
+      }
+    } catch (error) {
+      setErrors({ auth: 'An unexpected error occurred' })
+    }
+  }
+
+  const handleSignup = async (email: string, password: string, name: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      })
+
+      if (error) {
+        setErrors({ auth: error.message })
+        return
+      }
+
+      setSuccessMessage('Check your email to confirm your account!')
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        rememberMe: false,
+        agreeToTerms: false,
+      })
+    } catch (error) {
+      setErrors({ auth: 'An unexpected error occurred' })
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
+    setSuccessMessage('')
     setIsLoading(true)
 
     // Validate form
@@ -72,11 +133,25 @@ const AuthPage: React.FC = () => {
       return
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      navigate('/')
-    }, 1500)
+    // Handle authentication
+    if (mode === 'signin') {
+      await handleLogin(formData.email, formData.password)
+    } else if (mode === 'signup') {
+      await handleSignup(formData.email, formData.password, formData.name)
+    } else if (mode === 'forgot') {
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(formData.email)
+        if (error) {
+          setErrors({ auth: error.message })
+        } else {
+          setSuccessMessage('Check your email for password reset instructions!')
+        }
+      } catch (error) {
+        setErrors({ auth: 'An unexpected error occurred' })
+      }
+    }
+
+    setIsLoading(false)
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -123,6 +198,26 @@ const AuthPage: React.FC = () => {
               SIGN UP
             </button>
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mb-4 p-3 bg-green-50 border-2 border-green-200 rounded">
+              <p className="text-green-800 text-sm font-persona-aura flex items-center">
+                <Check size={14} className="mr-1" />
+                {successMessage}
+              </p>
+            </div>
+          )}
+
+          {/* Auth Error */}
+          {errors.auth && (
+            <div className="mb-4 p-3 bg-red-50 border-2 border-red-200 rounded">
+              <p className="text-red-800 text-sm font-persona-aura flex items-center">
+                <AlertCircle size={14} className="mr-1" />
+                {errors.auth}
+              </p>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">

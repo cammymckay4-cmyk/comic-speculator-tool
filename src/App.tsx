@@ -1,9 +1,10 @@
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense, lazy, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import MainNavbar from './components/layout/MainNavbar'
 import Footer from './components/layout/Footer'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import { useUserStore } from './store/userStore'
+import { supabase } from './lib/supabaseClient'
 
 // Lazy load pages for better performance
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -15,7 +16,47 @@ const ComicDetailPage = lazy(() => import('./pages/ComicDetailPage'))
 const AuthPage = lazy(() => import('./pages/AuthPage'))
 
 function App() {
-  const { user } = useUserStore()
+  const { user, setUser, setLoading } = useUserStore()
+  
+  // Check for existing session on app load
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session?.user) {
+          setUser({
+            name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+            email: session.user.email || '',
+            avatar: session.user.user_metadata?.avatar_url || null,
+          })
+        }
+      } catch (error) {
+        console.error('Session check error:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkSession()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_OUT' || !session) {
+          setUser(null)
+        } else if (event === 'SIGNED_IN' && session?.user) {
+          setUser({
+            name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+            email: session.user.email || '',
+            avatar: session.user.user_metadata?.avatar_url || null,
+          })
+        }
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [setUser, setLoading])
   
   return (
     <div className="min-h-screen bg-parchment flex flex-col">
@@ -23,7 +64,7 @@ function App() {
       <MainNavbar 
         user={user || undefined}
         onNavigate={(page) => console.log('Navigate to:', page)}
-        onLogout={() => console.log('Logout')}
+        onLogout={() => {}}
         notificationCount={3}
       />
 
