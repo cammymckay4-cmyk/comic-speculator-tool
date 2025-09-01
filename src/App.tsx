@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import MainNavbar from './components/layout/MainNavbar'
 import Footer from './components/layout/Footer'
 import LoadingSpinner from './components/ui/LoadingSpinner'
+import { useUserStore } from './store/userStore'
 
 // Lazy load pages for better performance
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -13,19 +14,18 @@ const NewsPage = lazy(() => import('./pages/NewsPage'))
 const ComicDetailPage = lazy(() => import('./pages/ComicDetailPage'))
 const AuthPage = lazy(() => import('./pages/AuthPage'))
 
-// Mock user data (replace with actual auth context)
-const mockUser = {
-  name: 'Comic Fan',
-  email: 'fan@comicscout.uk',
-  avatar: null,
-}
-
 function App() {
+  const { user } = useUserStore()
+  
   return (
     <div className="min-h-screen bg-parchment flex flex-col">
       {/* Main Navigation */}
       <MainNavbar 
-        user={mockUser}
+        user={user ? {
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar
+        } : undefined}
         onNavigate={(page) => console.log('Navigate to:', page)}
         onLogout={() => console.log('Logout')}
         notificationCount={3}
