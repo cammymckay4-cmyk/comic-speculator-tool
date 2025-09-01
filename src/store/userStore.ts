@@ -1,10 +1,15 @@
 import { create } from 'zustand'
-import { User } from '../lib/types'
+
+interface NavbarUserType {
+  name: string
+  email: string
+  avatar?: string | null
+}
 
 interface UserStore {
-  user: User | null
+  user: NavbarUserType | null
   isLoading: boolean
-  setUser: (user: User | null) => void
+  setUser: (user: NavbarUserType | null) => void
   clearUser: () => void
   setLoading: (loading: boolean) => void
 }
