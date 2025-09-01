@@ -21,11 +21,7 @@ function App() {
     <div className="min-h-screen bg-parchment flex flex-col">
       {/* Main Navigation */}
       <MainNavbar 
-        user={user ? {
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar
-        } : undefined}
+        user={user}
         onNavigate={(page) => console.log('Navigate to:', page)}
         onLogout={() => console.log('Logout')}
         notificationCount={3}
