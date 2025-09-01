@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   Filter, 
   Grid, 
@@ -14,7 +14,7 @@ import FilterPanel from '@/components/features/FilterPanel'
 import SortDropdown from '@/components/features/SortDropdown'
 import Pagination from '@/components/features/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { useCollectionQuery } from '@/hooks/useCollectionQuery'
+import { useCollectionQuery, useCollectionCount } from '@/hooks/useCollectionQuery'
 import { getCollectionStats } from '@/services/collectionService'
 
 
@@ -31,13 +31,34 @@ const CollectionPage: React.FC = () => {
     yearRange: { min: '', max: '' },
   })
   
-  // Fetch user collection data
-  const { data: collectionComics, isLoading, isError, error } = useCollectionQuery()
-  
   const itemsPerPage = 12
+
+  // Fetch user collection data with backend filtering
+  const { data: collectionComics, isLoading, isError, error } = useCollectionQuery({
+    searchTerm,
+    filters: activeFilters,
+    sortOrder,
+    page: currentPage,
+    itemsPerPage
+  })
+
+  // Get total count for pagination
+  const { data: totalItems } = useCollectionCount({
+    searchTerm,
+    filters: activeFilters
+  })
   
+  // For stats, we need to fetch all comics without filtering (or use a separate stats endpoint)
+  const { data: allComics } = useCollectionQuery({
+    searchTerm: '',
+    filters: { publishers: [], conditions: [], priceRange: { min: '', max: '' }, yearRange: { min: '', max: '' } },
+    sortOrder: 'created_at',
+    page: 1,
+    itemsPerPage: 1000 // Large number to get all for stats
+  })
+
   // Calculate collection statistics
-  const stats = collectionComics ? getCollectionStats(collectionComics) : {
+  const stats = allComics ? getCollectionStats(allComics) : {
     totalComics: 0,
     totalValue: 0,
     averageValue: 0,
@@ -45,7 +66,7 @@ const CollectionPage: React.FC = () => {
   }
   
   // Transform collection comics for display (matching the old structure)
-  const allDisplayComics = collectionComics?.map(collectionComic => ({
+  const displayComics = collectionComics?.map(collectionComic => ({
     id: collectionComic.comic.id,
     title: collectionComic.comic.title,
     issue: collectionComic.comic.issue,
@@ -63,92 +84,12 @@ const CollectionPage: React.FC = () => {
     addedDate: collectionComic.addedDate ? new Date(collectionComic.addedDate) : new Date(),
   })) || []
 
-  // Create filtered and sorted comics using useMemo
-  const filteredAndSortedComics = useMemo(() => {
-    let filtered = [...allDisplayComics]
+  const totalPages = Math.ceil((totalItems || 0) / itemsPerPage)
 
-    // Apply search filter
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim()
-      filtered = filtered.filter(comic => 
-        comic.title.toLowerCase().includes(searchLower) ||
-        comic.issue.toLowerCase().includes(searchLower) ||
-        comic.publisher.toLowerCase().includes(searchLower)
-      )
-    }
-
-    // Apply publisher filter
-    if (activeFilters.publishers.length > 0) {
-      filtered = filtered.filter(comic => 
-        activeFilters.publishers.includes(comic.publisher)
-      )
-    }
-
-    // Apply condition filter
-    if (activeFilters.conditions.length > 0) {
-      filtered = filtered.filter(comic => 
-        activeFilters.conditions.includes(comic.condition)
-      )
-    }
-
-    // Apply price range filter
-    if (activeFilters.priceRange.min || activeFilters.priceRange.max) {
-      filtered = filtered.filter(comic => {
-        const price = comic.marketValue
-        const min = activeFilters.priceRange.min ? parseFloat(activeFilters.priceRange.min) : 0
-        const max = activeFilters.priceRange.max ? parseFloat(activeFilters.priceRange.max) : Infinity
-        return price >= min && price <= max
-      })
-    }
-
-    // Apply year range filter (based on purchase date for now, could be extended to publication year)
-    if (activeFilters.yearRange.min || activeFilters.yearRange.max) {
-      filtered = filtered.filter(comic => {
-        if (!comic.purchaseDateValue) return false
-        const year = comic.purchaseDateValue.getFullYear()
-        const minYear = activeFilters.yearRange.min ? parseInt(activeFilters.yearRange.min) : 0
-        const maxYear = activeFilters.yearRange.max ? parseInt(activeFilters.yearRange.max) : new Date().getFullYear()
-        return year >= minYear && year <= maxYear
-      })
-    }
-
-    // Apply sorting
-    filtered.sort((a, b) => {
-      switch (sortOrder) {
-        case 'title':
-          return a.title.localeCompare(b.title)
-        case 'issue-number':
-          // Extract numeric part from issue string
-          const aIssue = parseInt(a.issue.replace(/\D/g, '')) || 0
-          const bIssue = parseInt(b.issue.replace(/\D/g, '')) || 0
-          return aIssue - bIssue
-        case 'market-value':
-          return b.marketValue - a.marketValue // Descending
-        case 'purchase-price':
-          return b.purchasePriceValue - a.purchasePriceValue // Descending
-        case 'added-date':
-          return b.addedDate.getTime() - a.addedDate.getTime() // Most recent first
-        case 'publish-date':
-          // For now, sort by purchase date as we don't have publish date
-          if (!a.purchaseDateValue || !b.purchaseDateValue) return 0
-          return b.purchaseDateValue.getTime() - a.purchaseDateValue.getTime()
-        case 'relevance':
-        default:
-          return 0 // Keep original order for relevance/default
-      }
-    })
-
-    return filtered
-  }, [allDisplayComics, searchTerm, activeFilters, sortOrder])
-
-  const displayComics = filteredAndSortedComics
-  const totalItems = displayComics.length
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
-
-  // Reset current page when search term or sort order changes
+  // Reset current page when search term, sort order, or filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, sortOrder])
+  }, [searchTerm, sortOrder, activeFilters])
 
   // Handle loading state
   if (isLoading) {
@@ -311,13 +252,13 @@ const CollectionPage: React.FC = () => {
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {displayComics.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((comic) => (
+            {displayComics.map((comic) => (
               <ComicCard key={comic.id} comic={comic} variant="detailed" />
             ))}
           </div>
         ) : (
           <div className="space-y-4">
-            {displayComics.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((comic) => (
+            {displayComics.map((comic) => (
               <div key={comic.id} className="bg-white comic-border shadow-comic p-4 flex items-center space-x-4 hover:translate-x-[-2px] hover:translate-y-[-2px] transition-transform">
                 <img
                   src={comic.coverImage}
