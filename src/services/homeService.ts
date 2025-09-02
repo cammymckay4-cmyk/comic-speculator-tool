@@ -28,22 +28,22 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
   // Get total comics count and collection value
   const { data: comics, error: comicsError } = await supabase
     .from('comics')
-    .select('market_value')
-    .eq('user_id', userId)
+    .select('marketValue')
+    .eq('userId', userId)
 
   if (comicsError) {
     throw new Error(`Failed to fetch user stats: ${comicsError.message}`)
   }
 
   const totalComics = comics?.length || 0
-  const collectionValue = comics?.reduce((sum, comic) => sum + (comic.market_value || 0), 0) || 0
+  const collectionValue = comics?.reduce((sum, comic) => sum + (comic.marketValue || 0), 0) || 0
 
   // Get active alerts count (assuming alerts table exists)
   const { count: alertsCount, error: alertsError } = await supabase
     .from('alerts')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .eq('is_active', true)
+    .eq('userId', userId)
+    .eq('isActive', true)
 
   if (alertsError) {
     console.warn('Failed to fetch alerts count:', alertsError.message)
@@ -56,8 +56,8 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
   const { count: recentCount, error: recentError } = await supabase
     .from('comics')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .gte('created_at', sevenDaysAgo.toISOString())
+    .eq('userId', userId)
+    .gte('createdAt', sevenDaysAgo.toISOString())
 
   if (recentError) {
     console.warn('Failed to fetch recent additions count:', recentError.message)
@@ -75,8 +75,8 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
 export const fetchHotComics = async (): Promise<HotComic[]> => {
   const { data: comics, error } = await supabase
     .from('comics')
-    .select('id, title, issue, publisher, cover_image, market_value, created_at')
-    .order('created_at', { ascending: false })
+    .select('id, title, issue, publisher, coverImage, marketValue, createdAt')
+    .order('createdAt', { ascending: false })
     .limit(5)
 
   if (error) {
@@ -93,8 +93,8 @@ export const fetchHotComics = async (): Promise<HotComic[]> => {
     title: comic.title,
     issue: comic.issue,
     publisher: comic.publisher,
-    coverImage: comic.cover_image || `https://via.placeholder.com/200x300/D62828/FDF6E3?text=${encodeURIComponent(comic.title)}`,
-    value: `£${comic.market_value?.toLocaleString() || '0'}`,
+    coverImage: comic.coverImage || `https://via.placeholder.com/200x300/D62828/FDF6E3?text=${encodeURIComponent(comic.title)}`,
+    value: `£${comic.marketValue?.toLocaleString() || '0'}`,
     trend: index < 3 ? 'up' : 'neutral' as const, // Mock trend for now
     change: index < 3 ? `+${5 + index * 3}%` : '0%'
   }))
@@ -104,8 +104,8 @@ export const fetchHotComics = async (): Promise<HotComic[]> => {
 export const fetchRecentNews = async (): Promise<NewsArticle[]> => {
   const { data: news, error } = await supabase
     .from('news')
-    .select('id, title, excerpt, author, publish_date, category, featured_image')
-    .order('publish_date', { ascending: false })
+    .select('id, title, excerpt, author, publishDate, category, featuredImage')
+    .order('publishDate', { ascending: false })
     .limit(3)
 
   if (error) {
@@ -123,9 +123,9 @@ export const fetchRecentNews = async (): Promise<NewsArticle[]> => {
     excerpt: article.excerpt,
     content: '', // Not needed for preview
     author: article.author,
-    publishDate: article.publish_date,
+    publishDate: article.publishDate,
     category: article.category as any,
     tags: [],
-    featuredImage: article.featured_image
+    featuredImage: article.featuredImage
   }))
 }

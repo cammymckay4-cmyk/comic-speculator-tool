@@ -7,19 +7,19 @@ export interface SupabaseComic {
   title: string
   issue: string
   publisher: string
-  cover_image: string
-  market_value: number
+  coverImage: string
+  marketValue: number
   condition: string
-  purchase_price?: number
-  purchase_date?: string
-  purchase_location?: string
+  purchasePrice?: number
+  purchaseDate?: string
+  purchaseLocation?: string
   notes?: string
-  publication_year?: number
+  publicationYear?: number
   format?: string
-  is_key_issue?: boolean
-  key_issue_reason?: string
-  created_at: string
-  user_id: string
+  isKeyIssue?: boolean
+  keyIssueReason?: string
+  createdAt: string
+  userId: string
 }
 
 // Transform Supabase data to match our frontend types
@@ -31,18 +31,18 @@ const transformSupabaseComic = (supabaseComic: SupabaseComic): CollectionComic =
     issue: supabaseComic.issue,
     issueNumber: parseInt(supabaseComic.issue.replace('#', '')) || 0,
     publisher: supabaseComic.publisher,
-    publishDate: supabaseComic.publication_year ? 
+    publishDate: supabaseComic.publicationYear ? 
       new Date(supabaseComic.publication_year, 0, 1).toISOString() : 
       new Date().toISOString(),
-    coverImage: supabaseComic.cover_image,
+    coverImage: supabaseComic.coverImage,
     creators: [], // This should be populated from your schema
     format: (supabaseComic.format as any) || 'single-issue',
     isVariant: false,
-    isKeyIssue: supabaseComic.is_key_issue || false,
-    keyIssueReason: supabaseComic.key_issue_reason,
+    isKeyIssue: supabaseComic.isKeyIssue || false,
+    keyIssueReason: supabaseComic.keyIssueReason,
     prices: [],
-    marketValue: supabaseComic.market_value,
-    lastUpdated: supabaseComic.created_at
+    marketValue: supabaseComic.marketValue,
+    lastUpdated: supabaseComic.createdAt
   }
 
   // Create a CollectionComic object
@@ -50,11 +50,11 @@ const transformSupabaseComic = (supabaseComic: SupabaseComic): CollectionComic =
     comicId: supabaseComic.id,
     comic: comic,
     condition: supabaseComic.condition as any, // Type assertion - adjust based on your schema
-    purchasePrice: supabaseComic.purchase_price,
-    purchaseDate: supabaseComic.purchase_date,
-    purchaseLocation: supabaseComic.purchase_location,
+    purchasePrice: supabaseComic.purchasePrice,
+    purchaseDate: supabaseComic.purchaseDate,
+    purchaseLocation: supabaseComic.purchaseLocation,
     notes: supabaseComic.notes,
-    addedDate: supabaseComic.created_at
+    addedDate: supabaseComic.createdAt
   }
 
   return collectionComic
@@ -83,12 +83,12 @@ export const fetchUserCollection = async (
     throw new Error('User ID is required')
   }
 
-  const { filters = {}, sortOrder = 'created_at', page = 1, itemsPerPage = 12 } = options
+  const { filters = {}, sortOrder = 'createdAt', page = 1, itemsPerPage = 12 } = options
 
   let query = supabase
     .from('comics')
     .select('*')
-    .eq('user_id', userId)
+    .eq('userId', userId)
 
   // Apply search filter
   if (filters.searchTerm && filters.searchTerm.trim()) {
@@ -108,25 +108,25 @@ export const fetchUserCollection = async (
 
   // Apply price range filter
   if (filters.priceRange?.min !== undefined) {
-    query = query.gte('market_value', filters.priceRange.min)
+    query = query.gte('marketValue', filters.priceRange.min)
   }
   if (filters.priceRange?.max !== undefined) {
-    query = query.lte('market_value', filters.priceRange.max)
+    query = query.lte('marketValue', filters.priceRange.max)
   }
 
   // Apply year range filter (assuming purchase_date is available)
   if (filters.yearRange?.min !== undefined) {
     const minYear = `${filters.yearRange.min}-01-01`
-    query = query.gte('purchase_date', minYear)
+    query = query.gte('purchaseDate', minYear)
   }
   if (filters.yearRange?.max !== undefined) {
     const maxYear = `${filters.yearRange.max}-12-31`
-    query = query.lte('purchase_date', maxYear)
+    query = query.lte('purchaseDate', maxYear)
   }
 
   // Apply sorting
   let ascending = false
-  let orderColumn = 'created_at'
+  let orderColumn = 'createdAt'
   
   switch (sortOrder) {
     case 'title':
@@ -139,24 +139,24 @@ export const fetchUserCollection = async (
       ascending = true
       break
     case 'market-value':
-      orderColumn = 'market_value'
+      orderColumn = 'marketValue'
       ascending = false // Highest first
       break
     case 'purchase-price':
-      orderColumn = 'purchase_price'
+      orderColumn = 'purchasePrice'
       ascending = false // Highest first
       break
     case 'added-date':
-      orderColumn = 'created_at'
+      orderColumn = 'createdAt'
       ascending = false // Most recent first
       break
     case 'publish-date':
     case 'purchase-date':
-      orderColumn = 'purchase_date'
+      orderColumn = 'purchaseDate'
       ascending = false // Most recent first
       break
     default:
-      orderColumn = 'created_at'
+      orderColumn = 'createdAt'
       ascending = false
   }
 
@@ -192,7 +192,7 @@ export const getCollectionCount = async (
   let query = supabase
     .from('comics')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
+    .eq('userId', userId)
 
   // Apply the same filters as fetchUserCollection but only for counting
   if (filters.searchTerm && filters.searchTerm.trim()) {
@@ -209,19 +209,19 @@ export const getCollectionCount = async (
   }
 
   if (filters.priceRange?.min !== undefined) {
-    query = query.gte('market_value', filters.priceRange.min)
+    query = query.gte('marketValue', filters.priceRange.min)
   }
   if (filters.priceRange?.max !== undefined) {
-    query = query.lte('market_value', filters.priceRange.max)
+    query = query.lte('marketValue', filters.priceRange.max)
   }
 
   if (filters.yearRange?.min !== undefined) {
     const minYear = `${filters.yearRange.min}-01-01`
-    query = query.gte('purchase_date', minYear)
+    query = query.gte('purchaseDate', minYear)
   }
   if (filters.yearRange?.max !== undefined) {
     const maxYear = `${filters.yearRange.max}-12-31`
-    query = query.lte('purchase_date', maxYear)
+    query = query.lte('purchaseDate', maxYear)
   }
 
   const { count, error } = await query
@@ -296,22 +296,22 @@ export const addComic = async (userId: string, comicData: AddComicData): Promise
 
   // Map the form data to Supabase schema
   const supabaseData = {
-    user_id: userId,
+    userId: userId,
     title: comicData.title,
     issue: comicData.issueNumber,
     publisher: comicData.publisher,
-    publication_year: comicData.publicationYear,
+    publicationYear: comicData.publicationYear,
     condition: comicData.condition,
     format: comicData.format,
-    market_value: comicData.estimatedValue || 0,
-    purchase_price: comicData.purchasePrice,
-    purchase_date: comicData.purchaseDate,
-    purchase_location: comicData.purchaseLocation,
-    cover_image: comicData.coverImageUrl || '',
+    marketValue: comicData.estimatedValue || 0,
+    purchasePrice: comicData.purchasePrice,
+    purchaseDate: comicData.purchaseDate,
+    purchaseLocation: comicData.purchaseLocation,
+    coverImage: comicData.coverImageUrl || '',
     notes: comicData.notes,
-    is_key_issue: comicData.isKeyIssue,
-    key_issue_reason: comicData.keyIssueReason,
-    created_at: comicData.addedDate
+    isKeyIssue: comicData.isKeyIssue,
+    keyIssueReason: comicData.keyIssueReason,
+    createdAt: comicData.addedDate
   }
 
   const { data, error } = await supabase
@@ -343,17 +343,17 @@ export const updateComic = async (comicId: string, updatedData: Partial<AddComic
   if (updatedData.title) supabaseData.title = updatedData.title
   if (updatedData.issueNumber) supabaseData.issue = updatedData.issueNumber
   if (updatedData.publisher) supabaseData.publisher = updatedData.publisher
-  if (updatedData.publicationYear) supabaseData.publication_year = updatedData.publicationYear
+  if (updatedData.publicationYear) supabaseData.publicationYear = updatedData.publicationYear
   if (updatedData.condition) supabaseData.condition = updatedData.condition
   if (updatedData.format) supabaseData.format = updatedData.format
-  if (updatedData.estimatedValue !== undefined) supabaseData.market_value = updatedData.estimatedValue || 0
-  if (updatedData.purchasePrice !== undefined) supabaseData.purchase_price = updatedData.purchasePrice
-  if (updatedData.purchaseDate !== undefined) supabaseData.purchase_date = updatedData.purchaseDate
-  if (updatedData.purchaseLocation !== undefined) supabaseData.purchase_location = updatedData.purchaseLocation
-  if (updatedData.coverImageUrl !== undefined) supabaseData.cover_image = updatedData.coverImageUrl || ''
+  if (updatedData.estimatedValue !== undefined) supabaseData.marketValue = updatedData.estimatedValue || 0
+  if (updatedData.purchasePrice !== undefined) supabaseData.purchasePrice = updatedData.purchasePrice
+  if (updatedData.purchaseDate !== undefined) supabaseData.purchaseDate = updatedData.purchaseDate
+  if (updatedData.purchaseLocation !== undefined) supabaseData.purchaseLocation = updatedData.purchaseLocation
+  if (updatedData.coverImageUrl !== undefined) supabaseData.coverImage = updatedData.coverImageUrl || ''
   if (updatedData.notes !== undefined) supabaseData.notes = updatedData.notes
-  if (updatedData.isKeyIssue !== undefined) supabaseData.is_key_issue = updatedData.isKeyIssue
-  if (updatedData.keyIssueReason !== undefined) supabaseData.key_issue_reason = updatedData.keyIssueReason
+  if (updatedData.isKeyIssue !== undefined) supabaseData.isKeyIssue = updatedData.isKeyIssue
+  if (updatedData.keyIssueReason !== undefined) supabaseData.keyIssueReason = updatedData.keyIssueReason
 
   const { data, error } = await supabase
     .from('comics')
