@@ -259,3 +259,65 @@ export const getCollectionStats = (comics: CollectionComic[]) => {
     keyIssues
   }
 }
+
+// Interface for adding a new comic
+export interface AddComicData {
+  title: string
+  issueNumber: string
+  publisher: string
+  publicationYear: number
+  condition: string
+  format: string
+  estimatedValue?: number | null
+  purchasePrice?: number | null
+  purchaseDate?: string | null
+  purchaseLocation?: string | null
+  coverImageUrl?: string | null
+  notes?: string | null
+  isKeyIssue: boolean
+  keyIssueReason?: string | null
+  addedDate: string
+}
+
+export const addComic = async (userId: string, comicData: AddComicData): Promise<CollectionComic> => {
+  if (!userId) {
+    throw new Error('User ID is required')
+  }
+
+  // Map the form data to Supabase schema
+  const supabaseData = {
+    user_id: userId,
+    title: comicData.title,
+    issue: comicData.issueNumber,
+    publisher: comicData.publisher,
+    publication_year: comicData.publicationYear,
+    condition: comicData.condition,
+    format: comicData.format,
+    market_value: comicData.estimatedValue || 0,
+    purchase_price: comicData.purchasePrice,
+    purchase_date: comicData.purchaseDate,
+    purchase_location: comicData.purchaseLocation,
+    cover_image: comicData.coverImageUrl || '',
+    notes: comicData.notes,
+    is_key_issue: comicData.isKeyIssue,
+    key_issue_reason: comicData.keyIssueReason,
+    created_at: comicData.addedDate
+  }
+
+  const { data, error } = await supabase
+    .from('comics')
+    .insert([supabaseData])
+    .select()
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to add comic: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error('No data returned from comic creation')
+  }
+
+  // Transform the returned data to match our frontend types
+  return transformSupabaseComic(data)
+}
