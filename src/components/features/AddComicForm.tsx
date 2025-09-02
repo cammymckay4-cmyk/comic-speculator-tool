@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
 import { X, Plus, Book, Upload, Image as ImageIcon } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ComicCondition, ComicFormat } from '@/lib/types'
 import { uploadComicImage } from '@/services/storageService'
+import { addComic, type AddComicData } from '@/services/collectionService'
+import { useUserStore } from '@/store/userStore'
 
 interface AddComicFormProps {
   isOpen: boolean
@@ -54,6 +57,9 @@ const publisherOptions = [
 ]
 
 const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
+  const { user } = useUserStore()
+  const queryClient = useQueryClient()
+  
   const [formData, setFormData] = useState({
     title: '',
     issueNumber: '',
@@ -74,9 +80,32 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
-  const [isUploading, setIsUploading] = useState(false)
-
   const [errors, setErrors] = useState<Record<string, string>>({})
+  
+  // TanStack Query mutation for adding comic
+  const addComicMutation = useMutation({
+    mutationFn: (comicData: AddComicData) => {
+      if (!user?.email) {
+        throw new Error('No user found')
+      }
+      return addComic(user.email, comicData)
+    },
+    onSuccess: () => {
+      // Invalidate and refetch the collection query
+      queryClient.invalidateQueries({ queryKey: ['collection', user?.email] })
+      queryClient.invalidateQueries({ queryKey: ['collection-count', user?.email] })
+      
+      // Reset form and close modal
+      resetForm()
+      onClose()
+      
+      // TODO: Add success toast notification
+    },
+    onError: (error) => {
+      console.error('Failed to save comic:', error)
+      // Error handling will be done in the submit handler
+    }
+  })
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -114,6 +143,30 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
     if (fileInput) {
       fileInput.value = ''
     }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      issueNumber: '',
+      publisher: '',
+      customPublisher: '',
+      publicationYear: '',
+      condition: 'near-mint' as ComicCondition,
+      format: 'single-issue' as ComicFormat,
+      estimatedValue: '',
+      purchasePrice: '',
+      purchaseDate: '',
+      purchaseLocation: '',
+      coverImage: '',
+      notes: '',
+      isKeyIssue: false,
+      keyIssueReason: '',
+    })
+    setSelectedFile(null)
+    setPreviewUrl('')
+    setErrors({})
+    clearImage()
   }
 
   const validateForm = () => {
@@ -163,8 +216,12 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
       return
     }
 
+    if (!user?.email) {
+      setErrors(prev => ({ ...prev, general: 'You must be logged in to add comics' }))
+      return
+    }
+
     try {
-      setIsUploading(true)
       let coverImageUrl = formData.coverImage.trim()
 
       // Upload image if file is selected
@@ -177,13 +234,12 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
             ...prev, 
             coverImage: uploadError instanceof Error ? uploadError.message : 'Upload failed' 
           }))
-          setIsUploading(false)
           return
         }
       }
 
       // Prepare comic data with uploaded image URL
-      const comicData = {
+      const comicData: AddComicData = {
         title: formData.title.trim(),
         issueNumber: formData.issueNumber.trim(),
         publisher: formData.publisher === 'Other' ? formData.customPublisher.trim() : formData.publisher,
@@ -201,34 +257,15 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
         addedDate: new Date().toISOString(),
       }
 
-      console.log('Comic Data:', comicData)
+      // Use the mutation to save the comic
+      await addComicMutation.mutateAsync(comicData)
       
-      // Reset form and close modal
-      setFormData({
-        title: '',
-        issueNumber: '',
-        publisher: '',
-        customPublisher: '',
-        publicationYear: '',
-        condition: 'near-mint' as ComicCondition,
-        format: 'single-issue' as ComicFormat,
-        estimatedValue: '',
-        purchasePrice: '',
-        purchaseDate: '',
-        purchaseLocation: '',
-        coverImage: '',
-        notes: '',
-        isKeyIssue: false,
-        keyIssueReason: '',
-      })
-      setSelectedFile(null)
-      setPreviewUrl('')
-      setErrors({})
-      setIsUploading(false)
-      onClose()
     } catch (error) {
       console.error('Failed to save comic:', error)
-      setIsUploading(false)
+      setErrors(prev => ({ 
+        ...prev, 
+        general: error instanceof Error ? error.message : 'Failed to save comic. Please try again.' 
+      }))
     }
   }
 
@@ -618,6 +655,13 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
 
+          {/* General Error Display */}
+          {errors.general && (
+            <div className="p-3 bg-red-100 border-2 border-red-500 comic-border">
+              <p className="text-sm text-red-600 font-persona-aura">{errors.general}</p>
+            </div>
+          )}
+
           {/* Submit Buttons */}
           <div className="flex justify-end space-x-4 pt-6 border-t-2 border-gray-200">
             <button
@@ -629,13 +673,13 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
             </button>
             <button
               type="submit"
-              disabled={isUploading}
+              disabled={addComicMutation.isPending}
               className="comic-button flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isUploading ? (
+              {addComicMutation.isPending ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Uploading...</span>
+                  <span>Saving Comic...</span>
                 </>
               ) : (
                 <>
