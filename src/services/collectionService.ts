@@ -223,6 +223,29 @@ export const getCollectionCount = async (
   return count || 0
 }
 
+export const fetchComicById = async (comicId: string): Promise<CollectionComic> => {
+  if (!comicId) {
+    throw new Error('Comic ID is required')
+  }
+
+  const { data, error } = await supabase
+    .from('comics')
+    .select('*')
+    .eq('id', comicId)
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to fetch comic: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error('Comic not found')
+  }
+
+  // Transform the Supabase data to match our frontend types
+  return transformSupabaseComic(data)
+}
+
 export const getCollectionStats = (comics: CollectionComic[]) => {
   const totalComics = comics.length
   const totalValue = comics.reduce((sum, comic) => sum + (comic.comic.marketValue || 0), 0)

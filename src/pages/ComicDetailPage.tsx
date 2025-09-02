@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { 
   ArrowLeft,
   Heart,
@@ -15,57 +16,69 @@ import {
   DollarSign,
   AlertCircle
 } from 'lucide-react'
-import { COMIC_CONDITIONS } from '@/utils/constants'
+import { fetchComicById } from '@/services/collectionService'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
-// Mock comic data (in a real app, this would be fetched based on the ID)
-const mockComicData = {
-  id: '1',
-  title: 'Amazing Spider-Man',
-  issue: '#1',
-  issueNumber: 1,
-  publisher: 'Marvel Comics',
-  publishDate: 'March 1963',
-  coverImage: 'https://via.placeholder.com/400x600/D62828/FDF6E3?text=Spider-Man+%231',
-  creators: [
-    { name: 'Stan Lee', role: 'Writer' },
-    { name: 'Steve Ditko', role: 'Artist' },
-  ],
-  description: 'The first appearance of Spider-Man! High school student Peter Parker is bitten by a radioactive spider and gains amazing powers. After a personal tragedy, he learns that with great power comes great responsibility.',
-  pageCount: 32,
-  format: 'Single Issue',
-  isKeyIssue: true,
-  keyIssueReason: 'First appearance of Spider-Man',
-  characters: ['Spider-Man', 'Aunt May', 'Uncle Ben', 'Flash Thompson'],
-  storyArcs: ['Spider-Man Origin'],
-  currentValue: 45000,
-  trend: 'up',
-  trendPercentage: 12,
-  conditions: [
-    { grade: 'Mint', price: 150000 },
-    { grade: 'Near Mint', price: 45000 },
-    { grade: 'Very Fine', price: 18000 },
-    { grade: 'Fine', price: 8000 },
-    { grade: 'Good', price: 3000 },
-  ],
-  priceHistory: [
-    { date: 'Jan 2024', value: 40000 },
-    { date: 'Feb 2024', value: 41000 },
-    { date: 'Mar 2024', value: 42000 },
-    { date: 'Apr 2024', value: 43000 },
-    { date: 'May 2024', value: 44000 },
-    { date: 'Jun 2024', value: 45000 },
-  ],
-}
 
 const ComicDetailPage: React.FC = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [selectedCondition, setSelectedCondition] = useState('Near Mint')
   const [isInWishlist, setIsInWishlist] = useState(false)
   const [hasAlert, setHasAlert] = useState(false)
 
-  // In a real app, fetch comic data based on id
-  const comic = mockComicData
+  // Fetch comic data based on id from URL
+  const { data: collectionComic, isLoading, isError, error } = useQuery({
+    queryKey: ['comic', id],
+    queryFn: () => fetchComicById(id!),
+    enabled: !!id, // Only run query if ID is present
+  })
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-parchment flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Loading comic details..." />
+      </div>
+    )
+  }
+
+  // Handle error state
+  if (isError || !collectionComic) {
+    return (
+      <div className="min-h-screen bg-parchment">
+        <div className="bg-white border-b-comic border-ink-black shadow-comic-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-2 text-stan-lee-blue hover:text-kirby-red transition-colors"
+            >
+              <ArrowLeft size={20} />
+              <span className="font-persona-aura font-semibold">Back</span>
+            </button>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white comic-border shadow-comic p-8 text-center">
+            <AlertCircle size={48} className="text-kirby-red mx-auto mb-4" />
+            <h1 className="font-super-squad text-2xl text-ink-black mb-2">
+              Comic Not Found
+            </h1>
+            <p className="font-persona-aura text-gray-600 mb-6">
+              {error instanceof Error ? error.message : 'The comic you\'re looking for could not be found.'}
+            </p>
+            <button
+              onClick={() => navigate('/collection')}
+              className="comic-button"
+            >
+              Back to Collection
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const comic = collectionComic.comic
 
   return (
     <div className="min-h-screen bg-parchment">
@@ -89,7 +102,7 @@ const ComicDetailPage: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="bg-white comic-border shadow-comic p-4 sticky top-24">
               <img
-                src={comic.coverImage}
+                src={comic.coverImage || '/comic-placeholder.jpg'}
                 alt={`${comic.title} ${comic.issue}`}
                 className="w-full h-auto"
               />
@@ -153,23 +166,26 @@ const ComicDetailPage: React.FC = () => {
                     {comic.title} {comic.issue}
                   </h1>
                   <p className="font-persona-aura text-gray-600">
-                    Published {comic.publishDate}
+                    Published {comic.publishDate ? new Date(comic.publishDate).toLocaleDateString('en-GB', { 
+                      year: 'numeric', 
+                      month: 'long' 
+                    }) : 'Date unknown'}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="font-super-squad text-3xl text-ink-black">
-                    £{comic.currentValue.toLocaleString()}
+                    £{(comic.marketValue || 0).toLocaleString()}
                   </p>
                   <div className="flex items-center justify-end space-x-1 text-green-600">
                     <TrendingUp size={16} />
                     <span className="font-persona-aura text-sm font-semibold">
-                      +{comic.trendPercentage}% this month
+                      Market value
                     </span>
                   </div>
                 </div>
               </div>
 
-              {comic.keyIssueReason && (
+              {comic.isKeyIssue && comic.keyIssueReason && (
                 <div className="bg-golden-age-yellow bg-opacity-20 border-2 border-golden-age-yellow p-4">
                   <div className="flex items-start space-x-2">
                     <Star size={20} className="text-golden-age-yellow mt-0.5" />
@@ -185,67 +201,75 @@ const ComicDetailPage: React.FC = () => {
             </div>
 
             {/* Description */}
-            <div className="bg-white comic-border shadow-comic p-6">
-              <h2 className="font-super-squad text-2xl text-ink-black mb-4">
-                SYNOPSIS
-              </h2>
-              <p className="font-persona-aura text-gray-700 leading-relaxed">
-                {comic.description}
-              </p>
-            </div>
+            {comic.description && (
+              <div className="bg-white comic-border shadow-comic p-6">
+                <h2 className="font-super-squad text-2xl text-ink-black mb-4">
+                  SYNOPSIS
+                </h2>
+                <p className="font-persona-aura text-gray-700 leading-relaxed">
+                  {comic.description}
+                </p>
+              </div>
+            )}
 
             {/* Creators */}
-            <div className="bg-white comic-border shadow-comic p-6">
-              <h2 className="font-super-squad text-2xl text-ink-black mb-4">
-                CREATIVE TEAM
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
-                {comic.creators.map((creator) => (
-                  <div key={creator.name} className="flex items-center space-x-3">
-                    <User size={20} className="text-gray-400" />
-                    <div>
-                      <p className="font-persona-aura font-semibold text-ink-black">
-                        {creator.name}
-                      </p>
-                      <p className="font-persona-aura text-sm text-gray-600">
-                        {creator.role}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Price by Condition */}
-            <div className="bg-white comic-border shadow-comic p-6">
-              <h2 className="font-super-squad text-2xl text-ink-black mb-4">
-                MARKET VALUES BY CONDITION
-              </h2>
-              <div className="space-y-3">
-                {comic.conditions.map((condition) => (
-                  <button
-                    key={condition.grade}
-                    onClick={() => setSelectedCondition(condition.grade)}
-                    className={`w-full p-4 border-2 transition-all duration-150
-                              ${selectedCondition === condition.grade 
-                                ? 'bg-golden-age-yellow border-ink-black shadow-comic translate-x-[-2px] translate-y-[-2px]' 
-                                : 'bg-white border-gray-300 hover:border-ink-black hover:shadow-comic-sm'}`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div className="text-left">
+            {comic.creators && comic.creators.length > 0 && (
+              <div className="bg-white comic-border shadow-comic p-6">
+                <h2 className="font-super-squad text-2xl text-ink-black mb-4">
+                  CREATIVE TEAM
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {comic.creators.map((creator) => (
+                    <div key={creator.name} className="flex items-center space-x-3">
+                      <User size={20} className="text-gray-400" />
+                      <div>
                         <p className="font-persona-aura font-semibold text-ink-black">
-                          {condition.grade}
+                          {creator.name}
                         </p>
-                        <p className="font-persona-aura text-xs text-gray-600">
-                          {COMIC_CONDITIONS.find(c => c.label.includes(condition.grade))?.grade}
+                        <p className="font-persona-aura text-sm text-gray-600">
+                          {creator.role}
                         </p>
                       </div>
-                      <p className="font-super-squad text-xl text-ink-black">
-                        £{condition.price.toLocaleString()}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Current Condition and Price */}
+            <div className="bg-white comic-border shadow-comic p-6">
+              <h2 className="font-super-squad text-2xl text-ink-black mb-4">
+                CONDITION & VALUE
+              </h2>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-golden-age-yellow border-2 border-ink-black shadow-comic">
+                  <div className="text-left">
+                    <p className="font-persona-aura font-semibold text-ink-black">
+                      {collectionComic.condition.charAt(0).toUpperCase() + collectionComic.condition.slice(1).replace(/-/g, ' ')}
+                    </p>
+                    <p className="font-persona-aura text-xs text-gray-800">
+                      Current condition
+                    </p>
+                  </div>
+                  <p className="font-super-squad text-xl text-ink-black">
+                    £{(comic.marketValue || 0).toLocaleString()}
+                  </p>
+                </div>
+                {collectionComic.purchasePrice && (
+                  <div className="flex justify-between items-center p-4 bg-gray-50 border-2 border-gray-300">
+                    <div className="text-left">
+                      <p className="font-persona-aura font-semibold text-ink-black">
+                        Purchase Price
+                      </p>
+                      <p className="font-persona-aura text-xs text-gray-600">
+                        {collectionComic.purchaseDate ? new Date(collectionComic.purchaseDate).toLocaleDateString('en-GB') : 'Date unknown'}
                       </p>
                     </div>
-                  </button>
-                ))}
+                    <p className="font-super-squad text-xl text-ink-black">
+                      £{collectionComic.purchasePrice.toLocaleString()}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -256,18 +280,20 @@ const ComicDetailPage: React.FC = () => {
               </h2>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <BookOpen size={18} className="text-gray-400" />
-                    <span className="font-persona-aura text-gray-600">Page Count:</span>
-                    <span className="font-persona-aura font-semibold text-ink-black">
-                      {comic.pageCount}
-                    </span>
-                  </div>
+                  {comic.pageCount && (
+                    <div className="flex items-center space-x-2">
+                      <BookOpen size={18} className="text-gray-400" />
+                      <span className="font-persona-aura text-gray-600">Page Count:</span>
+                      <span className="font-persona-aura font-semibold text-ink-black">
+                        {comic.pageCount}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center space-x-2">
                     <Calendar size={18} className="text-gray-400" />
                     <span className="font-persona-aura text-gray-600">Format:</span>
                     <span className="font-persona-aura font-semibold text-ink-black">
-                      {comic.format}
+                      {comic.format.charAt(0).toUpperCase() + comic.format.slice(1).replace(/-/g, ' ')}
                     </span>
                   </div>
                 </div>
@@ -276,36 +302,38 @@ const ComicDetailPage: React.FC = () => {
                     <Tag size={18} className="text-gray-400" />
                     <span className="font-persona-aura text-gray-600">Issue:</span>
                     <span className="font-persona-aura font-semibold text-ink-black">
-                      #{comic.issueNumber}
+                      {comic.issue}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <DollarSign size={18} className="text-gray-400" />
-                    <span className="font-persona-aura text-gray-600">Trend:</span>
-                    <span className="font-persona-aura font-semibold text-green-600">
-                      Rising
+                    <User size={18} className="text-gray-400" />
+                    <span className="font-persona-aura text-gray-600">Added:</span>
+                    <span className="font-persona-aura font-semibold text-ink-black">
+                      {new Date(collectionComic.addedDate).toLocaleDateString('en-GB')}
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Characters */}
-              <div className="mt-6 pt-6 border-t-2 border-gray-200">
-                <p className="font-persona-aura text-gray-600 mb-3">Characters:</p>
-                <div className="flex flex-wrap gap-2">
-                  {comic.characters.map((character) => (
-                    <span
-                      key={character}
-                      className="px-3 py-1 bg-stan-lee-blue text-parchment text-xs font-persona-aura font-semibold border-2 border-ink-black shadow-comic-sm"
-                    >
-                      {character}
-                    </span>
-                  ))}
+              {comic.characters && comic.characters.length > 0 && (
+                <div className="mt-6 pt-6 border-t-2 border-gray-200">
+                  <p className="font-persona-aura text-gray-600 mb-3">Characters:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {comic.characters.map((character) => (
+                      <span
+                        key={character}
+                        className="px-3 py-1 bg-stan-lee-blue text-parchment text-xs font-persona-aura font-semibold border-2 border-ink-black shadow-comic-sm"
+                      >
+                        {character}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Story Arcs */}
-              {comic.storyArcs.length > 0 && (
+              {comic.storyArcs && comic.storyArcs.length > 0 && (
                 <div className="mt-4">
                   <p className="font-persona-aura text-gray-600 mb-3">Story Arcs:</p>
                   <div className="flex flex-wrap gap-2">
