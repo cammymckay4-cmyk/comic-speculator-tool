@@ -8,6 +8,8 @@ import {
   Upload,
   Star
 } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import ComicCard from '@/components/ui/ComicCard'
 import SearchBar from '@/components/features/SearchBar'
 import FilterPanel from '@/components/features/FilterPanel'
@@ -15,14 +17,20 @@ import SortDropdown from '@/components/features/SortDropdown'
 import Pagination from '@/components/features/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import AddComicForm from '@/components/features/AddComicForm'
+import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import { useCollectionQuery, useCollectionCount } from '@/hooks/useCollectionQuery'
-import { getCollectionStats } from '@/services/collectionService'
+import { getCollectionStats, deleteComic } from '@/services/collectionService'
+import { toast } from '@/store/toastStore'
 
 
 const CollectionPage: React.FC = () => {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [showAddComicModal, setShowAddComicModal] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [comicToDelete, setComicToDelete] = useState<any>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortOrder, setSortOrder] = useState('title')
@@ -66,6 +74,27 @@ const CollectionPage: React.FC = () => {
     averageValue: 0,
     keyIssues: 0
   }
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: (comicId: string) => deleteComic(comicId),
+    onSuccess: () => {
+      // Invalidate collection queries
+      queryClient.invalidateQueries({ queryKey: ['collection'] })
+      queryClient.invalidateQueries({ queryKey: ['collection-count'] })
+      
+      // Show success toast
+      toast.success('Comic Deleted', 'The comic has been removed from your collection')
+      
+      // Close modal
+      setIsDeleteModalOpen(false)
+      setComicToDelete(null)
+    },
+    onError: (error) => {
+      console.error('Failed to delete comic:', error)
+      toast.error('Delete Failed', 'Failed to delete the comic. Please try again.')
+    }
+  })
   
   // Transform collection comics for display (matching the old structure)
   const displayComics = collectionComics?.map(collectionComic => ({
@@ -87,6 +116,22 @@ const CollectionPage: React.FC = () => {
   })) || []
 
   const totalPages = Math.ceil((totalItems || 0) / itemsPerPage)
+
+  // Handle delete comic
+  const handleDeleteClick = (comic: any) => {
+    setComicToDelete(comic)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (comicToDelete) {
+      deleteMutation.mutate(comicToDelete.id)
+    }
+  }
+
+  const handleEditClick = (comic: any) => {
+    navigate(`/collection/${comic.id}`)
+  }
 
   // Reset current page when search term, sort order, or filters change
   useEffect(() => {
@@ -261,7 +306,14 @@ const CollectionPage: React.FC = () => {
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {displayComics.map((comic) => (
-              <ComicCard key={comic.id} comic={comic} variant="detailed" />
+              <ComicCard 
+                key={comic.id} 
+                comic={comic} 
+                variant="detailed"
+                onClick={() => navigate(`/collection/${comic.id}`)}
+                onEdit={() => handleEditClick(comic)}
+                onDelete={() => handleDeleteClick(comic)}
+              />
             ))}
           </div>
         ) : (
@@ -303,6 +355,22 @@ const CollectionPage: React.FC = () => {
       <AddComicForm 
         isOpen={showAddComicModal}
         onClose={() => setShowAddComicModal(false)}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false)
+          setComicToDelete(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="DELETE COMIC"
+        message={`Are you sure you want to delete "${comicToDelete?.title} ${comicToDelete?.issue}" from your collection? This action cannot be undone.`}
+        confirmText="Delete Comic"
+        cancelText="Cancel"
+        isLoading={deleteMutation.isPending}
+        variant="danger"
       />
     </div>
   )

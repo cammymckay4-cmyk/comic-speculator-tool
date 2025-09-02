@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
   ArrowLeft,
   Heart,
@@ -15,19 +15,26 @@ import {
   Star,
   DollarSign,
   AlertCircle,
-  Edit
+  Edit,
+  Trash2
 } from 'lucide-react'
-import { fetchComicById } from '@/services/collectionService'
+import { fetchComicById, deleteComic } from '@/services/collectionService'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditComicForm from '@/components/features/EditComicForm'
+import ConfirmationModal from '@/components/ui/ConfirmationModal'
+import { toast } from '@/store/toastStore'
+import { useUserStore } from '@/store/userStore'
 
 
 const ComicDetailPage: React.FC = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { user } = useUserStore()
   const [isInWishlist, setIsInWishlist] = useState(false)
   const [hasAlert, setHasAlert] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   // Fetch comic data based on id from URL
   const { data: collectionComic, isLoading, isError, error } = useQuery({
@@ -35,6 +42,35 @@ const ComicDetailPage: React.FC = () => {
     queryFn: () => fetchComicById(id!),
     enabled: !!id, // Only run query if ID is present
   })
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteComic(id!),
+    onSuccess: () => {
+      // Invalidate collection queries
+      queryClient.invalidateQueries({ queryKey: ['collection'] })
+      queryClient.invalidateQueries({ queryKey: ['collection-count'] })
+      
+      // Show success toast
+      toast.success('Comic Deleted', 'The comic has been removed from your collection')
+      
+      // Navigate back to collection
+      navigate('/collection')
+    },
+    onError: (error) => {
+      console.error('Failed to delete comic:', error)
+      toast.error('Delete Failed', 'Failed to delete the comic. Please try again.')
+    }
+  })
+
+  const handleDeleteClick = () => {
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    deleteMutation.mutate()
+    setIsDeleteModalOpen(false)
+  }
 
   // Handle loading state
   if (isLoading) {
@@ -120,6 +156,17 @@ const ComicDetailPage: React.FC = () => {
                   <Edit size={18} />
                   <span className="font-persona-aura font-semibold">
                     Edit Comic
+                  </span>
+                </button>
+
+                <button
+                  onClick={handleDeleteClick}
+                  className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-kirby-red text-parchment
+                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-red-700"
+                >
+                  <Trash2 size={18} />
+                  <span className="font-persona-aura font-semibold">
+                    Delete Comic
                   </span>
                 </button>
                 
@@ -375,6 +422,19 @@ const ComicDetailPage: React.FC = () => {
           comic={collectionComic}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="DELETE COMIC"
+        message={`Are you sure you want to delete "${collectionComic?.comic.title} ${collectionComic?.comic.issue}" from your collection? This action cannot be undone.`}
+        confirmText="Delete Comic"
+        cancelText="Cancel"
+        isLoading={deleteMutation.isPending}
+        variant="danger"
+      />
     </div>
   )
 }

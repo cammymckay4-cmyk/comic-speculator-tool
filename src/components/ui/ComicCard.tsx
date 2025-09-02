@@ -1,5 +1,5 @@
 import React from 'react'
-import { TrendingUp, TrendingDown, Edit } from 'lucide-react'
+import { TrendingUp, TrendingDown, Edit, Trash2 } from 'lucide-react'
 
 interface ComicData {
   id: string
@@ -16,6 +16,7 @@ interface ComicCardProps {
   comic: ComicData
   onClick?: () => void
   onEdit?: () => void
+  onDelete?: () => void
   variant?: 'default' | 'compact' | 'detailed'
 }
 
@@ -23,6 +24,7 @@ const ComicCard: React.FC<ComicCardProps> = ({
   comic, 
   onClick,
   onEdit,
+  onDelete,
   variant = 'default' 
 }) => {
   return (
@@ -57,19 +59,33 @@ const ComicCard: React.FC<ComicCardProps> = ({
           </div>
         )}
         
-        {/* Edit Button */}
-        {onEdit && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
-            }}
-            className="absolute bottom-2 right-2 bg-stan-lee-blue text-parchment p-2 border-2 border-ink-black shadow-comic-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-kirby-red"
-            title="Edit Comic"
-          >
-            <Edit size={16} />
-          </button>
-        )}
+        {/* Action Buttons */}
+        <div className="absolute bottom-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {onEdit && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit()
+              }}
+              className="bg-stan-lee-blue text-parchment p-2 border-2 border-ink-black shadow-comic-sm hover:bg-blue-700 transition-colors"
+              title="Edit Comic"
+            >
+              <Edit size={16} />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+              className="bg-kirby-red text-parchment p-2 border-2 border-ink-black shadow-comic-sm hover:bg-red-700 transition-colors"
+              title="Delete Comic"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Card Content */}

@@ -373,3 +373,18 @@ export const updateComic = async (comicId: string, updatedData: Partial<AddComic
   // Transform the returned data to match our frontend types
   return transformSupabaseComic(data)
 }
+
+export const deleteComic = async (comicId: string): Promise<void> => {
+  if (!comicId) {
+    throw new Error('Comic ID is required')
+  }
+
+  const { error } = await supabase
+    .from('comics')
+    .delete()
+    .eq('id', comicId)
+
+  if (error) {
+    throw new Error(`Failed to delete comic: ${error.message}`)
+  }
+}
