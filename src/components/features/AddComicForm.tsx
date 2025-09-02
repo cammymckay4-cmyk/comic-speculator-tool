@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { X, Plus, Book } from 'lucide-react'
+import { X, Plus, Book, Upload, Image as ImageIcon } from 'lucide-react'
 import type { ComicCondition, ComicFormat } from '@/lib/types'
+import { uploadComicImage } from '@/services/storageService'
 
 interface AddComicFormProps {
   isOpen: boolean
@@ -71,7 +72,49 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
     keyIssueReason: '',
   })
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string>('')
+  const [isUploading, setIsUploading] = useState(false)
+
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({ ...prev, coverImage: 'Please select an image file' }))
+        return
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024 // 5MB
+      if (file.size > maxSize) {
+        setErrors(prev => ({ ...prev, coverImage: 'File size must be less than 5MB' }))
+        return
+      }
+
+      setSelectedFile(file)
+      
+      // Create preview URL
+      const url = URL.createObjectURL(file)
+      setPreviewUrl(url)
+      
+      // Clear any existing errors
+      setErrors(prev => ({ ...prev, coverImage: '' }))
+    }
+  }
+
+  const clearImage = () => {
+    setSelectedFile(null)
+    setPreviewUrl('')
+    setFormData(prev => ({ ...prev, coverImage: '' }))
+    // Clear the file input
+    const fileInput = document.getElementById('coverImageFile') as HTMLInputElement
+    if (fileInput) {
+      fileInput.value = ''
+    }
+  }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -121,7 +164,25 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
     }
 
     try {
-      // For now, just console.log the collected form data and close the modal
+      setIsUploading(true)
+      let coverImageUrl = formData.coverImage.trim()
+
+      // Upload image if file is selected
+      if (selectedFile) {
+        try {
+          coverImageUrl = await uploadComicImage(selectedFile)
+        } catch (uploadError) {
+          console.error('Image upload failed:', uploadError)
+          setErrors(prev => ({ 
+            ...prev, 
+            coverImage: uploadError instanceof Error ? uploadError.message : 'Upload failed' 
+          }))
+          setIsUploading(false)
+          return
+        }
+      }
+
+      // Prepare comic data with uploaded image URL
       const comicData = {
         title: formData.title.trim(),
         issueNumber: formData.issueNumber.trim(),
@@ -133,7 +194,7 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
         purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
         purchaseDate: formData.purchaseDate || null,
         purchaseLocation: formData.purchaseLocation.trim() || null,
-        coverImage: formData.coverImage.trim() || null,
+        coverImageUrl: coverImageUrl || null,
         notes: formData.notes.trim() || null,
         isKeyIssue: formData.isKeyIssue,
         keyIssueReason: formData.keyIssueReason.trim() || null,
@@ -160,10 +221,14 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
         isKeyIssue: false,
         keyIssueReason: '',
       })
+      setSelectedFile(null)
+      setPreviewUrl('')
       setErrors({})
+      setIsUploading(false)
       onClose()
     } catch (error) {
       console.error('Failed to save comic:', error)
+      setIsUploading(false)
     }
   }
 
@@ -435,18 +500,77 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
               ADDITIONAL INFORMATION
             </h3>
             
-            {/* Cover Image URL */}
+            {/* Cover Image Upload */}
             <div>
               <label className="block font-persona-aura font-semibold text-ink-black mb-2">
-                Cover Image URL
+                Cover Image
               </label>
-              <input
-                type="url"
-                value={formData.coverImage}
-                onChange={(e) => handleChange('coverImage', e.target.value)}
-                className="w-full p-3 border-2 border-ink-black comic-border font-persona-aura focus:outline-none focus:ring-2 focus:ring-stan-lee-blue"
-                placeholder="https://example.com/cover-image.jpg"
-              />
+              
+              {/* File Input */}
+              <div className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="coverImageFile"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="coverImageFile"
+                    className={`w-full p-3 border-2 comic-border font-persona-aura cursor-pointer flex items-center justify-center space-x-2 hover:bg-gray-50 transition-colors ${
+                      errors.coverImage ? 'border-red-500' : 'border-ink-black'
+                    }`}
+                  >
+                    <Upload size={20} className="text-gray-600" />
+                    <span className="text-gray-600">
+                      {selectedFile ? selectedFile.name : 'Choose image file...'}
+                    </span>
+                  </label>
+                </div>
+
+                {/* Alternative URL Input */}
+                <div className="text-center text-sm text-gray-600 font-persona-aura">OR</div>
+                <input
+                  type="url"
+                  value={formData.coverImage}
+                  onChange={(e) => handleChange('coverImage', e.target.value)}
+                  className={`w-full p-3 border-2 comic-border font-persona-aura focus:outline-none focus:ring-2 focus:ring-stan-lee-blue ${
+                    errors.coverImage ? 'border-red-500' : 'border-ink-black'
+                  }`}
+                  placeholder="Or enter image URL: https://example.com/cover.jpg"
+                />
+
+                {/* Image Preview */}
+                {(previewUrl || formData.coverImage) && (
+                  <div className="relative inline-block">
+                    <img
+                      src={previewUrl || formData.coverImage}
+                      alt="Cover preview"
+                      className="w-32 h-48 object-cover border-2 border-ink-black comic-border"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={clearImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                    <div className="mt-2 flex items-center space-x-1 text-sm text-gray-600 font-persona-aura">
+                      <ImageIcon size={16} />
+                      <span>Preview</span>
+                    </div>
+                  </div>
+                )}
+                
+                {errors.coverImage && (
+                  <p className="text-sm text-red-600 font-persona-aura">{errors.coverImage}</p>
+                )}
+              </div>
             </div>
 
             {/* Key Issue */}
@@ -505,10 +629,20 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
             </button>
             <button
               type="submit"
-              className="comic-button flex items-center space-x-2"
+              disabled={isUploading}
+              className="comic-button flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Plus size={20} />
-              <span>Save Comic</span>
+              {isUploading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <Plus size={20} />
+                  <span>Save Comic</span>
+                </>
+              )}
             </button>
           </div>
         </form>
