@@ -14,10 +14,12 @@ import {
   BookOpen,
   Star,
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  Edit
 } from 'lucide-react'
 import { fetchComicById } from '@/services/collectionService'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import EditComicForm from '@/components/features/EditComicForm'
 
 
 const ComicDetailPage: React.FC = () => {
@@ -25,6 +27,7 @@ const ComicDetailPage: React.FC = () => {
   const navigate = useNavigate()
   const [isInWishlist, setIsInWishlist] = useState(false)
   const [hasAlert, setHasAlert] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Fetch comic data based on id from URL
   const { data: collectionComic, isLoading, isError, error } = useQuery({
@@ -109,6 +112,17 @@ const ComicDetailPage: React.FC = () => {
               
               {/* Quick Actions */}
               <div className="mt-4 space-y-3">
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-golden-age-yellow text-ink-black
+                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-yellow-400"
+                >
+                  <Edit size={18} />
+                  <span className="font-persona-aura font-semibold">
+                    Edit Comic
+                  </span>
+                </button>
+                
                 <button
                   onClick={() => setIsInWishlist(!isInWishlist)}
                   className={`w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm
@@ -352,6 +366,15 @@ const ComicDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Edit Comic Modal */}
+      {collectionComic && (
+        <EditComicForm
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          comic={collectionComic}
+        />
+      )}
     </div>
   )
 }
