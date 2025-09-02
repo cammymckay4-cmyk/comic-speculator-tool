@@ -15,7 +15,7 @@ export interface HotComic {
   publisher: string
   coverImage: string
   value: string
-  trend: 'up' | 'down' | 'stable'
+  trend: 'up' | 'down' | 'neutral'
   change: string
 }
 
@@ -95,7 +95,7 @@ export const fetchHotComics = async (): Promise<HotComic[]> => {
     publisher: comic.publisher,
     coverImage: comic.cover_image || `https://via.placeholder.com/200x300/D62828/FDF6E3?text=${encodeURIComponent(comic.title)}`,
     value: `£${comic.market_value?.toLocaleString() || '0'}`,
-    trend: index < 3 ? 'up' : 'stable' as const, // Mock trend for now
+    trend: index < 3 ? 'up' : 'neutral' as const, // Mock trend for now
     change: index < 3 ? `+${5 + index * 3}%` : '0%'
   }))
 }
