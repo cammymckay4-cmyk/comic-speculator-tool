@@ -14,81 +14,21 @@ import {
 import ComicCard from '@/components/ui/ComicCard'
 import StatsCard from '@/components/ui/StatsCard'
 import NewsCard from '@/components/ui/NewsCard'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { useUserStatsQuery, useHotComicsQuery, useRecentNewsQuery } from '@/hooks/useHomeQuery'
+import { useUserStore } from '@/store/userStore'
 import { COMIC_EFFECTS } from '@/utils/constants'
+import { formatDistanceToNow } from 'date-fns'
 
-// Mock data for demonstration
-const mockTrendingComics = [
-  {
-    id: '1',
-    title: 'Amazing Spider-Man',
-    issue: '#1',
-    publisher: 'Marvel',
-    coverImage: 'https://via.placeholder.com/200x300/D62828/FDF6E3?text=Spider-Man',
-    value: '£2,500',
-    trend: 'up' as const,
-    change: '+12%',
-  },
-  {
-    id: '2',
-    title: 'Batman',
-    issue: '#423',
-    publisher: 'DC',
-    coverImage: 'https://via.placeholder.com/200x300/003049/FDF6E3?text=Batman',
-    value: '£850',
-    trend: 'up' as const,
-    change: '+8%',
-  },
-  {
-    id: '3',
-    title: 'X-Men',
-    issue: '#94',
-    publisher: 'Marvel',
-    coverImage: 'https://via.placeholder.com/200x300/F7B538/1C1C1C?text=X-Men',
-    value: '£1,200',
-    trend: 'down' as const,
-    change: '-3%',
-  },
-  {
-    id: '4',
-    title: 'The Walking Dead',
-    issue: '#1',
-    publisher: 'Image',
-    coverImage: 'https://via.placeholder.com/200x300/1C1C1C/FDF6E3?text=TWD',
-    value: '£3,100',
-    trend: 'up' as const,
-    change: '+15%',
-  },
-]
-
-const mockNews = [
-  {
-    id: '1',
-    title: 'Marvel Announces New Spider-Man Series',
-    excerpt: 'A fresh take on the web-slinger coming this summer with acclaimed writer...',
-    date: '2 hours ago',
-    category: 'New Releases',
-    image: 'https://via.placeholder.com/400x200/D62828/FDF6E3?text=News',
-  },
-  {
-    id: '2',
-    title: 'Comic Con 2024 Exclusive Reveals',
-    excerpt: 'Major announcements and exclusive variants unveiled at this year\'s convention...',
-    date: '5 hours ago',
-    category: 'Events',
-    image: 'https://via.placeholder.com/400x200/003049/FDF6E3?text=Comic+Con',
-  },
-  {
-    id: '3',
-    title: 'Key Issue Alert: First Appearance Skyrockets',
-    excerpt: 'Recent MCU announcement causes 300% price increase for this key issue...',
-    date: '1 day ago',
-    category: 'Market Trends',
-    image: 'https://via.placeholder.com/400x200/F7B538/1C1C1C?text=Key+Issue',
-  },
-]
 
 const HomePage: React.FC = () => {
   const [selectedEffect] = useState(COMIC_EFFECTS[Math.floor(Math.random() * COMIC_EFFECTS.length)])
+  const { user } = useUserStore()
+  
+  // Fetch data using TanStack Query
+  const { data: userStats, isLoading: statsLoading, isError: statsError } = useUserStatsQuery()
+  const { data: hotComics, isLoading: comicsLoading, isError: comicsError } = useHotComicsQuery()
+  const { data: recentNews, isLoading: newsLoading, isError: newsError } = useRecentNewsQuery()
 
   return (
     <div className="min-h-screen">
@@ -119,36 +59,74 @@ const HomePage: React.FC = () => {
       {/* Stats Section */}
       <section className="py-12 bg-parchment">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard
-              title="Total Comics"
-              value="12,847"
-              change="+234 this week"
-              icon={<BarChart3 />}
-              trend="up"
-            />
-            <StatsCard
-              title="Active Users"
-              value="3,421"
-              change="+12% growth"
-              icon={<Users />}
-              trend="up"
-            />
-            <StatsCard
-              title="Price Alerts"
-              value="8,923"
-              change="423 triggered today"
-              icon={<AlertCircle />}
-              trend="neutral"
-            />
-            <StatsCard
-              title="Market Value"
-              value="£2.4M"
-              change="+5.2% this month"
-              icon={<DollarSign />}
-              trend="up"
-            />
-          </div>
+          {statsLoading ? (
+            <div className="flex justify-center">
+              <LoadingSpinner size="md" text="Loading stats..." />
+            </div>
+          ) : statsError || !userStats ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Fallback to global stats when user not logged in */}
+              <StatsCard
+                title="Comics Tracked"
+                value="12,847"
+                change="Growing daily"
+                icon={<BarChart3 />}
+                trend="up"
+              />
+              <StatsCard
+                title="Active Users"
+                value="3,421"
+                change="+12% growth"
+                icon={<Users />}
+                trend="up"
+              />
+              <StatsCard
+                title="Price Alerts"
+                value="8,923"
+                change="Keeping track"
+                icon={<AlertCircle />}
+                trend="neutral"
+              />
+              <StatsCard
+                title="Market Value"
+                value="£2.4M+"
+                change="Total tracked"
+                icon={<DollarSign />}
+                trend="up"
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatsCard
+                title="Your Comics"
+                value={userStats.totalComics.toLocaleString()}
+                change={`${userStats.recentAdditions} added this week`}
+                icon={<BarChart3 />}
+                trend={userStats.recentAdditions > 0 ? "up" : "neutral"}
+              />
+              <StatsCard
+                title="Collection Value"
+                value={`£${userStats.collectionValue.toLocaleString()}`}
+                change="Personal collection"
+                icon={<DollarSign />}
+                trend="up"
+              />
+              <StatsCard
+                title="Active Alerts"
+                value={userStats.activeAlerts.toString()}
+                change="Watching for deals"
+                icon={<AlertCircle />}
+                trend="neutral"
+              />
+              <StatsCard
+                title="Recent Adds"
+                value={userStats.recentAdditions.toString()}
+                change="Last 7 days"
+                icon={<Clock />}
+                trend={userStats.recentAdditions > 0 ? "up" : "neutral"}
+              />
+            </div>
+          )}
         </div>
       </section>
 
@@ -165,11 +143,23 @@ const HomePage: React.FC = () => {
             </button>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {mockTrendingComics.map((comic) => (
-              <ComicCard key={comic.id} comic={comic} />
-            ))}
-          </div>
+          {comicsLoading ? (
+            <div className="flex justify-center">
+              <LoadingSpinner size="md" text="Loading hot comics..." />
+            </div>
+          ) : comicsError || !hotComics?.length ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 font-persona-aura">
+                {comicsError ? 'Failed to load hot comics' : 'No hot comics available right now'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {hotComics.map((comic) => (
+                <ComicCard key={comic.id} comic={comic} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -233,11 +223,33 @@ const HomePage: React.FC = () => {
             </button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {mockNews.map((article) => (
-              <NewsCard key={article.id} article={article} />
-            ))}
-          </div>
+          {newsLoading ? (
+            <div className="flex justify-center">
+              <LoadingSpinner size="md" text="Loading news..." />
+            </div>
+          ) : newsError || !recentNews?.length ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 font-persona-aura">
+                {newsError ? 'Failed to load news' : 'No recent news available'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {recentNews.map((article) => (
+                <NewsCard 
+                  key={article.id} 
+                  article={{
+                    id: article.id,
+                    title: article.title,
+                    excerpt: article.excerpt,
+                    date: formatDistanceToNow(new Date(article.publishDate), { addSuffix: true }),
+                    category: article.category,
+                    image: article.featuredImage
+                  }} 
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
