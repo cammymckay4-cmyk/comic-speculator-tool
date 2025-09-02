@@ -321,3 +321,45 @@ export const addComic = async (userId: string, comicData: AddComicData): Promise
   // Transform the returned data to match our frontend types
   return transformSupabaseComic(data)
 }
+
+export const updateComic = async (comicId: string, updatedData: Partial<AddComicData>): Promise<CollectionComic> => {
+  if (!comicId) {
+    throw new Error('Comic ID is required')
+  }
+
+  // Map the form data to Supabase schema
+  const supabaseData: any = {}
+  
+  if (updatedData.title) supabaseData.title = updatedData.title
+  if (updatedData.issueNumber) supabaseData.issue = updatedData.issueNumber
+  if (updatedData.publisher) supabaseData.publisher = updatedData.publisher
+  if (updatedData.publicationYear) supabaseData.publication_year = updatedData.publicationYear
+  if (updatedData.condition) supabaseData.condition = updatedData.condition
+  if (updatedData.format) supabaseData.format = updatedData.format
+  if (updatedData.estimatedValue !== undefined) supabaseData.market_value = updatedData.estimatedValue || 0
+  if (updatedData.purchasePrice !== undefined) supabaseData.purchase_price = updatedData.purchasePrice
+  if (updatedData.purchaseDate !== undefined) supabaseData.purchase_date = updatedData.purchaseDate
+  if (updatedData.purchaseLocation !== undefined) supabaseData.purchase_location = updatedData.purchaseLocation
+  if (updatedData.coverImageUrl !== undefined) supabaseData.cover_image = updatedData.coverImageUrl || ''
+  if (updatedData.notes !== undefined) supabaseData.notes = updatedData.notes
+  if (updatedData.isKeyIssue !== undefined) supabaseData.is_key_issue = updatedData.isKeyIssue
+  if (updatedData.keyIssueReason !== undefined) supabaseData.key_issue_reason = updatedData.keyIssueReason
+
+  const { data, error } = await supabase
+    .from('comics')
+    .update(supabaseData)
+    .eq('id', comicId)
+    .select()
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to update comic: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error('No data returned from comic update')
+  }
+
+  // Transform the returned data to match our frontend types
+  return transformSupabaseComic(data)
+}

@@ -1,5 +1,5 @@
 import React from 'react'
-import { TrendingUp, TrendingDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, Edit } from 'lucide-react'
 
 interface ComicData {
   id: string
@@ -15,12 +15,14 @@ interface ComicData {
 interface ComicCardProps {
   comic: ComicData
   onClick?: () => void
+  onEdit?: () => void
   variant?: 'default' | 'compact' | 'detailed'
 }
 
 const ComicCard: React.FC<ComicCardProps> = ({ 
   comic, 
   onClick,
+  onEdit,
   variant = 'default' 
 }) => {
   return (
@@ -53,6 +55,20 @@ const ComicCard: React.FC<ComicCardProps> = ({
             )}
             <span className="font-persona-aura text-xs font-bold">{comic.change}</span>
           </div>
+        )}
+        
+        {/* Edit Button */}
+        {onEdit && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit()
+            }}
+            className="absolute bottom-2 right-2 bg-stan-lee-blue text-parchment p-2 border-2 border-ink-black shadow-comic-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-kirby-red"
+            title="Edit Comic"
+          >
+            <Edit size={16} />
+          </button>
         )}
       </div>
       
