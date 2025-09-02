@@ -63,6 +63,7 @@ const AuthPage: React.FC = () => {
 
   const handleSignup = async (email: string, password: string, name: string) => {
     try {
+      // Sign up user - our database trigger will handle sending confirmation email
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -70,6 +71,8 @@ const AuthPage: React.FC = () => {
           data: {
             full_name: name,
           },
+          // Let our custom trigger handle email confirmation
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
         },
       })
 

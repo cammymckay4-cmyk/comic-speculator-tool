@@ -16,6 +16,7 @@ const AccountPage = lazy(() => import('./pages/AccountPage'))
 const NewsPage = lazy(() => import('./pages/NewsPage'))
 const ComicDetailPage = lazy(() => import('./pages/ComicDetailPage'))
 const AuthPage = lazy(() => import('./pages/AuthPage'))
+const AuthConfirmPage = lazy(() => import('./pages/AuthConfirmPage'))
 
 function App() {
   const { user, setUser, setLoading } = useUserStore()
@@ -83,6 +84,7 @@ function App() {
             <Route path="/news" element={<NewsPage />} />
             <Route path="/comic/:id" element={<ComicDetailPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/auth/confirm" element={<AuthConfirmPage />} />
             
             {/* Protected Routes (add auth guard later) */}
             <Route path="/collection" element={<CollectionPage />} />
