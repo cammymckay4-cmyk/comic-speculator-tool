@@ -4,16 +4,16 @@ import type { UserAlert, AlertType } from '@/lib/types'
 // Interface for the alerts table in Supabase
 export interface SupabaseAlert {
   id: string
-  user_id: string
-  comic_id?: string
+  userId: string
+  comicId?: string
   name: string
-  alert_type: AlertType
-  threshold_price?: number
-  price_direction?: 'above' | 'below'
-  is_active: boolean
-  created_at: string
-  last_triggered?: string
-  trigger_count: number
+  alertType: AlertType
+  thresholdPrice?: number
+  priceDirection?: 'above' | 'below'
+  isActive: boolean
+  createdAt: string
+  lastTriggered?: string
+  triggerCount: number
   description?: string
 }
 
@@ -21,17 +21,17 @@ export interface SupabaseAlert {
 const transformSupabaseAlert = (supabaseAlert: SupabaseAlert): UserAlert => {
   const userAlert: UserAlert = {
     id: supabaseAlert.id,
-    userId: supabaseAlert.user_id,
-    comicId: supabaseAlert.comic_id,
-    type: supabaseAlert.alert_type,
+    userId: supabaseAlert.userId,
+    comicId: supabaseAlert.comicId,
+    type: supabaseAlert.alertType,
     criteria: {
-      priceThreshold: supabaseAlert.threshold_price,
-      priceDirection: supabaseAlert.price_direction,
+      priceThreshold: supabaseAlert.thresholdPrice,
+      priceDirection: supabaseAlert.priceDirection,
     },
-    isActive: supabaseAlert.is_active,
-    createdDate: supabaseAlert.created_at,
-    lastTriggered: supabaseAlert.last_triggered,
-    triggerCount: supabaseAlert.trigger_count,
+    isActive: supabaseAlert.isActive,
+    createdDate: supabaseAlert.createdAt,
+    lastTriggered: supabaseAlert.lastTriggered,
+    triggerCount: supabaseAlert.triggerCount,
     name: supabaseAlert.name,
     description: supabaseAlert.description,
   }
@@ -47,8 +47,8 @@ export const fetchAlerts = async (userId: string): Promise<UserAlert[]> => {
   const { data, error } = await supabase
     .from('alerts')
     .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
+    .eq('userId', userId)
+    .order('createdAt', { ascending: false })
 
   if (error) {
     throw new Error(`Failed to fetch alerts: ${error.message}`)
@@ -73,15 +73,15 @@ export interface CreateAlertData {
 
 export const createAlert = async (alertData: CreateAlertData): Promise<UserAlert> => {
   const supabaseAlertData = {
-    user_id: alertData.userId,
-    comic_id: alertData.comicId,
+    userId: alertData.userId,
+    comicId: alertData.comicId,
     name: alertData.name,
-    alert_type: alertData.alertType,
-    threshold_price: alertData.thresholdPrice,
-    price_direction: alertData.priceDirection,
+    alertType: alertData.alertType,
+    thresholdPrice: alertData.thresholdPrice,
+    priceDirection: alertData.priceDirection,
     description: alertData.description,
-    is_active: true,
-    trigger_count: 0,
+    isActive: true,
+    triggerCount: 0,
   }
 
   const { data, error } = await supabase
@@ -104,7 +104,7 @@ export const createAlert = async (alertData: CreateAlertData): Promise<UserAlert
 export const updateAlertStatus = async (alertId: string, isActive: boolean): Promise<UserAlert> => {
   const { data, error } = await supabase
     .from('alerts')
-    .update({ is_active: isActive })
+    .update({ isActive: isActive })
     .eq('id', alertId)
     .select()
     .single()
