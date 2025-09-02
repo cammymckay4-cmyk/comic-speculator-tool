@@ -32,7 +32,7 @@ const transformSupabaseComic = (supabaseComic: SupabaseComic): CollectionComic =
     issueNumber: parseInt(supabaseComic.issue.replace('#', '')) || 0,
     publisher: supabaseComic.publisher,
     publishDate: supabaseComic.publicationYear ? 
-      new Date(supabaseComic.publication_year, 0, 1).toISOString() : 
+      new Date(supabaseComic.publicationYear, 0, 1).toISOString() : 
       new Date().toISOString(),
     coverImage: supabaseComic.coverImage,
     creators: [], // This should be populated from your schema
