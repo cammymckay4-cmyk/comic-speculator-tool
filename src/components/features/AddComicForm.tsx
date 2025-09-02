@@ -5,6 +5,7 @@ import type { ComicCondition, ComicFormat } from '@/lib/types'
 import { uploadComicImage } from '@/services/storageService'
 import { addComic, type AddComicData } from '@/services/collectionService'
 import { useUserStore } from '@/store/userStore'
+import { toast } from '@/store/toastStore'
 
 interface AddComicFormProps {
   isOpen: boolean
@@ -95,11 +96,12 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
       queryClient.invalidateQueries({ queryKey: ['collection', user?.email] })
       queryClient.invalidateQueries({ queryKey: ['collection-count', user?.email] })
       
+      // Show success notification
+      toast.success('Comic Added Successfully', 'Your comic has been added to your collection.')
+      
       // Reset form and close modal
       resetForm()
       onClose()
-      
-      // TODO: Add success toast notification
     },
     onError: (error) => {
       console.error('Failed to save comic:', error)
@@ -192,8 +194,8 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
       newErrors.publicationYear = 'Publication year is required'
     } else {
       const year = parseInt(formData.publicationYear)
-      if (isNaN(year) || year < 1900 || year > new Date().getFullYear() + 1) {
-        newErrors.publicationYear = 'Please enter a valid year'
+      if (isNaN(year) || year < 1800 || year > new Date().getFullYear() + 1) {
+        newErrors.publicationYear = 'Please enter a valid year (1800 or later)'
       }
     }
 
@@ -403,7 +405,7 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
                     errors.publicationYear ? 'border-red-500' : 'border-ink-black'
                   }`}
                   placeholder="e.g., 2024"
-                  min="1900"
+                  min="1800"
                   max={new Date().getFullYear() + 1}
                   required
                 />

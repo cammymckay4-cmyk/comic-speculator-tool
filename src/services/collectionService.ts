@@ -12,9 +12,14 @@ export interface SupabaseComic {
   condition: string
   purchase_price?: number
   purchase_date?: string
+  purchase_location?: string
+  notes?: string
+  publication_year?: number
+  format?: string
+  is_key_issue?: boolean
+  key_issue_reason?: string
   created_at: string
   user_id: string
-  // Add other fields as needed based on your Supabase schema
 }
 
 // Transform Supabase data to match our frontend types
@@ -26,12 +31,15 @@ const transformSupabaseComic = (supabaseComic: SupabaseComic): CollectionComic =
     issue: supabaseComic.issue,
     issueNumber: parseInt(supabaseComic.issue.replace('#', '')) || 0,
     publisher: supabaseComic.publisher,
-    publishDate: new Date().toISOString(), // This should come from your comics table
+    publishDate: supabaseComic.publication_year ? 
+      new Date(supabaseComic.publication_year, 0, 1).toISOString() : 
+      new Date().toISOString(),
     coverImage: supabaseComic.cover_image,
     creators: [], // This should be populated from your schema
-    format: 'single-issue', // Default format
+    format: (supabaseComic.format as any) || 'single-issue',
     isVariant: false,
-    isKeyIssue: false,
+    isKeyIssue: supabaseComic.is_key_issue || false,
+    keyIssueReason: supabaseComic.key_issue_reason,
     prices: [],
     marketValue: supabaseComic.market_value,
     lastUpdated: supabaseComic.created_at
@@ -44,6 +52,8 @@ const transformSupabaseComic = (supabaseComic: SupabaseComic): CollectionComic =
     condition: supabaseComic.condition as any, // Type assertion - adjust based on your schema
     purchasePrice: supabaseComic.purchase_price,
     purchaseDate: supabaseComic.purchase_date,
+    purchaseLocation: supabaseComic.purchase_location,
+    notes: supabaseComic.notes,
     addedDate: supabaseComic.created_at
   }
 
