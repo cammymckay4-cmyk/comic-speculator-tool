@@ -14,6 +14,7 @@ import FilterPanel from '@/components/features/FilterPanel'
 import SortDropdown from '@/components/features/SortDropdown'
 import Pagination from '@/components/features/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import AddComicForm from '@/components/features/AddComicForm'
 import { useCollectionQuery, useCollectionCount } from '@/hooks/useCollectionQuery'
 import { getCollectionStats } from '@/services/collectionService'
 
@@ -21,6 +22,7 @@ import { getCollectionStats } from '@/services/collectionService'
 const CollectionPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
+  const [showAddComicModal, setShowAddComicModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortOrder, setSortOrder] = useState('title')
@@ -197,7 +199,10 @@ const CollectionPage: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <button className="comic-button flex items-center space-x-2">
+              <button 
+                onClick={() => setShowAddComicModal(true)}
+                className="comic-button flex items-center space-x-2"
+              >
                 <Plus size={18} />
                 <span className="hidden sm:inline">Add Comic</span>
               </button>
@@ -244,7 +249,10 @@ const CollectionPage: React.FC = () => {
               <p className="font-persona-aura text-gray-600 mb-6">
                 Start building your comic collection by adding your first comic!
               </p>
-              <button className="comic-button flex items-center space-x-2 mx-auto">
+              <button 
+                onClick={() => setShowAddComicModal(true)}
+                className="comic-button flex items-center space-x-2 mx-auto"
+              >
                 <Plus size={18} />
                 <span>Add Your First Comic</span>
               </button>
@@ -290,6 +298,12 @@ const CollectionPage: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* Add Comic Modal */}
+      <AddComicForm 
+        isOpen={showAddComicModal}
+        onClose={() => setShowAddComicModal(false)}
+      />
     </div>
   )
 }
