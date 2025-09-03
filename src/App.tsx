@@ -18,6 +18,7 @@ const NewsPage = lazy(() => import('./pages/NewsPage'))
 const ComicDetailPage = lazy(() => import('./pages/ComicDetailPage'))
 const AuthPage = lazy(() => import('./pages/AuthPage'))
 const AuthConfirmPage = lazy(() => import('./pages/AuthConfirmPage'))
+const SearchPage = lazy(() => import('./pages/SearchPage'))
 
 function App() {
   const { user, setUser, setLoading } = useUserStore()
@@ -83,6 +84,7 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/news" element={<NewsPage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/comic/:id" element={<ComicDetailPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/auth/confirm" element={<AuthConfirmPage />} />

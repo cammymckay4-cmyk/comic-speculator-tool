@@ -79,8 +79,10 @@ const MainNavbar: React.FC<MainNavbarProps> = ({
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (searchQuery.trim() && onSearch) {
-      onSearch(searchQuery.trim())
+    if (searchQuery.trim()) {
+      // Navigate to search page with query parameter
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      setMobileMenuOpen(false)
     }
   }
 
