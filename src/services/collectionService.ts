@@ -693,3 +693,53 @@ export const searchMasterComics = async (
 
   return data || []
 }
+
+// Function to fetch a single comic by ID (for ComicDetailPage)
+export const fetchComicById = async (comicId: string): Promise<CollectionComic> => {
+  if (!comicId) {
+    throw new Error('Comic ID is required')
+  }
+
+  // Get the current user from Supabase Auth
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  
+  if (authError || !user) {
+    throw new Error('User not authenticated')
+  }
+
+  // This function expects a collection entry ID, not a comic ID
+  // We need to find the collection entry that matches this ID
+  const { data, error } = await supabase
+    .from('user_collection_entries')
+    .select(`
+      *,
+      comic:comics!inner(
+        id,
+        title,
+        issue,
+        publisher,
+        cover_image,
+        market_value,
+        publication_year,
+        format,
+        is_key_issue,
+        key_issue_reason,
+        created_at,
+        updated_at
+      )
+    `)
+    .eq('id', comicId) // This is actually the collection entry ID
+    .eq('user_id', user.id)
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to fetch comic: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error('Comic not found')
+  }
+
+  // Transform the Supabase data to match our frontend types
+  return transformCollectionEntry(data)
+}
