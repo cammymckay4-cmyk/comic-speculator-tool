@@ -17,6 +17,14 @@ const AuthConfirmPage: React.FC = () => {
   useEffect(() => {
     const confirmUser = async () => {
       try {
+        // First check if user is already authenticated (no token needed)
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          // User is already verified, redirect to home
+          navigate('/')
+          return
+        }
+
         // Check for both token_hash and token parameters (Supabase sends different parameter names inconsistently)
         const token = searchParams.get('token_hash') || searchParams.get('token')
         const type = searchParams.get('type')
@@ -27,9 +35,11 @@ const AuthConfirmPage: React.FC = () => {
           token: searchParams.get('token'),
           finalToken: token,
           type,
-          allParams: Object.fromEntries(searchParams.entries())
+          allParams: Object.fromEntries(searchParams.entries()),
+          hasSession: !!session
         })
 
+        // Only try token verification if NOT already authenticated and token exists
         if (!token) {
           setStatus('error')
           setMessage('Invalid or expired verification link. Please sign up again or contact support.')
