@@ -11,8 +11,10 @@ export interface UserStats {
 export interface HotComic {
   id: string
   title: string
+  issue: string
   issueNumber: string
   publisher: string
+  coverImage: string
   coverImageUrl: string
   value: string
   trend: 'up' | 'down' | 'neutral'
@@ -91,8 +93,10 @@ export const fetchHotComics = async (): Promise<HotComic[]> => {
   return comics.map((comic, index) => ({
     id: comic.id,
     title: comic.title,
+    issue: comic.issueNumber,
     issueNumber: comic.issueNumber,
     publisher: comic.publisher,
+    coverImage: comic.coverImageUrl || `https://via.placeholder.com/200x300/D62828/FDF6E3?text=${encodeURIComponent(comic.title)}`,
     coverImageUrl: comic.coverImageUrl || `https://via.placeholder.com/200x300/D62828/FDF6E3?text=${encodeURIComponent(comic.title)}`,
     value: `£${comic.marketValue?.toLocaleString() || '0'}`,
     trend: index < 3 ? 'up' : 'neutral' as const, // Mock trend for now
