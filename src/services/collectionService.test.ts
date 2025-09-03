@@ -22,7 +22,7 @@ const mockSupabaseComic: SupabaseComic = {
   publisher: 'Marvel Comics',
   coverImage: 'https://example.com/cover.jpg',
   marketValue: 1500,
-  condition: 'Near Mint',
+  condition: 'near-mint',
   purchasePrice: 500,
   purchaseDate: '2024-01-15',
   purchaseLocation: 'Comic Shop',
@@ -40,7 +40,7 @@ const mockAddComicData: AddComicData = {
   issueNumber: '#1',
   publisher: 'Marvel Comics',
   publicationYear: 1963,
-  condition: 'Very Fine',
+  condition: 'very-fine',
   format: 'single-issue',
   estimatedValue: 2000,
   purchasePrice: 800,
@@ -309,7 +309,7 @@ describe('collectionService', () => {
             marketValue: 100,
             lastUpdated: '2024-01-01'
           },
-          condition: 'Near Mint',
+          condition: 'near-mint',
           addedDate: '2024-01-01'
         },
         {
@@ -330,7 +330,7 @@ describe('collectionService', () => {
             marketValue: 200,
             lastUpdated: '2024-01-02'
           },
-          condition: 'Very Fine',
+          condition: 'very-fine',
           addedDate: '2024-01-02'
         }
       ]
