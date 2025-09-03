@@ -4,6 +4,7 @@ import MainNavbar from './components/layout/MainNavbar'
 import Footer from './components/layout/Footer'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import ToastContainer from './components/ui/ToastContainer'
+import AdminRoute from './components/auth/AdminRoute'
 import { Toaster } from 'sonner'
 import { useUserStore } from './store/userStore'
 import { supabase } from './lib/supabaseClient'
@@ -19,6 +20,7 @@ const ComicDetailPage = lazy(() => import('./pages/ComicDetailPage'))
 const AuthPage = lazy(() => import('./pages/AuthPage'))
 const AuthConfirmPage = lazy(() => import('./pages/AuthConfirmPage'))
 const SearchPage = lazy(() => import('./pages/SearchPage'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
 
 function App() {
   const { user, setUser, setLoading } = useUserStore()
@@ -93,6 +95,13 @@ function App() {
             <Route path="/collection" element={<CollectionPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
             <Route path="/account" element={<AccountPage />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+              <AdminRoute>
+                <AdminPage />
+              </AdminRoute>
+            } />
             
             {/* Catch all - redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
