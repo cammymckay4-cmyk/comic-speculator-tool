@@ -18,7 +18,7 @@ const transformSearchResult = (data: any): SearchResultComic => {
   return {
     id: data.id,
     title: data.title,
-    issueNumber: data.issue,
+    issueNumber: data.issueNumber,
     publisher: data.publisher,
     coverImageUrl: data.coverImage,
     marketValue: data.marketValue || 0,
@@ -41,7 +41,7 @@ export const searchPublicComics = async (searchTerm: string): Promise<SearchResu
     .select(`
       id,
       title,
-      issue,
+      issueNumber,
       publisher,
       coverImage,
       marketValue,
