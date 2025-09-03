@@ -30,6 +30,22 @@ export interface AuthFormData {
   rememberMe?: boolean;
 }
 
+// User Profile Types (for secure profile system)
+export interface UserProfile {
+  id: string;
+  username: string;
+  avatar_url?: string | null;
+  bio?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateProfileData {
+  username?: string;
+  avatar_url?: string | null;
+  bio?: string | null;
+}
+
 // Comic and Collection Types
 export interface Comic {
   id: string;
