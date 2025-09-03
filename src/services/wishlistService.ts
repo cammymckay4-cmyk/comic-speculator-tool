@@ -1,14 +1,6 @@
 import { supabase } from '@/lib/supabaseClient'
-import type { CollectionComic } from '@/lib/types'
+import type { CollectionComic, WishlistItem } from '@/lib/types'
 import { transformSupabaseComic } from './collectionService'
-
-export interface WishlistItem {
-  id: string
-  userId: string
-  comicId: string
-  createdAt: string
-  comic?: CollectionComic
-}
 
 export const getWishlist = async (userId: string): Promise<WishlistItem[]> => {
   if (!userId) {

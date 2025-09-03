@@ -65,6 +65,7 @@ const ComicDetailPage: React.FC = () => {
         setIsInUserWishlist(inWishlist)
       } catch (error) {
         console.error('Error checking wishlist status:', error)
+        toast.error('Failed to load wishlist status. Please try refreshing the page.')
       } finally {
         setWishlistLoading(false)
       }

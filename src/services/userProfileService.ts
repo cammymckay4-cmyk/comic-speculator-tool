@@ -22,36 +22,41 @@ export const fetchUserProfileByUsername = async (username: string): Promise<User
     throw new Error('Username is required')
   }
 
-  // For now, create a mock user profile since we don't have a public user profiles table
-  // In a real implementation, you would have a public profiles table with public user data
-  const mockUser: User = {
-    id: 'mock-user-id',
-    name: username,
-    email: `${username}@example.com`,
-    avatar: null,
-    subscriptionTier: 'free',
-    subscriptionStatus: 'active',
-    joinDate: '2023-01-01T00:00:00.000Z',
-    lastActive: '2024-01-01T00:00:00.000Z'
+  // Get user by username from auth metadata
+  // Note: This is a simplified approach. In production, you'd likely have a public profiles table
+  const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
+  
+  if (usersError) {
+    throw new Error(`Failed to fetch users: ${usersError.message}`)
   }
 
-  // Create mock stats for demonstration
-  const mockStats: UserProfileStats = {
-    totalComics: 156,
-    totalValue: 12450,
-    averageValue: 79,
-    keyIssues: 23,
-    topPublishers: [
-      { name: 'Marvel Comics', count: 67 },
-      { name: 'DC Comics', count: 54 },
-      { name: 'Image Comics', count: 23 },
-      { name: 'Dark Horse Comics', count: 12 }
-    ]
+  const foundUser = users.find(user => 
+    user.user_metadata?.full_name === username || 
+    user.email?.split('@')[0] === username
+  )
+
+  if (!foundUser) {
+    throw new Error(`User '${username}' not found`)
   }
+
+  // Create user object from auth data
+  const user: User = {
+    id: foundUser.id,
+    name: foundUser.user_metadata?.full_name || foundUser.email?.split('@')[0] || username,
+    email: foundUser.email || '',
+    avatar: foundUser.user_metadata?.avatar_url || null,
+    subscriptionTier: 'free', // Default value - would come from subscription table in real app
+    subscriptionStatus: 'active', // Default value
+    joinDate: foundUser.created_at || new Date().toISOString(),
+    lastActive: foundUser.last_sign_in_at || foundUser.created_at || new Date().toISOString()
+  }
+
+  // Fetch real stats for this user
+  const stats = await fetchUserStats(foundUser.id)
 
   return {
-    user: mockUser,
-    stats: mockStats
+    user,
+    stats
   }
 }
 
