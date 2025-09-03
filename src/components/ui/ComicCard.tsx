@@ -4,9 +4,9 @@ import { TrendingUp, TrendingDown, Edit, Trash2 } from 'lucide-react'
 interface ComicData {
   id: string
   title: string
-  issue: string
+  issueNumber: string
   publisher: string
-  coverImage: string
+  coverImageUrl: string
   value: string
   trend: 'up' | 'down' | 'neutral'
   change: string
@@ -35,8 +35,8 @@ const ComicCard: React.FC<ComicCardProps> = ({
       {/* Cover Image */}
       <div className="relative h-64 bg-gray-100 overflow-hidden">
         <img
-          src={comic.coverImage}
-          alt={`${comic.title} ${comic.issue}`}
+          src={comic.coverImageUrl}
+          alt={`${comic.title} ${comic.issueNumber}`}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
         
@@ -99,7 +99,7 @@ const ComicCard: React.FC<ComicCardProps> = ({
           {comic.title}
         </h3>
         <p className="font-persona-aura text-sm text-gray-700">
-          Issue {comic.issue}
+          Issue {comic.issueNumber}
         </p>
         
         {variant === 'detailed' && (

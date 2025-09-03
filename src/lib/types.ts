@@ -34,15 +34,15 @@ export interface AuthFormData {
 export interface UserProfile {
   id: string;
   username: string;
-  avatar_url?: string | null;
+  avatarUrl?: string | null;
   bio?: string | null;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UpdateProfileData {
   username?: string;
-  avatar_url?: string | null;
+  avatarUrl?: string | null;
   bio?: string | null;
 }
 
@@ -55,7 +55,7 @@ export interface Comic {
   seriesId?: string;
   publisher: string;
   publishDate: string;
-  coverImage: string;
+  coverImageUrl: string;
   thumbnailImage?: string;
   creators: ComicCreator[];
   description?: string;

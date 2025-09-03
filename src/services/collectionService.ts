@@ -34,7 +34,7 @@ const transformSupabaseComic = (supabaseComic: SupabaseComic): CollectionComic =
     publishDate: supabaseComic.publicationYear ? 
       new Date(supabaseComic.publicationYear, 0, 1).toISOString() : 
       new Date().toISOString(),
-    coverImage: supabaseComic.coverImageUrl,
+    coverImageUrl: supabaseComic.coverImageUrl,
     creators: [], // This should be populated from your schema
     format: (supabaseComic.format as any) || 'single-issue',
     isVariant: false,
