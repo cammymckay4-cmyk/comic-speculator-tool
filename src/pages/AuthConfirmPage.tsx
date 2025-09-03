@@ -17,12 +17,22 @@ const AuthConfirmPage: React.FC = () => {
   useEffect(() => {
     const confirmUser = async () => {
       try {
-        const token = searchParams.get('token_hash')
+        // Check for both token_hash and token parameters (Supabase sends different parameter names inconsistently)
+        const token = searchParams.get('token_hash') || searchParams.get('token')
         const type = searchParams.get('type')
+
+        // Debug logging for troubleshooting
+        console.log('Auth confirmation attempt:', {
+          token_hash: searchParams.get('token_hash'),
+          token: searchParams.get('token'),
+          finalToken: token,
+          type,
+          allParams: Object.fromEntries(searchParams.entries())
+        })
 
         if (!token) {
           setStatus('error')
-          setMessage('Invalid confirmation link. No token provided.')
+          setMessage('Invalid or expired verification link. Please sign up again or contact support.')
           return
         }
 
@@ -123,7 +133,7 @@ const AuthConfirmPage: React.FC = () => {
                   onClick={() => navigate('/auth')}
                   className="w-full comic-button"
                 >
-                  TRY AGAIN
+                  SIGN UP AGAIN
                 </button>
                 <button
                   onClick={() => navigate('/')}
