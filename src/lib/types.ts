@@ -229,3 +229,12 @@ export type SortOption =
   | 'market-value'
   | 'purchase-price'
   | 'relevance';
+
+// Wishlist Types
+export interface WishlistItem {
+  id: string
+  userId: string
+  comicId: string
+  createdAt: string
+  comic?: CollectionComic
+}
