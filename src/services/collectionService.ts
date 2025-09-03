@@ -388,3 +388,25 @@ export const deleteComic = async (comicId: string): Promise<void> => {
     throw new Error(`Failed to delete comic: ${error.message}`)
   }
 }
+
+export const fetchAllComicsForUser = async (userId: string): Promise<CollectionComic[]> => {
+  if (!userId) {
+    throw new Error('User ID is required')
+  }
+
+  const { data, error } = await supabase
+    .from('comics')
+    .select('*')
+    .eq('userId', userId)
+    .order('createdAt', { ascending: false })
+
+  if (error) {
+    throw new Error(`Failed to fetch all comics: ${error.message}`)
+  }
+
+  if (!data) {
+    return []
+  }
+
+  return data.map(transformSupabaseComic)
+}

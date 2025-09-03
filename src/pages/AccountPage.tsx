@@ -11,9 +11,15 @@ import {
   Check,
   X,
   AlertCircle,
-  Zap
+  Zap,
+  Download,
+  Database
 } from 'lucide-react'
 import { SUBSCRIPTION_TIERS } from '@/utils/constants'
+import { fetchAllComicsForUser } from '@/services/collectionService'
+import { generateCSV, downloadCSV } from '@/utils/csvExport'
+import { supabase } from '@/lib/supabaseClient'
+import { toast } from 'sonner'
 
 const AccountPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile')
@@ -23,13 +29,50 @@ const AccountPage: React.FC = () => {
     newsletter: true,
     priceAlerts: true,
   })
+  const [isExporting, setIsExporting] = useState(false)
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'subscription', label: 'Subscription', icon: CreditCard },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: Shield },
+    { id: 'data', label: 'Data Management', icon: Database },
   ]
+
+  const handleExportCSV = async () => {
+    try {
+      setIsExporting(true)
+      
+      // Get the current authenticated user
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError || !user) {
+        toast.error('Please log in to export your collection.')
+        return
+      }
+      
+      toast.info('Fetching your comic collection...')
+      
+      const comics = await fetchAllComicsForUser(user.id)
+      
+      if (comics.length === 0) {
+        toast.warning('No comics found in your collection to export')
+        return
+      }
+
+      toast.info('Generating CSV file...')
+      
+      const csvContent = generateCSV(comics)
+      downloadCSV(csvContent)
+      
+      toast.success(`Successfully exported ${comics.length} comics to CSV!`)
+    } catch (error) {
+      console.error('Error exporting CSV:', error)
+      toast.error('Failed to export collection. Please try again.')
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-parchment">
@@ -454,6 +497,82 @@ const AccountPage: React.FC = () => {
                         <button className="text-kirby-red hover:text-red-700 font-persona-aura text-sm font-semibold">
                           Revoke
                         </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Data Management Tab */}
+            {activeTab === 'data' && (
+              <div className="bg-white comic-border shadow-comic p-8">
+                <h2 className="font-super-squad text-2xl text-ink-black mb-6">
+                  DATA MANAGEMENT
+                </h2>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-persona-aura font-semibold text-ink-black mb-4">
+                      Export Collection
+                    </h3>
+                    <p className="font-persona-aura text-sm text-gray-600 mb-6">
+                      Download your entire comic collection as a CSV file for backup or use in other applications.
+                    </p>
+                    
+                    <div className="bg-blue-50 border-2 border-blue-200 p-4 mb-6">
+                      <div className="flex items-start space-x-3">
+                        <AlertCircle size={20} className="text-blue-600 mt-0.5" />
+                        <div>
+                          <p className="font-persona-aura font-semibold text-blue-900 mb-1">
+                            What's Included
+                          </p>
+                          <ul className="font-persona-aura text-sm text-blue-700 space-y-1">
+                            <li>• All comic titles, issues, and publishers</li>
+                            <li>• Market values and purchase information</li>
+                            <li>• Condition ratings and personal notes</li>
+                            <li>• Key issue designations and reasons</li>
+                            <li>• Publication years and formats</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={handleExportCSV}
+                      disabled={isExporting}
+                      className="comic-button flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isExporting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-parchment"></div>
+                          <span>Exporting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={18} />
+                          <span>Export My Collection to CSV</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="border-t-2 border-gray-200 pt-6">
+                    <h3 className="font-persona-aura font-semibold text-ink-black mb-4">
+                      File Information
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="font-persona-aura text-sm text-gray-600">File Format:</span>
+                        <span className="font-persona-aura text-sm text-ink-black font-semibold">CSV (Comma-Separated Values)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-persona-aura text-sm text-gray-600">Default Filename:</span>
+                        <span className="font-persona-aura text-sm text-ink-black font-semibold">comicscoutuk_collection_export.csv</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-persona-aura text-sm text-gray-600">Encoding:</span>
+                        <span className="font-persona-aura text-sm text-ink-black font-semibold">UTF-8</span>
                       </div>
                     </div>
                   </div>
