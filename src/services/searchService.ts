@@ -20,11 +20,11 @@ const transformSearchResult = (data: any): SearchResultComic => {
     title: data.title,
     issueNumber: data.issue,
     publisher: data.publisher,
-    coverImageUrl: data.cover_image,
-    marketValue: data.market_value || 0,
+    coverImageUrl: data.coverImageUrl,
+    marketValue: data.marketValue || 0,
     publicationYear: data.publication_year,
-    isKeyIssue: data.is_key_issue || false,
-    keyIssueReason: data.key_issue_reason
+    isKeyIssue: data.isKeyIssue || false,
+    keyIssueReason: data.keyIssueReason
   }
 }
 
@@ -43,11 +43,11 @@ export const searchPublicComics = async (searchTerm: string): Promise<SearchResu
       title,
       issue,
       publisher,
-      cover_image,
-      market_value,
+      coverImageUrl,
+      marketValue,
       publication_year,
-      is_key_issue,
-      key_issue_reason
+      isKeyIssue,
+      keyIssueReason
     `)
     .ilike('title', `%${trimmedSearch}%`)
     .order('title', { ascending: true })
