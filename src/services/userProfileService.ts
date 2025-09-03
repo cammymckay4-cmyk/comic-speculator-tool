@@ -22,37 +22,34 @@ export const fetchUserProfileByUsername = async (username: string): Promise<User
     throw new Error('Username is required')
   }
 
-  // Get user by username from auth metadata
-  // Note: This is a simplified approach. In production, you'd likely have a public profiles table
-  const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
+  // Get user profile from the secure profiles table
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, username, avatar_url, bio, created_at')
+    .eq('username', username)
+    .single()
   
-  if (usersError) {
-    throw new Error(`Failed to fetch users: ${usersError.message}`)
+  if (profileError) {
+    if (profileError.code === 'PGRST116') {
+      throw new Error(`User '${username}' not found`)
+    }
+    throw new Error(`Failed to fetch user profile: ${profileError.message}`)
   }
 
-  const foundUser = users.find(user => 
-    user.user_metadata?.full_name === username || 
-    user.email?.split('@')[0] === username
-  )
-
-  if (!foundUser) {
-    throw new Error(`User '${username}' not found`)
-  }
-
-  // Create user object from auth data
+  // Create user object from profile data (only public, non-sensitive data)
   const user: User = {
-    id: foundUser.id,
-    name: foundUser.user_metadata?.full_name || foundUser.email?.split('@')[0] || username,
-    email: foundUser.email || '',
-    avatar: foundUser.user_metadata?.avatar_url || null,
+    id: profile.id,
+    name: profile.username,
+    email: '', // Don't expose email addresses - this is private data
+    avatar: profile.avatar_url || null,
     subscriptionTier: 'free', // Default value - would come from subscription table in real app
     subscriptionStatus: 'active', // Default value
-    joinDate: foundUser.created_at || new Date().toISOString(),
-    lastActive: foundUser.last_sign_in_at || foundUser.created_at || new Date().toISOString()
+    joinDate: profile.created_at,
+    lastActive: profile.created_at // We don't store last_active in profiles for privacy
   }
 
   // Fetch real stats for this user
-  const stats = await fetchUserStats(foundUser.id)
+  const stats = await fetchUserStats(profile.id)
 
   return {
     user,

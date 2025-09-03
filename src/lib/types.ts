@@ -11,6 +11,15 @@ export interface User {
   preferences?: UserPreferences;
 }
 
+export interface Profile {
+  id: string;
+  username: string;
+  avatar_url?: string;
+  bio?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface UserPreferences {
   emailNotifications: boolean;
   pushNotifications: boolean;
