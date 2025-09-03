@@ -11,9 +11,9 @@ export interface UserStats {
 export interface HotComic {
   id: string
   title: string
-  issue: string
+  issueNumber: string
   publisher: string
-  coverImage: string
+  coverImageUrl: string
   value: string
   trend: 'up' | 'down' | 'neutral'
   change: string
@@ -75,7 +75,7 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
 export const fetchHotComics = async (): Promise<HotComic[]> => {
   const { data: comics, error } = await supabase
     .from('comics')
-    .select('id, title, issue, publisher, coverImage, marketValue, createdAt')
+    .select('id, title, issueNumber, publisher, coverImageUrl, marketValue, createdAt')
     .order('createdAt', { ascending: false })
     .limit(5)
 
@@ -91,9 +91,9 @@ export const fetchHotComics = async (): Promise<HotComic[]> => {
   return comics.map((comic, index) => ({
     id: comic.id,
     title: comic.title,
-    issue: comic.issue,
+    issue: comic.issueNumber,
     publisher: comic.publisher,
-    coverImage: comic.coverImage || `https://via.placeholder.com/200x300/D62828/FDF6E3?text=${encodeURIComponent(comic.title)}`,
+    coverImage: comic.coverImageUrl || `https://via.placeholder.com/200x300/D62828/FDF6E3?text=${encodeURIComponent(comic.title)}`,
     value: `£${comic.marketValue?.toLocaleString() || '0'}`,
     trend: index < 3 ? 'up' : 'neutral' as const, // Mock trend for now
     change: index < 3 ? `+${5 + index * 3}%` : '0%'

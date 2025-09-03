@@ -11,7 +11,7 @@ export class UserProfileService {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, avatar_url, bio, created_at, updated_at')
+        .select('id, username, avatarUrl, bio, createdAt, updatedAt')
         .eq('username', username)
         .single()
 
@@ -44,7 +44,7 @@ export class UserProfileService {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, avatar_url, bio, created_at, updated_at')
+        .select('id, username, avatarUrl, bio, createdAt, updatedAt')
         .eq('id', user.id)
         .single()
 
@@ -95,10 +95,10 @@ export class UserProfileService {
         .from('profiles')
         .update({
           ...updates,
-          updated_at: new Date().toISOString()
+          updatedAt: new Date().toISOString()
         })
         .eq('id', user.id)
-        .select('id, username, avatar_url, bio, created_at, updated_at')
+        .select('id, username, avatarUrl, bio, createdAt, updatedAt')
         .single()
 
       if (error) {
@@ -166,10 +166,10 @@ export class UserProfileService {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, avatar_url, bio, created_at, updated_at')
+        .select('id, username, avatarUrl, bio, createdAt, updatedAt')
         .ilike('username', `%${query}%`)
         .limit(searchLimit)
-        .order('created_at', { ascending: false })
+        .order('createdAt', { ascending: false })
 
       if (error) {
         throw error

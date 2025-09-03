@@ -5,9 +5,9 @@ import type { CollectionComic, Comic } from '@/lib/types'
 export interface SupabaseComic {
   id: string
   title: string
-  issue: string
+  issueNumber: string
   publisher: string
-  coverImage: string
+  coverImageUrl: string
   marketValue: number
   condition: string
   purchasePrice?: number
@@ -28,13 +28,13 @@ const transformSupabaseComic = (supabaseComic: SupabaseComic): CollectionComic =
   const comic: Comic = {
     id: supabaseComic.id,
     title: supabaseComic.title,
-    issue: supabaseComic.issue,
-    issueNumber: parseInt(supabaseComic.issue.replace('#', '')) || 0,
+    issue: supabaseComic.issueNumber,
+    issueNumber: parseInt(supabaseComic.issueNumber.replace('#', '')) || 0,
     publisher: supabaseComic.publisher,
     publishDate: supabaseComic.publicationYear ? 
       new Date(supabaseComic.publicationYear, 0, 1).toISOString() : 
       new Date().toISOString(),
-    coverImage: supabaseComic.coverImage,
+    coverImage: supabaseComic.coverImageUrl,
     creators: [], // This should be populated from your schema
     format: (supabaseComic.format as any) || 'single-issue',
     isVariant: false,
@@ -93,7 +93,7 @@ export const fetchUserCollection = async (
   // Apply search filter
   if (filters.searchTerm && filters.searchTerm.trim()) {
     const searchTerm = filters.searchTerm.trim()
-    query = query.or(`title.ilike.%${searchTerm}%,issue.ilike.%${searchTerm}%,publisher.ilike.%${searchTerm}%`)
+    query = query.or(`title.ilike.%${searchTerm}%,issueNumber.ilike.%${searchTerm}%,publisher.ilike.%${searchTerm}%`)
   }
 
   // Apply publisher filter
@@ -134,8 +134,8 @@ export const fetchUserCollection = async (
       ascending = true
       break
     case 'issue-number':
-      // For issue sorting, we'll use the issue field and let Supabase handle it
-      orderColumn = 'issue'
+      // For issue sorting, we'll use the issueNumber field and let Supabase handle it
+      orderColumn = 'issueNumber'
       ascending = true
       break
     case 'market-value':
@@ -197,7 +197,7 @@ export const getCollectionCount = async (
   // Apply the same filters as fetchUserCollection but only for counting
   if (filters.searchTerm && filters.searchTerm.trim()) {
     const searchTerm = filters.searchTerm.trim()
-    query = query.or(`title.ilike.%${searchTerm}%,issue.ilike.%${searchTerm}%,publisher.ilike.%${searchTerm}%`)
+    query = query.or(`title.ilike.%${searchTerm}%,issueNumber.ilike.%${searchTerm}%,publisher.ilike.%${searchTerm}%`)
   }
 
   if (filters.publishers && filters.publishers.length > 0) {
@@ -298,7 +298,7 @@ export const addComic = async (userId: string, comicData: AddComicData): Promise
   const supabaseData = {
     userId: userId,
     title: comicData.title,
-    issue: comicData.issueNumber,
+    issueNumber: comicData.issueNumber,
     publisher: comicData.publisher,
     publicationYear: comicData.publicationYear,
     condition: comicData.condition,
@@ -307,7 +307,7 @@ export const addComic = async (userId: string, comicData: AddComicData): Promise
     purchasePrice: comicData.purchasePrice,
     purchaseDate: comicData.purchaseDate,
     purchaseLocation: comicData.purchaseLocation,
-    coverImage: comicData.coverImageUrl || '',
+    coverImageUrl: comicData.coverImageUrl || '',
     notes: comicData.notes,
     isKeyIssue: comicData.isKeyIssue,
     keyIssueReason: comicData.keyIssueReason,
@@ -341,7 +341,7 @@ export const updateComic = async (comicId: string, updatedData: Partial<AddComic
   const supabaseData: any = {}
   
   if (updatedData.title) supabaseData.title = updatedData.title
-  if (updatedData.issueNumber) supabaseData.issue = updatedData.issueNumber
+  if (updatedData.issueNumber) supabaseData.issueNumber = updatedData.issueNumber
   if (updatedData.publisher) supabaseData.publisher = updatedData.publisher
   if (updatedData.publicationYear) supabaseData.publicationYear = updatedData.publicationYear
   if (updatedData.condition) supabaseData.condition = updatedData.condition
@@ -350,7 +350,7 @@ export const updateComic = async (comicId: string, updatedData: Partial<AddComic
   if (updatedData.purchasePrice !== undefined) supabaseData.purchasePrice = updatedData.purchasePrice
   if (updatedData.purchaseDate !== undefined) supabaseData.purchaseDate = updatedData.purchaseDate
   if (updatedData.purchaseLocation !== undefined) supabaseData.purchaseLocation = updatedData.purchaseLocation
-  if (updatedData.coverImageUrl !== undefined) supabaseData.coverImage = updatedData.coverImageUrl || ''
+  if (updatedData.coverImageUrl !== undefined) supabaseData.coverImageUrl = updatedData.coverImageUrl || ''
   if (updatedData.notes !== undefined) supabaseData.notes = updatedData.notes
   if (updatedData.isKeyIssue !== undefined) supabaseData.isKeyIssue = updatedData.isKeyIssue
   if (updatedData.keyIssueReason !== undefined) supabaseData.keyIssueReason = updatedData.keyIssueReason

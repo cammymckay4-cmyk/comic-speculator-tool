@@ -7,8 +7,8 @@ export interface AdminUser {
   email: string
   username: string
   role: UserRole
-  created_at: string
-  last_sign_in_at?: string
+  createdAt: string
+  lastSignInAt?: string
 }
 
 export class AdminService {
