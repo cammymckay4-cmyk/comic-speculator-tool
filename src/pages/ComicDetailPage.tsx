@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
@@ -19,13 +19,11 @@ import {
   Trash2
 } from 'lucide-react'
 import { fetchComicById, deleteComic } from '@/services/collectionService'
-import { addToWishlist, removeFromWishlist, isInWishlist } from '@/services/wishlistService'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditComicForm from '@/components/features/EditComicForm'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import { toast } from '@/store/toastStore'
 import { useUserStore } from '@/store/userStore'
-import { supabase } from '@/lib/supabaseClient'
 
 
 const ComicDetailPage: React.FC = () => {
@@ -33,8 +31,7 @@ const ComicDetailPage: React.FC = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useUserStore()
-  const [isInUserWishlist, setIsInUserWishlist] = useState(false)
-  const [wishlistLoading, setWishlistLoading] = useState(true)
+  const [isInWishlist, setIsInWishlist] = useState(false)
   const [hasAlert, setHasAlert] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -45,34 +42,6 @@ const ComicDetailPage: React.FC = () => {
     queryFn: () => fetchComicById(id!),
     enabled: !!id, // Only run query if ID is present
   })
-
-  // Check if comic is in user's wishlist
-  useEffect(() => {
-    const checkWishlistStatus = async () => {
-      if (!user || !id) {
-        setWishlistLoading(false)
-        return
-      }
-
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session?.user?.id) {
-          setWishlistLoading(false)
-          return
-        }
-
-        const inWishlist = await isInWishlist(session.user.id, id)
-        setIsInUserWishlist(inWishlist)
-      } catch (error) {
-        console.error('Error checking wishlist status:', error)
-        toast.error('Failed to load wishlist status. Please try refreshing the page.')
-      } finally {
-        setWishlistLoading(false)
-      }
-    }
-
-    checkWishlistStatus()
-  }, [user, id])
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -94,45 +63,6 @@ const ComicDetailPage: React.FC = () => {
     }
   })
 
-  // Wishlist mutations
-  const addToWishlistMutation = useMutation({
-    mutationFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user?.id || !id) {
-        throw new Error('User not authenticated or comic ID missing')
-      }
-      return addToWishlist(session.user.id, id)
-    },
-    onSuccess: () => {
-      setIsInUserWishlist(true)
-      queryClient.invalidateQueries({ queryKey: ['wishlist'] })
-      toast.success('Added to Wishlist', 'Comic has been added to your wishlist')
-    },
-    onError: (error) => {
-      console.error('Failed to add to wishlist:', error)
-      toast.error('Failed to Add', error instanceof Error ? error.message : 'Failed to add comic to wishlist')
-    }
-  })
-
-  const removeFromWishlistMutation = useMutation({
-    mutationFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user?.id || !id) {
-        throw new Error('User not authenticated or comic ID missing')
-      }
-      return removeFromWishlist(session.user.id, id)
-    },
-    onSuccess: () => {
-      setIsInUserWishlist(false)
-      queryClient.invalidateQueries({ queryKey: ['wishlist'] })
-      toast.success('Removed from Wishlist', 'Comic has been removed from your wishlist')
-    },
-    onError: (error) => {
-      console.error('Failed to remove from wishlist:', error)
-      toast.error('Failed to Remove', 'Failed to remove comic from wishlist')
-    }
-  })
-
   const handleDeleteClick = () => {
     setIsDeleteModalOpen(true)
   }
@@ -140,19 +70,6 @@ const ComicDetailPage: React.FC = () => {
   const handleDeleteConfirm = () => {
     deleteMutation.mutate()
     setIsDeleteModalOpen(false)
-  }
-
-  const handleWishlistToggle = () => {
-    if (!user) {
-      toast.error('Authentication Required', 'Please sign in to add comics to your wishlist')
-      return
-    }
-
-    if (isInUserWishlist) {
-      removeFromWishlistMutation.mutate()
-    } else {
-      addToWishlistMutation.mutate()
-    }
   }
 
   // Handle loading state
@@ -254,20 +171,14 @@ const ComicDetailPage: React.FC = () => {
                 </button>
                 
                 <button
-                  onClick={handleWishlistToggle}
-                  disabled={!user || wishlistLoading || addToWishlistMutation.isPending || removeFromWishlistMutation.isPending}
+                  onClick={() => setIsInWishlist(!isInWishlist)}
                   className={`w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm
-                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic disabled:opacity-50 disabled:cursor-not-allowed
-                            ${isInUserWishlist ? 'bg-kirby-red text-parchment' : 'bg-white text-ink-black'}`}
+                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic
+                            ${isInWishlist ? 'bg-kirby-red text-parchment' : 'bg-white text-ink-black'}`}
                 >
-                  <Heart size={18} fill={isInUserWishlist ? 'currentColor' : 'none'} />
+                  <Heart size={18} fill={isInWishlist ? 'currentColor' : 'none'} />
                   <span className="font-persona-aura font-semibold">
-                    {wishlistLoading || addToWishlistMutation.isPending || removeFromWishlistMutation.isPending
-                      ? 'Loading...'
-                      : isInUserWishlist 
-                        ? 'Remove from Wishlist' 
-                        : 'Add to Wishlist'
-                    }
+                    {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
                   </span>
                 </button>
 
