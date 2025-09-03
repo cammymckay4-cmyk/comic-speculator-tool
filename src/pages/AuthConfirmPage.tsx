@@ -17,7 +17,7 @@ const AuthConfirmPage: React.FC = () => {
   useEffect(() => {
     const confirmUser = async () => {
       try {
-        const token = searchParams.get('token')
+        const token = searchParams.get('token_hash')
         const type = searchParams.get('type')
 
         if (!token) {
