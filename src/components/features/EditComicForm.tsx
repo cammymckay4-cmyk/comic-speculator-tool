@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { X, Plus, Book, Upload, Image as ImageIcon, Save } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import type { ComicCondition, ComicFormat, CollectionComic } from '@/lib/types'
 import { uploadComicImage } from '@/services/storageService'
 import { updateComic, type AddComicData } from '@/services/collectionService'
 import { useUserStore } from '@/store/userStore'
-import { toast } from '@/store/toastStore'
 
 interface EditComicFormProps {
   isOpen: boolean
@@ -125,14 +125,15 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
       queryClient.invalidateQueries({ queryKey: ['comic', comic.comicId] })
       
       // Show success notification
-      toast.success('Comic Updated Successfully', 'Your comic details have been updated.')
+      toast.success('Changes Saved', { description: 'Your updates to the comic have been saved.' })
       
       // Close modal
       onClose()
     },
     onError: (error) => {
       console.error('Failed to update comic:', error)
-      // Error handling will be done in the submit handler
+      // Show error notification
+      toast.error('Save Failed', { description: 'Your changes could not be saved. Please try again.' })
     }
   })
 
