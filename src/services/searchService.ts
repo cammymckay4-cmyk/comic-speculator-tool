@@ -18,11 +18,11 @@ const transformSearchResult = (data: any): SearchResultComic => {
   return {
     id: data.id,
     title: data.title,
-    issueNumber: data.issueNumber,
+    issueNumber: data.issue,
     publisher: data.publisher,
     coverImageUrl: data.coverImageUrl,
     marketValue: data.marketValue || 0,
-    publicationYear: data.publicationYear,
+    publicationYear: data.publication_year,
     isKeyIssue: data.isKeyIssue || false,
     keyIssueReason: data.keyIssueReason
   }
@@ -41,11 +41,11 @@ export const searchPublicComics = async (searchTerm: string): Promise<SearchResu
     .select(`
       id,
       title,
-      issueNumber,
+      issue,
       publisher,
       coverImageUrl,
       marketValue,
-      publicationYear,
+      publication_year,
       isKeyIssue,
       keyIssueReason
     `)
