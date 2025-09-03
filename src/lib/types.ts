@@ -168,6 +168,7 @@ export interface UserCollection {
 }
 
 export interface CollectionComic {
+  id?: string; // Collection entry ID for removal operations
   comicId: string;
   comic: Comic;
   condition: ComicCondition;

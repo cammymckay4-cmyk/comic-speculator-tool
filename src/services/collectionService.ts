@@ -57,6 +57,7 @@ const transformCollectionEntry = (entry: SupabaseUserCollectionEntry): Collectio
 
   // Create a CollectionComic object
   const collectionComic: CollectionComic = {
+    id: entry.id, // Collection entry ID for removal operations
     comicId: entry.comic_id,
     comic: comic,
     condition: entry.condition as any,

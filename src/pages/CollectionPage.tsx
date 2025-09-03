@@ -101,7 +101,7 @@ const CollectionPage: React.FC = () => {
   // Transform collection comics for display (matching the old structure)
   const displayComics = collectionComics?.map(collectionComic => ({
     id: collectionComic.comic.id,
-    entryId: collectionComic.comicId, // This is actually the entry ID in the new schema
+    entryId: collectionComic.id, // Collection entry ID for removal operations
     title: collectionComic.comic.title,
     issue: collectionComic.comic.issue,
     publisher: collectionComic.comic.publisher,
