@@ -65,46 +65,24 @@ export class AdminService {
 
   /**
    * List all users (admin only)
-   * This uses the admin client to get all users and combines with profile data
+   * This calls the secure admin-ops Edge Function
    */
   async listAllUsers(): Promise<AdminUser[]> {
     try {
-      // First check if current user is admin
-      const isAdmin = await this.isCurrentUserAdmin()
-      if (!isAdmin) {
-        throw new Error('Unauthorized: Admin access required')
-      }
-
-      // Get all users from auth.users using admin client
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
-      
-      if (authError) {
-        throw authError
-      }
-
-      // Get profile data for all users including roles
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, username, role')
-
-      if (profileError) {
-        throw profileError
-      }
-
-      // Combine auth data with profile data
-      const users: AdminUser[] = authUsers.users.map(user => {
-        const profile = profiles?.find(p => p.id === user.id)
-        return {
-          id: user.id,
-          email: user.email || '',
-          username: profile?.username || 'Unknown',
-          role: profile?.role || 'user',
-          created_at: user.created_at,
-          last_sign_in_at: user.last_sign_in_at
-        }
+      // Call the secure admin-ops Edge Function
+      const { data, error } = await supabase.functions.invoke('admin-ops/list-users', {
+        method: 'GET'
       })
+      
+      if (error) {
+        throw error
+      }
 
-      return users
+      if (data?.error) {
+        throw new Error(data.error)
+      }
+
+      return data?.users || []
     } catch (error) {
       console.error('Error listing users:', error)
       throw new Error('Failed to list users')
@@ -113,28 +91,26 @@ export class AdminService {
 
   /**
    * Update a user's role (admin only)
+   * This calls the secure admin-ops Edge Function
    */
   async updateUserRole(userId: string, newRole: UserRole): Promise<void> {
     try {
-      // First check if current user is admin
-      const isAdmin = await this.isCurrentUserAdmin()
-      if (!isAdmin) {
-        throw new Error('Unauthorized: Admin access required')
-      }
-
-      // Validate role
-      if (!['user', 'moderator', 'admin'].includes(newRole)) {
-        throw new Error('Invalid role specified')
-      }
-
-      // Update the role in profiles table
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('id', userId)
-
+      // Call the secure admin-ops Edge Function
+      const { data, error } = await supabase.functions.invoke('admin-ops/update-role', {
+        method: 'POST',
+        body: { userId, newRole }
+      })
+      
       if (error) {
         throw error
+      }
+
+      if (data?.error) {
+        throw new Error(data.error)
+      }
+
+      if (!data?.success) {
+        throw new Error('Failed to update user role')
       }
     } catch (error) {
       console.error('Error updating user role:', error)
