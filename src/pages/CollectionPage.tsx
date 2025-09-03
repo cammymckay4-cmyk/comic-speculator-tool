@@ -16,19 +16,21 @@ import FilterPanel from '@/components/features/FilterPanel'
 import SortDropdown from '@/components/features/SortDropdown'
 import Pagination from '@/components/features/Pagination'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import AddComicForm from '@/components/features/AddComicForm'
+import ComicSearchModal from '@/components/features/ComicSearchModal'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import { useCollectionQuery, useCollectionCount } from '@/hooks/useCollectionQuery'
-import { getCollectionStats, deleteComic } from '@/services/collectionService'
+import { getCollectionStats, removeFromCollection } from '@/services/collectionService'
+import { useUserStore } from '@/store/userStore'
 import { toast } from '@/store/toastStore'
 
 
 const CollectionPage: React.FC = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { user } = useUserStore()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
-  const [showAddComicModal, setShowAddComicModal] = useState(false)
+  const [showComicSearchModal, setShowComicSearchModal] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [comicToDelete, setComicToDelete] = useState<any>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -75,30 +77,31 @@ const CollectionPage: React.FC = () => {
     keyIssues: 0
   }
 
-  // Delete mutation
-  const deleteMutation = useMutation({
-    mutationFn: (comicId: string) => deleteComic(comicId),
+  // Remove from collection mutation
+  const removeFromCollectionMutation = useMutation({
+    mutationFn: ({ entryId, userEmail }: { entryId: string; userEmail: string }) => removeFromCollection(entryId, userEmail),
     onSuccess: () => {
       // Invalidate collection queries
       queryClient.invalidateQueries({ queryKey: ['collection'] })
       queryClient.invalidateQueries({ queryKey: ['collection-count'] })
       
       // Show success toast
-      toast.success('Comic Deleted', 'The comic has been removed from your collection')
+      toast.success('Comic Removed', 'The comic has been removed from your collection')
       
       // Close modal
       setIsDeleteModalOpen(false)
       setComicToDelete(null)
     },
     onError: (error) => {
-      console.error('Failed to delete comic:', error)
-      toast.error('Delete Failed', 'Failed to delete the comic. Please try again.')
+      console.error('Failed to remove comic:', error)
+      toast.error('Remove Failed', 'Failed to remove the comic. Please try again.')
     }
   })
   
   // Transform collection comics for display (matching the old structure)
   const displayComics = collectionComics?.map(collectionComic => ({
     id: collectionComic.comic.id,
+    entryId: collectionComic.comicId, // This is actually the entry ID in the new schema
     title: collectionComic.comic.title,
     issue: collectionComic.comic.issue,
     publisher: collectionComic.comic.publisher,
@@ -124,8 +127,8 @@ const CollectionPage: React.FC = () => {
   }
 
   const handleDeleteConfirm = () => {
-    if (comicToDelete) {
-      deleteMutation.mutate(comicToDelete.id)
+    if (comicToDelete && comicToDelete.entryId && user?.email) {
+      removeFromCollectionMutation.mutate({ entryId: comicToDelete.entryId, userEmail: user.email })
     }
   }
 
@@ -245,7 +248,7 @@ const CollectionPage: React.FC = () => {
 
               {/* Action Buttons */}
               <button 
-                onClick={() => setShowAddComicModal(true)}
+                onClick={() => setShowComicSearchModal(true)}
                 className="comic-button flex items-center space-x-2"
               >
                 <Plus size={18} />
@@ -295,7 +298,7 @@ const CollectionPage: React.FC = () => {
                 Start building your comic collection by adding your first comic!
               </p>
               <button 
-                onClick={() => setShowAddComicModal(true)}
+                onClick={() => setShowComicSearchModal(true)}
                 className="comic-button flex items-center space-x-2 mx-auto"
               >
                 <Plus size={18} />
@@ -351,10 +354,10 @@ const CollectionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Comic Modal */}
-      <AddComicForm 
-        isOpen={showAddComicModal}
-        onClose={() => setShowAddComicModal(false)}
+      {/* Comic Search Modal */}
+      <ComicSearchModal 
+        isOpen={showComicSearchModal}
+        onClose={() => setShowComicSearchModal(false)}
       />
 
       {/* Delete Confirmation Modal */}
@@ -369,7 +372,7 @@ const CollectionPage: React.FC = () => {
         message={`Are you sure you want to delete "${comicToDelete?.title} ${comicToDelete?.issue}" from your collection? This action cannot be undone.`}
         confirmText="Delete Comic"
         cancelText="Cancel"
-        isLoading={deleteMutation.isPending}
+        isLoading={removeFromCollectionMutation.isPending}
         variant="danger"
       />
     </div>
