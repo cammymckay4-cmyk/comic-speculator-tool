@@ -280,7 +280,7 @@ const ComicDetailPage: React.FC = () => {
                   CREATIVE TEAM
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
-                  {comic.creators.map((creator) => (
+                  {comic.creators.map((creator: any) => (
                     <div key={creator.name} className="flex items-center space-x-3">
                       <User size={20} className="text-gray-400" />
                       <div>
@@ -381,7 +381,7 @@ const ComicDetailPage: React.FC = () => {
                 <div className="mt-6 pt-6 border-t-2 border-gray-200">
                   <p className="font-persona-aura text-gray-600 mb-3">Characters:</p>
                   <div className="flex flex-wrap gap-2">
-                    {comic.characters.map((character) => (
+                    {comic.characters.map((character: any) => (
                       <span
                         key={character}
                         className="px-3 py-1 bg-stan-lee-blue text-parchment text-xs font-persona-aura font-semibold border-2 border-ink-black shadow-comic-sm"
@@ -398,7 +398,7 @@ const ComicDetailPage: React.FC = () => {
                 <div className="mt-4">
                   <p className="font-persona-aura text-gray-600 mb-3">Story Arcs:</p>
                   <div className="flex flex-wrap gap-2">
-                    {comic.storyArcs.map((arc) => (
+                    {comic.storyArcs.map((arc: any) => (
                       <span
                         key={arc}
                         className="px-3 py-1 bg-kirby-red text-parchment text-xs font-persona-aura font-semibold border-2 border-ink-black shadow-comic-sm"
