@@ -7,8 +7,8 @@ export interface AdminUser {
   email: string
   username: string
   role: UserRole
-  created_at: string
-  last_sign_in_at?: string
+  createdAt: string
+  lastSignInAt?: string
 }
 
 export class AdminService {
@@ -82,7 +82,16 @@ export class AdminService {
         throw new Error(data.error)
       }
 
-      return data?.users || []
+      // Transform snake_case to camelCase for frontend compatibility
+      const users = data?.users || []
+      return users.map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        createdAt: user.created_at,
+        lastSignInAt: user.last_sign_in_at
+      }))
     } catch (error) {
       console.error('Error listing users:', error)
       throw new Error('Failed to list users')
