@@ -23,7 +23,7 @@ export interface SupabaseComic {
 }
 
 // Transform Supabase data to match our frontend types
-export const transformSupabaseComic = (supabaseComic: SupabaseComic): CollectionComic => {
+const transformSupabaseComic = (supabaseComic: SupabaseComic): CollectionComic => {
   // Create a Comic object from the Supabase data
   const comic: Comic = {
     id: supabaseComic.id,
