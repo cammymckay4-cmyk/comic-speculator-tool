@@ -4,6 +4,7 @@ import MainNavbar from './components/layout/MainNavbar'
 import Footer from './components/layout/Footer'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import ToastContainer from './components/ui/ToastContainer'
+import { Toaster } from 'sonner'
 import { useUserStore } from './store/userStore'
 import { supabase } from './lib/supabaseClient'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
@@ -102,6 +103,9 @@ function App() {
       
       {/* Toast Container */}
       <ToastContainer />
+      
+      {/* Sonner Toast Provider */}
+      <Toaster />
     </div>
   )
 }
