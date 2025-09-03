@@ -145,10 +145,10 @@ export default function AdminPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(user.created_at)}
+                    {formatDate(user.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Never'}
+                    {user.lastSignInAt ? formatDate(user.lastSignInAt) : 'Never'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <select
