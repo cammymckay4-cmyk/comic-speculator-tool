@@ -33,7 +33,7 @@ export const getWishlist = async (userId: string): Promise<WishlistItem[]> => {
     userId: item.user_id,
     comicId: item.comic_id,
     createdAt: item.created_at,
-    comic: item.comics ? transformSupabaseComic(item.comics) : undefined
+    comic: item.comics ? transformSupabaseComic(item.comics as any) : undefined
   }))
 }
 
@@ -86,7 +86,7 @@ export const addToWishlist = async (userId: string, comicId: string): Promise<Wi
     userId: data.user_id,
     comicId: data.comic_id,
     createdAt: data.created_at,
-    comic: data.comics ? transformSupabaseComic(data.comics) : undefined
+    comic: data.comics ? transformSupabaseComic(data.comics as any) : undefined
   }
 }
 
