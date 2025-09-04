@@ -722,7 +722,7 @@ export const fetchAllComicsForUser = async (userEmail: string): Promise<Collecti
   return data.map(transformCollectionEntry)
 }
 
-// New function to search master comics list (matching searchService.ts logic)
+// New function to search master comics list (using same logic as working main search)
 export const searchMasterComics = async (
   searchTerm: string,
   limit: number = 20
@@ -740,11 +740,11 @@ export const searchMasterComics = async (
     .from('comics')
     .select('*')
 
-  // Build a single OR condition that searches for ANY of the terms in ANY field
+  // Use the same simple logic as the working main search - only search title and issue
   const allConditions = new Set<string>()
   
   searchTerms.forEach(term => {
-    const termConditions = buildTermConditions(term, ['title', 'issue', 'publisher'])
+    const termConditions = buildTermConditions(term, ['title', 'issue'])
     termConditions.split(',').forEach(condition => allConditions.add(condition))
   })
 
