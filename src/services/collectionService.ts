@@ -756,7 +756,7 @@ export const fetchPublicComicById = async (comicId: string): Promise<Comic> => {
       publisher,
       cover_image,
       market_value,
-      format,
+      variant_description,
       is_key_issue,
       key_notes,
       description,
