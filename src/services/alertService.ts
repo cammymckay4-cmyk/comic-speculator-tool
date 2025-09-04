@@ -72,14 +72,42 @@ export interface CreateAlertData {
 }
 
 export const createAlert = async (alertData: CreateAlertData): Promise<UserAlert> => {
+  // Validate required fields
+  if (!alertData.userId) {
+    throw new Error('User ID is required to create an alert')
+  }
+  
+  if (!alertData.name?.trim()) {
+    throw new Error('Alert name is required')
+  }
+
+  // Validate price-related fields for price alerts
+  if (['price-drop', 'price-increase'].includes(alertData.alertType)) {
+    if (!alertData.thresholdPrice || alertData.thresholdPrice <= 0) {
+      throw new Error('Valid threshold price is required for price alerts')
+    }
+    if (!alertData.priceDirection || !['above', 'below'].includes(alertData.priceDirection)) {
+      throw new Error('Price direction (above/below) is required for price alerts')
+    }
+  }
+
+  console.log('Creating alert with data:', {
+    userId: alertData.userId,
+    comicId: alertData.comicId,
+    name: alertData.name,
+    alertType: alertData.alertType,
+    thresholdPrice: alertData.thresholdPrice,
+    priceDirection: alertData.priceDirection
+  })
+
   const supabaseAlertData = {
     user_id: alertData.userId,
     comic_id: alertData.comicId,
-    name: alertData.name,
+    name: alertData.name.trim(),
     alert_type: alertData.alertType,
     threshold_price: alertData.thresholdPrice,
     price_direction: alertData.priceDirection,
-    description: alertData.description,
+    description: alertData.description?.trim() || null,
     is_active: true,
     trigger_count: 0,
   }
@@ -91,13 +119,27 @@ export const createAlert = async (alertData: CreateAlertData): Promise<UserAlert
     .single()
 
   if (error) {
-    throw new Error(`Failed to create alert: ${error.message}`)
+    console.error('Supabase error creating alert:', error)
+    
+    // Provide more specific error messages based on error code
+    if (error.code === 'PGRST116') {
+      throw new Error('No data returned - the alerts table may not exist. Please contact support.')
+    } else if (error.code === '42P01') {
+      throw new Error('The alerts table does not exist in the database. Please contact support.')
+    } else if (error.code === '23514') {
+      throw new Error('Invalid alert type or price direction provided')
+    } else if (error.message.includes('row-level security')) {
+      throw new Error('You do not have permission to create alerts. Please ensure you are logged in.')
+    } else {
+      throw new Error(`Failed to create alert: ${error.message}`)
+    }
   }
 
   if (!data) {
     throw new Error('No data returned from alert creation')
   }
 
+  console.log('Alert created successfully:', data)
   return transformSupabaseAlert(data)
 }
 
