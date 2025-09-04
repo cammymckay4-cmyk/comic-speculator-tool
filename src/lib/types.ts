@@ -77,6 +77,7 @@ export interface Comic {
   prices: ComicPrice[];
   marketValue?: number;
   lastUpdated: string;
+  ebayStatus?: EbayStatus;
 }
 
 export interface ComicCreator {
@@ -246,3 +247,17 @@ export type SortOption =
   | 'market-value'
   | 'purchase-price'
   | 'relevance';
+
+// eBay Integration Types
+export interface EbayStatus {
+  hasLiveListings: boolean;
+  hasEndingSoon: boolean;
+  liveListingsCount: number;
+  endingSoonCount: number;
+  priceRange?: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  lastChecked?: string;
+}

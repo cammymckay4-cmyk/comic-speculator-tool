@@ -73,6 +73,7 @@ const WishlistPage: React.FC = () => {
     maxPrice: wishlistItem.maxPrice,
     notes: wishlistItem.notes,
     addedDate: wishlistItem.addedDate ? new Date(wishlistItem.addedDate).toLocaleDateString() : 'N/A',
+    ebayStatus: wishlistItem.comic.ebayStatus
   })) || []
 
   const totalPages = Math.ceil((totalItems || 0) / itemsPerPage)

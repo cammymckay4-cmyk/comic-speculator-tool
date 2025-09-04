@@ -5,6 +5,7 @@ import { Search, BookOpen } from 'lucide-react'
 import ComicCard from '@/components/ui/ComicCard'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { searchPublicComics, type SearchResultComic, type SearchResponse } from '@/services/searchService'
+import { addEbayStatusToComic } from '@/lib/ebayUtils'
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams()
@@ -20,7 +21,7 @@ const SearchPage: React.FC = () => {
 
   // Transform SearchResultComic to ComicCard format
   const transformToComicCardData = (comic: SearchResultComic) => {
-    return {
+    const baseComic = {
       id: comic.id,
       title: comic.title,
       issue: comic.issueNumber,
@@ -30,6 +31,9 @@ const SearchPage: React.FC = () => {
       trend: 'neutral' as const,
       change: ''
     }
+    
+    // Add eBay status to the comic
+    return addEbayStatusToComic(baseComic)
   }
 
   return (

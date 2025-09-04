@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabaseClient'
 import type { Comic } from '@/lib/types'
+import { addEbayStatusToComic } from '@/lib/ebayUtils'
 
 // Interface for the wishlist_items table in Supabase
 export interface SupabaseWishlistItem {
@@ -40,7 +41,7 @@ export interface WishlistItem {
 // Transform Supabase wishlist item with comic data to match our frontend types
 const transformWishlistItem = (item: SupabaseWishlistItem): WishlistItem => {
   // Create a Comic object from the Supabase comic data
-  const comic: Comic = {
+  const baseComic: Comic = {
     id: item.comic.id,
     title: item.comic.title,
     issue: item.comic.issue,
@@ -57,6 +58,9 @@ const transformWishlistItem = (item: SupabaseWishlistItem): WishlistItem => {
     marketValue: item.comic.market_value,
     lastUpdated: item.comic.updated_at
   }
+  
+  // Add eBay status to the comic
+  const comic = addEbayStatusToComic(baseComic)
 
   // Create a WishlistItem object
   const wishlistItem: WishlistItem = {
