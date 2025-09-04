@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { 
   Eye, 
   EyeOff, 
@@ -18,6 +18,7 @@ type AuthMode = 'signin' | 'signup' | 'forgot'
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [mode, setMode] = useState<AuthMode>('signin')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -57,7 +58,10 @@ const AuthPage: React.FC = () => {
           email: data.user.email || '',
           avatar: data.user.user_metadata?.avatar_url || null,
         })
-        navigate('/')
+        
+        // Check for redirect parameter and navigate to it, otherwise go to home
+        const redirectTo = searchParams.get('redirect')
+        navigate(redirectTo || '/')
       }
     } catch (error) {
       setErrors({ auth: 'An unexpected error occurred' })
