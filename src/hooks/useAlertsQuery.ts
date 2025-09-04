@@ -4,7 +4,7 @@ import { useUserStore } from '@/store/userStore'
 
 export const useAlertsQuery = () => {
   const { user } = useUserStore()
-
+  
   return useQuery({
     queryKey: ['alerts', user?.id],
     queryFn: () => {
@@ -22,7 +22,7 @@ export const useAlertsQuery = () => {
 export const useCreateAlert = () => {
   const queryClient = useQueryClient()
   const { user } = useUserStore()
-
+  
   return useMutation({
     mutationFn: (alertData: CreateAlertData) => {
       if (!user) {
@@ -33,6 +33,8 @@ export const useCreateAlert = () => {
     onSuccess: () => {
       // Invalidate and refetch alerts after successful creation
       queryClient.invalidateQueries({ queryKey: ['alerts', user?.id] })
+      // Also invalidate alerts count
+      queryClient.invalidateQueries({ queryKey: ['alertsCount', user?.id] })
     },
   })
 }
@@ -40,7 +42,7 @@ export const useCreateAlert = () => {
 export const useUpdateAlertStatus = () => {
   const queryClient = useQueryClient()
   const { user } = useUserStore()
-
+  
   return useMutation({
     mutationFn: ({ alertId, isActive }: { alertId: string; isActive: boolean }) => {
       return updateAlertStatus(alertId, isActive)
@@ -48,6 +50,8 @@ export const useUpdateAlertStatus = () => {
     onSuccess: () => {
       // Invalidate and refetch alerts after successful update
       queryClient.invalidateQueries({ queryKey: ['alerts', user?.id] })
+      // Also invalidate alerts count
+      queryClient.invalidateQueries({ queryKey: ['alertsCount', user?.id] })
     },
   })
 }
@@ -55,7 +59,7 @@ export const useUpdateAlertStatus = () => {
 export const useDeleteAlert = () => {
   const queryClient = useQueryClient()
   const { user } = useUserStore()
-
+  
   return useMutation({
     mutationFn: (alertId: string) => {
       return deleteAlert(alertId)
@@ -63,6 +67,8 @@ export const useDeleteAlert = () => {
     onSuccess: () => {
       // Invalidate and refetch alerts after successful deletion
       queryClient.invalidateQueries({ queryKey: ['alerts', user?.id] })
+      // Also invalidate alerts count
+      queryClient.invalidateQueries({ queryKey: ['alertsCount', user?.id] })
     },
   })
 }
