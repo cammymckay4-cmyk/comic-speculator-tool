@@ -6,14 +6,14 @@ export const useAlertsQuery = () => {
   const { user } = useUserStore()
 
   return useQuery({
-    queryKey: ['alerts', user?.email],
+    queryKey: ['alerts', user?.id],
     queryFn: () => {
-      if (!user?.email) {
+      if (!user?.id) {
         throw new Error('No user found')
       }
-      return fetchAlerts(user.email)
+      return fetchAlerts(user.id)
     },
-    enabled: !!user?.email,
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 2, // 2 minutes
     refetchOnWindowFocus: false,
   })
@@ -25,14 +25,14 @@ export const useCreateAlert = () => {
 
   return useMutation({
     mutationFn: (alertData: Omit<CreateAlertData, 'userId'>) => {
-      if (!user?.email) {
+      if (!user?.id) {
         throw new Error('No user found')
       }
-      return createAlert({ ...alertData, userId: user.email })
+      return createAlert({ ...alertData, userId: user.id })
     },
     onSuccess: () => {
       // Invalidate and refetch alerts after successful creation
-      queryClient.invalidateQueries({ queryKey: ['alerts', user?.email] })
+      queryClient.invalidateQueries({ queryKey: ['alerts', user?.id] })
     },
   })
 }
@@ -47,7 +47,7 @@ export const useUpdateAlertStatus = () => {
     },
     onSuccess: () => {
       // Invalidate and refetch alerts after successful update
-      queryClient.invalidateQueries({ queryKey: ['alerts', user?.email] })
+      queryClient.invalidateQueries({ queryKey: ['alerts', user?.id] })
     },
   })
 }
@@ -62,7 +62,7 @@ export const useDeleteAlert = () => {
     },
     onSuccess: () => {
       // Invalidate and refetch alerts after successful deletion
-      queryClient.invalidateQueries({ queryKey: ['alerts', user?.email] })
+      queryClient.invalidateQueries({ queryKey: ['alerts', user?.id] })
     },
   })
 }

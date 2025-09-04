@@ -35,6 +35,7 @@ function App() {
         
         if (session?.user) {
           setUser({
+            id: session.user.id,
             name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
             email: session.user.email || '',
             avatar: session.user.user_metadata?.avatar_url || null,
@@ -56,6 +57,7 @@ function App() {
           setUser(null)
         } else if (event === 'SIGNED_IN' && session?.user) {
           setUser({
+            id: session.user.id,
             name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
             email: session.user.email || '',
             avatar: session.user.user_metadata?.avatar_url || null,
