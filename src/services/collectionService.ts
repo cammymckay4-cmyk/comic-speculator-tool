@@ -123,7 +123,30 @@ export const fetchUserCollection = async (
   // Apply search filter (search in comic data)
   if (filters.searchTerm && filters.searchTerm.trim()) {
     const searchTerm = filters.searchTerm.trim()
-    query = query.or(`comic.title.ilike.%${searchTerm}%,comic.issue.ilike.%${searchTerm}%,comic.publisher.ilike.%${searchTerm}%`)
+    // Split search term by spaces to handle partial matches
+    const searchTerms = searchTerm.split(/\s+/).filter(term => term.length > 0)
+    
+    if (searchTerms.length === 1) {
+      // Single term - search in title, issue, or publisher
+      const term = searchTerms[0]
+      const normalizedTerm = term.toLowerCase().replace(/-/g, '')
+      query = query.or(`comic.title.ilike.%${term}%,comic.title.ilike.%${normalizedTerm}%,comic.issue.ilike.%${term}%,comic.issue.ilike.%${normalizedTerm}%,comic.publisher.ilike.%${term}%`)
+    } else {
+      // Multiple terms - each term must match somewhere (title, issue, or publisher)
+      const conditions: string[] = []
+      searchTerms.forEach(term => {
+        const normalizedTerm = term.toLowerCase().replace(/-/g, '')
+        const termConditions = [
+          `comic.title.ilike.%${term}%`,
+          `comic.title.ilike.%${normalizedTerm}%`,
+          `comic.issue.ilike.%${term}%`,
+          `comic.issue.ilike.%${normalizedTerm}%`,
+          `comic.publisher.ilike.%${term}%`
+        ].join(',')
+        conditions.push(`(${termConditions})`)
+      })
+      query = query.or(conditions.join(','))
+    }
   }
 
   // Apply publisher filter
@@ -245,7 +268,30 @@ export const getCollectionCount = async (
   // Apply the same filters as fetchUserCollection but only for counting
   if (filters.searchTerm && filters.searchTerm.trim()) {
     const searchTerm = filters.searchTerm.trim()
-    query = query.or(`comic.title.ilike.%${searchTerm}%,comic.issue.ilike.%${searchTerm}%,comic.publisher.ilike.%${searchTerm}%`)
+    // Split search term by spaces to handle partial matches
+    const searchTerms = searchTerm.split(/\s+/).filter(term => term.length > 0)
+    
+    if (searchTerms.length === 1) {
+      // Single term - search in title, issue, or publisher
+      const term = searchTerms[0]
+      const normalizedTerm = term.toLowerCase().replace(/-/g, '')
+      query = query.or(`comic.title.ilike.%${term}%,comic.title.ilike.%${normalizedTerm}%,comic.issue.ilike.%${term}%,comic.issue.ilike.%${normalizedTerm}%,comic.publisher.ilike.%${term}%`)
+    } else {
+      // Multiple terms - each term must match somewhere (title, issue, or publisher)
+      const conditions: string[] = []
+      searchTerms.forEach(term => {
+        const normalizedTerm = term.toLowerCase().replace(/-/g, '')
+        const termConditions = [
+          `comic.title.ilike.%${term}%`,
+          `comic.title.ilike.%${normalizedTerm}%`,
+          `comic.issue.ilike.%${term}%`,
+          `comic.issue.ilike.%${normalizedTerm}%`,
+          `comic.publisher.ilike.%${term}%`
+        ].join(',')
+        conditions.push(`(${termConditions})`)
+      })
+      query = query.or(conditions.join(','))
+    }
   }
 
   if (filters.publishers && filters.publishers.length > 0) {
@@ -666,11 +712,36 @@ export const searchMasterComics = async (
   }
 
   const trimmedTerm = searchTerm.trim()
+  // Split search term by spaces to handle partial matches
+  const searchTerms = trimmedTerm.split(/\s+/).filter(term => term.length > 0)
   
-  const { data, error } = await supabase
+  let query = supabase
     .from('comics')
     .select('*')
-    .or(`title.ilike.%${trimmedTerm}%,issue.ilike.%${trimmedTerm}%,publisher.ilike.%${trimmedTerm}%`)
+
+  if (searchTerms.length === 1) {
+    // Single term - search in title, issue, or publisher
+    const term = searchTerms[0]
+    const normalizedTerm = term.toLowerCase().replace(/-/g, '')
+    query = query.or(`title.ilike.%${term}%,title.ilike.%${normalizedTerm}%,issue.ilike.%${term}%,issue.ilike.%${normalizedTerm}%,publisher.ilike.%${term}%`)
+  } else {
+    // Multiple terms - each term must match somewhere (title, issue, or publisher)
+    const conditions: string[] = []
+    searchTerms.forEach(term => {
+      const normalizedTerm = term.toLowerCase().replace(/-/g, '')
+      const termConditions = [
+        `title.ilike.%${term}%`,
+        `title.ilike.%${normalizedTerm}%`,
+        `issue.ilike.%${term}%`,
+        `issue.ilike.%${normalizedTerm}%`,
+        `publisher.ilike.%${term}%`
+      ].join(',')
+      conditions.push(`(${termConditions})`)
+    })
+    query = query.or(conditions.join(','))
+  }
+
+  const { data, error } = await query
     .order('title', { ascending: true })
     .limit(limit)
 
