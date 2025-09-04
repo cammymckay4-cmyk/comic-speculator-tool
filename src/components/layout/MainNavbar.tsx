@@ -13,7 +13,9 @@ import {
   Home,
   Newspaper,
   AlertCircle,
-  DollarSign
+  DollarSign,
+  Heart,
+  BookOpen
 } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { useUserStore } from '@/store/userStore'
@@ -51,7 +53,8 @@ const MainNavbar: React.FC<MainNavbarProps> = ({
   const navigationItems = [
     { label: 'Home', key: '/', icon: Home },
     { label: 'News', key: '/news', icon: Newspaper },
-    { label: 'Collection', key: '/collection', icon: Star },
+    { label: 'Collection', key: '/collection', icon: BookOpen },
+    { label: 'Wishlist', key: '/wishlist', icon: Heart },
     { label: 'Alerts', key: '/alerts', icon: AlertCircle },
   ]
 
