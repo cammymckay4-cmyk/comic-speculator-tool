@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { X, Plus, TrendingDown, TrendingUp, Bell, Package, Clock } from 'lucide-react'
 import { useCreateAlert } from '@/hooks/useAlertsQuery'
-import type { AlertType } from '@/lib/types'
+import type { AlertType, Comic } from '@/lib/types'
 
 interface CreateAlertModalProps {
   isOpen: boolean
   onClose: () => void
+  comic?: Comic
 }
 
 const alertTypeOptions = [
@@ -16,9 +17,9 @@ const alertTypeOptions = [
   { value: 'auction-ending' as AlertType, label: 'Auction Ending', icon: Clock, color: 'text-orange-600' },
 ]
 
-const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) => {
+const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, comic }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    name: comic ? `${comic.title} ${comic.issue} Alert` : '',
     alertType: 'price-drop' as AlertType,
     thresholdPrice: '',
     priceDirection: 'below' as 'above' | 'below',
@@ -31,7 +32,7 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) 
     e.preventDefault()
     
     // Validate form before submission
-    if (!formData.name.trim()) {
+    if (!formData.name.trim() && !comic) {
       console.error('Alert name is required')
       return
     }
@@ -52,6 +53,7 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) 
         thresholdPrice: formData.thresholdPrice ? parseFloat(formData.thresholdPrice) : undefined,
         priceDirection: formData.priceDirection,
         description: formData.description || undefined,
+        comicId: comic?.id,
       })
 
       await createAlertMutation.mutateAsync({
@@ -60,13 +62,14 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) 
         thresholdPrice: formData.thresholdPrice ? parseFloat(formData.thresholdPrice) : undefined,
         priceDirection: formData.priceDirection,
         description: formData.description || undefined,
+        comicId: comic?.id,
       })
       
       console.log('Alert created successfully')
       
       // Reset form and close modal on success
       setFormData({
-        name: '',
+        name: comic ? `${comic.title} ${comic.issue} Alert` : '',
         alertType: 'price-drop' as AlertType,
         thresholdPrice: '',
         priceDirection: 'below' as 'above' | 'below',
@@ -107,20 +110,44 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) 
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Alert Name */}
-          <div>
-            <label className="block font-persona-aura font-semibold text-ink-black mb-2">
-              Alert Name *
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              className="w-full p-3 border-2 border-ink-black comic-border font-persona-aura focus:outline-none focus:ring-2 focus:ring-stan-lee-blue"
-              placeholder="e.g., Spider-Man Price Watch"
-              required
-            />
-          </div>
+          {/* Comic Info (when comic is provided) */}
+          {comic && (
+            <div className="bg-golden-age-yellow bg-opacity-20 border-2 border-golden-age-yellow p-4">
+              <h3 className="font-super-squad text-lg text-ink-black mb-2">Creating Alert For:</h3>
+              <div className="flex items-center space-x-3">
+                <img
+                  src={comic.coverImage || '/comic-placeholder.jpg'}
+                  alt={`${comic.title} ${comic.issue}`}
+                  className="w-12 h-16 object-cover border-2 border-ink-black"
+                />
+                <div>
+                  <p className="font-persona-aura font-semibold text-ink-black">
+                    {comic.title} {comic.issue}
+                  </p>
+                  <p className="font-persona-aura text-sm text-gray-600">
+                    {comic.publisher} • Current Value: £{(comic.marketValue || 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Alert Name (only show when no comic is provided) */}
+          {!comic && (
+            <div>
+              <label className="block font-persona-aura font-semibold text-ink-black mb-2">
+                Alert Name *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                className="w-full p-3 border-2 border-ink-black comic-border font-persona-aura focus:outline-none focus:ring-2 focus:ring-stan-lee-blue"
+                placeholder="e.g., Spider-Man Price Watch"
+                required
+              />
+            </div>
+          )}
 
           {/* Alert Type */}
           <div>
@@ -211,7 +238,7 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) 
             </button>
             <button
               type="submit"
-              disabled={createAlertMutation.isPending || !formData.name.trim()}
+              disabled={createAlertMutation.isPending || (!formData.name.trim() && !comic)}
               className="comic-button flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createAlertMutation.isPending ? (
