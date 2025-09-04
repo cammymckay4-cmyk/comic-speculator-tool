@@ -39,14 +39,21 @@ const ComicDetailPage: React.FC = () => {
   // Fetch comic data from master comics table (public access)
   const { data: comic, isLoading, isError, error } = useQuery({
     queryKey: ['public-comic', id],
-    queryFn: () => fetchPublicComicById(id!),
+    queryFn: () => {
+      if (!id) throw new Error('Comic ID is required')
+      return fetchPublicComicById(id)
+    },
     enabled: !!id, // Only run query if ID is present
   })
 
   // Fetch user's collection entry for this comic (if logged in)
   const { data: collectionEntry } = useQuery({
     queryKey: ['user-collection-entry', id, user?.email],
-    queryFn: () => getUserCollectionEntry(id!, user?.email!),
+    queryFn: () => {
+      if (!id) throw new Error('Comic ID is required')
+      if (!user?.email) throw new Error('User email is required')
+      return getUserCollectionEntry(id, user.email)
+    },
     enabled: !!id && !!user?.email, // Only run if ID is present and user is logged in
   })
 
@@ -56,7 +63,10 @@ const ComicDetailPage: React.FC = () => {
       if (!collectionEntry) {
         throw new Error('Comic not in collection')
       }
-      return removeFromCollection(collectionEntry.id, user?.email!)
+      if (!user?.email) {
+        throw new Error('User email not found')
+      }
+      return removeFromCollection(collectionEntry.id, user.email)
     },
     onSuccess: () => {
       // Invalidate collection queries
