@@ -85,7 +85,10 @@ const AlertConfigPage: React.FC = () => {
     enabled: !!comicId
   })
 
-  const createAlertMutation = useCreateAlert()
+  const createAlertMutation = useCreateAlert((data) => {
+    toast.success('Alert Created', 'Your price alert has been set up successfully')
+    navigate('/alerts')
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -122,9 +125,6 @@ const AlertConfigPage: React.FC = () => {
         priceDirection: formData.priceDirection,
         description: formData.description || undefined
       })
-      
-      toast.success('Alert Created', 'Your price alert has been set up successfully')
-      navigate('/alerts')
     } catch (error) {
       console.error('Failed to create alert:', error)
       const errorMessage = error instanceof Error 

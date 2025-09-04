@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { adminService, type AdminUser, type UserRole } from '../services/adminService'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
-import { toast } from 'sonner'
+import { toast } from '@/store/toastStore'
 
 export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([])

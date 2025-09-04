@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, Plus, Book, Upload, Image as ImageIcon, Save } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { toast } from '@/store/toastStore'
 import type { ComicCondition, ComicFormat, CollectionComic } from '@/lib/types'
 import { uploadComicImage } from '@/services/storageService'
 import { updateCollectionEntry, type AddToCollectionData } from '@/services/collectionService'

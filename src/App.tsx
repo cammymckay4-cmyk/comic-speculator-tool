@@ -5,7 +5,6 @@ import Footer from './components/layout/Footer'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import ToastContainer from './components/ui/ToastContainer'
 import AdminRoute from './components/auth/AdminRoute'
-import { Toaster } from 'sonner'
 import { useUserStore } from './store/userStore'
 import { supabase } from './lib/supabaseClient'
 import { useAlertsCount } from './hooks/useAlertsCount'
@@ -122,9 +121,6 @@ function App() {
       
       {/* Toast Container */}
       <ToastContainer />
-      
-      {/* Sonner Toast Provider */}
-      <Toaster />
     </div>
   )
 }

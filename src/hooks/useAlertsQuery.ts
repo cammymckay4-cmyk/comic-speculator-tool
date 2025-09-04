@@ -19,7 +19,7 @@ export const useAlertsQuery = () => {
   })
 }
 
-export const useCreateAlert = () => {
+export const useCreateAlert = (onSuccess?: (data: any) => void) => {
   const queryClient = useQueryClient()
   const { user } = useUserStore()
   
@@ -30,11 +30,16 @@ export const useCreateAlert = () => {
       }
       return createAlert(alertData)
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate and refetch alerts after successful creation
       queryClient.invalidateQueries({ queryKey: ['alerts', user?.id] })
       // Also invalidate alerts count
       queryClient.invalidateQueries({ queryKey: ['alertsCount', user?.id] })
+      
+      // Call the custom onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess(data)
+      }
     },
   })
 }

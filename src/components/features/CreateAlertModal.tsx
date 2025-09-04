@@ -29,7 +29,29 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, co
     description: '',
   })
 
-  const createAlertMutation = useCreateAlert()
+  const createAlertMutation = useCreateAlert((data) => {
+    // Show success toast with comic title if available
+    const alertTitle = comic ? `${comic.title} ${comic.issue || ''}`.trim() : formData.name
+    toast.success(
+      'Alert created successfully!',
+      `Alert created for ${alertTitle}`
+    )
+    
+    // Reset form and close modal on success
+    setFormData({
+      name: comic ? `${comic.title} ${comic.issue} Alert` : '',
+      alertType: 'price-drop' as AlertType,
+      thresholdPrice: '',
+      priceDirection: 'below' as 'above' | 'below',
+      description: '',
+    })
+    onClose()
+    
+    // Redirect to alerts page after a brief delay to show the toast
+    setTimeout(() => {
+      navigate('/alerts')
+    }, 500)
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,31 +83,9 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, co
 
       console.log('Submitting alert creation:', alertData)
 
-      const newAlert = await createAlertMutation.mutateAsync(alertData)
+      await createAlertMutation.mutateAsync(alertData)
       
       console.log('Alert created successfully')
-      
-      // Show success toast with comic title if available
-      const alertTitle = comic ? `${comic.title} ${comic.issue || ''}`.trim() : formData.name
-      toast.success(
-        'Alert created successfully!',
-        `Alert created for ${alertTitle}`
-      )
-      
-      // Reset form and close modal on success
-      setFormData({
-        name: comic ? `${comic.title} ${comic.issue} Alert` : '',
-        alertType: 'price-drop' as AlertType,
-        thresholdPrice: '',
-        priceDirection: 'below' as 'above' | 'below',
-        description: '',
-      })
-      onClose()
-      
-      // Redirect to alerts page after a brief delay to show the toast
-      setTimeout(() => {
-        navigate('/alerts')
-      }, 500)
     } catch (error) {
       console.error('Failed to create alert:', error)
       // Error will be handled by the mutation's error state

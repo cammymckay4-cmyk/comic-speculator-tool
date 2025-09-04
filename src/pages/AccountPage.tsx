@@ -19,7 +19,7 @@ import { SUBSCRIPTION_TIERS } from '@/utils/constants'
 import { fetchAllComicsForUser } from '@/services/collectionService'
 import { generateCSV, downloadCSV } from '@/utils/csvExport'
 import { supabase } from '@/lib/supabaseClient'
-import { toast } from 'sonner'
+import { toast } from '@/store/toastStore'
 
 const AccountPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile')

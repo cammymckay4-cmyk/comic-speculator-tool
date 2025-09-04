@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, Search, Book, Plus } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { toast } from '@/store/toastStore'
 import type { ComicCondition } from '@/lib/types'
 import { addToCollection, type SupabaseComic, type AddToCollectionData } from '@/services/collectionService'
 import { searchPublicComics, type SearchResultComic } from '@/services/searchService'
