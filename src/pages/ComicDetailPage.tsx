@@ -269,21 +269,6 @@ const ComicDetailPage: React.FC = () => {
     window.open(ebayUrl, '_blank', 'noopener,noreferrer')
   }
 
-  const handleEndingSoon = () => {
-    if (!comic) return
-    
-    // Create search query with title and issue
-    const searchQuery = `${comic.title} ${comic.issue}`.trim()
-    
-    // Encode the search query to handle special characters
-    const encodedQuery = encodeURIComponent(searchQuery)
-    
-    // Construct the eBay UK search URL with ending soonest sort, auctions only, and UK-only results
-    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&LH_PrefLoc=1&LH_Auction=1&_sop=1`
-    
-    // Open in new tab
-    window.open(ebayUrl, '_blank', 'noopener,noreferrer')
-  }
 
   const handleSoldListings = () => {
     if (!comic) return
@@ -411,14 +396,6 @@ const ComicDetailPage: React.FC = () => {
                   <span className="font-persona-aura font-semibold">View Live Listings</span>
                 </button>
 
-                <button 
-                  onClick={handleEndingSoon}
-                  className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-white text-ink-black
-                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-gray-50"
-                >
-                  <Calendar size={18} />
-                  <span className="font-persona-aura font-semibold">Ending Soon</span>
-                </button>
 
                 <button 
                   onClick={handleSoldListings}
