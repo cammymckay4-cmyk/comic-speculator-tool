@@ -30,7 +30,30 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Validate form before submission
+    if (!formData.name.trim()) {
+      console.error('Alert name is required')
+      return
+    }
+
+    // For price alerts, validate threshold price
+    if (['price-drop', 'price-increase'].includes(formData.alertType)) {
+      const price = parseFloat(formData.thresholdPrice)
+      if (!formData.thresholdPrice || isNaN(price) || price <= 0) {
+        console.error('Valid threshold price is required for price alerts')
+        return
+      }
+    }
+    
     try {
+      console.log('Submitting alert creation:', {
+        name: formData.name,
+        alertType: formData.alertType,
+        thresholdPrice: formData.thresholdPrice ? parseFloat(formData.thresholdPrice) : undefined,
+        priceDirection: formData.priceDirection,
+        description: formData.description || undefined,
+      })
+
       await createAlertMutation.mutateAsync({
         name: formData.name,
         alertType: formData.alertType,
@@ -38,6 +61,8 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) 
         priceDirection: formData.priceDirection,
         description: formData.description || undefined,
       })
+      
+      console.log('Alert created successfully')
       
       // Reset form and close modal on success
       setFormData({
@@ -50,6 +75,7 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) 
       onClose()
     } catch (error) {
       console.error('Failed to create alert:', error)
+      // Error will be handled by the mutation's error state
     }
   }
 
@@ -205,8 +231,13 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose }) 
           {/* Error Message */}
           {createAlertMutation.isError && (
             <div className="mt-4 p-3 bg-red-100 border-2 border-red-300 comic-border">
-              <p className="font-persona-aura text-red-700">
-                Failed to create alert. Please try again.
+              <p className="font-persona-aura text-red-700 font-semibold mb-2">
+                Failed to create alert
+              </p>
+              <p className="font-persona-aura text-red-600 text-sm">
+                {createAlertMutation.error instanceof Error 
+                  ? createAlertMutation.error.message 
+                  : 'An unknown error occurred. Please try again.'}
               </p>
             </div>
           )}

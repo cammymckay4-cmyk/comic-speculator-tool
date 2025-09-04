@@ -92,9 +92,30 @@ const AlertConfigPage: React.FC = () => {
     
     if (!comic) return
 
+    // Validate form data
+    const alertName = formData.name || `${comic.title} ${comic.issue} Alert`
+    
+    // For price alerts, validate target price
+    if (['price-drop', 'price-increase'].includes(formData.alertType)) {
+      const price = parseFloat(formData.targetPrice)
+      if (!formData.targetPrice || isNaN(price) || price <= 0) {
+        toast.error('Invalid Price', 'Please enter a valid target price for this alert.')
+        return
+      }
+    }
+
     try {
+      console.log('Creating alert for comic:', {
+        comicId: comicId,
+        comicTitle: comic.title,
+        name: alertName,
+        alertType: formData.alertType,
+        targetPrice: formData.targetPrice ? parseFloat(formData.targetPrice) : undefined,
+        priceDirection: formData.priceDirection,
+      })
+
       await createAlertMutation.mutateAsync({
-        name: formData.name || `${comic.title} ${comic.issue} Alert`,
+        name: alertName,
         alertType: formData.alertType,
         comicId: comicId,
         thresholdPrice: formData.targetPrice ? parseFloat(formData.targetPrice) : undefined,
@@ -106,7 +127,10 @@ const AlertConfigPage: React.FC = () => {
       navigate('/alerts')
     } catch (error) {
       console.error('Failed to create alert:', error)
-      toast.error('Alert Failed', 'Failed to create alert. Please try again.')
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to create alert. Please try again.'
+      toast.error('Alert Failed', errorMessage)
     }
   }
 
@@ -382,11 +406,18 @@ const AlertConfigPage: React.FC = () => {
           {/* Error Message */}
           {createAlertMutation.isError && (
             <div className="mt-6 p-4 bg-red-100 border-2 border-red-300 comic-border">
-              <div className="flex items-center space-x-3">
-                <AlertCircle size={24} className="text-red-600" />
-                <p className="font-persona-aura text-red-700">
-                  Failed to create alert. Please check your inputs and try again.
-                </p>
+              <div className="flex items-start space-x-3">
+                <AlertCircle size={24} className="text-red-600 mt-0.5" />
+                <div>
+                  <p className="font-persona-aura text-red-700 font-semibold">
+                    Failed to create alert
+                  </p>
+                  <p className="font-persona-aura text-red-600 text-sm mt-1">
+                    {createAlertMutation.error instanceof Error 
+                      ? createAlertMutation.error.message 
+                      : 'Please check your inputs and try again.'}
+                  </p>
+                </div>
               </div>
             </div>
           )}
