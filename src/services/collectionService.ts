@@ -74,17 +74,43 @@ const transformCollectionEntry = (entry: SupabaseUserCollectionEntry): Collectio
   return collectionComic
 }
 
-// Helper function to build OR conditions without duplicates
+// Search normalization functions (matching searchService.ts)
+const normalizeSearchTerm = (term: string): string => {
+  // Handle hyphenated words, remove articles, and normalize case
+  return term
+    .toLowerCase()
+    .replace(/^(the|a|an)\s+/i, '') // Remove leading articles
+    .replace(/-/g, '') // Remove hyphens (spider-man -> spiderman)
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim()
+}
+
+// Create search variants for better matching
+const createSearchVariants = (term: string): string[] => {
+  const variants = new Set<string>()
+  const normalized = normalizeSearchTerm(term)
+  
+  variants.add(term) // Original
+  variants.add(normalized) // Normalized
+  
+  // Add hyphenated version if term contains common words that are often hyphenated
+  if (term.toLowerCase().includes('spider') && term.toLowerCase().includes('man')) {
+    variants.add(term.toLowerCase().replace(/spiderman/g, 'spider-man'))
+    variants.add(term.toLowerCase().replace(/spider[\s-]*man/g, 'spiderman'))
+  }
+  
+  return Array.from(variants).filter(v => v.length > 0)
+}
+
+// Helper function to build OR conditions for all variants of a term
 const buildTermConditions = (term: string, fields: string[]): string => {
-  const normalizedTerm = term.toLowerCase().replace(/-/g, '')
+  const variants = createSearchVariants(term)
   const conditions = new Set<string>() // Use Set to avoid duplicates
   
-  fields.forEach(field => {
-    conditions.add(`${field}.ilike.%${term}%`)
-    // Only add normalized version if it's different from original
-    if (normalizedTerm !== term) {
-      conditions.add(`${field}.ilike.%${normalizedTerm}%`)
-    }
+  variants.forEach(variant => {
+    fields.forEach(field => {
+      conditions.add(`${field}.ilike.%${variant}%`)
+    })
   })
   
   return Array.from(conditions).join(',')
@@ -696,7 +722,7 @@ export const fetchAllComicsForUser = async (userEmail: string): Promise<Collecti
   return data.map(transformCollectionEntry)
 }
 
-// New function to search master comics list
+// New function to search master comics list (matching searchService.ts logic)
 export const searchMasterComics = async (
   searchTerm: string,
   limit: number = 20
@@ -705,25 +731,25 @@ export const searchMasterComics = async (
     return []
   }
 
-  const trimmedTerm = searchTerm.trim()
+  const trimmedSearch = searchTerm.trim()
+  
   // Split search term by spaces to handle partial matches
-  const searchTerms = trimmedTerm.split(/\s+/).filter(term => term.length > 0)
+  const searchTerms = trimmedSearch.split(/\s+/).filter(term => term.length > 0)
   
   let query = supabase
     .from('comics')
     .select('*')
 
-  if (searchTerms.length === 1) {
-    // Single term - search in title, issue, or publisher
-    const term = searchTerms[0]
-    const conditions = buildTermConditions(term, ['title', 'issue', 'publisher'])
-    query = query.or(conditions)
-  } else {
-    // Multiple terms - chain OR conditions, each term must match somewhere
-    searchTerms.forEach(term => {
-      const conditions = buildTermConditions(term, ['title', 'issue', 'publisher'])
-      query = query.or(conditions)
-    })
+  // Build a single OR condition that searches for ANY of the terms in ANY field
+  const allConditions = new Set<string>()
+  
+  searchTerms.forEach(term => {
+    const termConditions = buildTermConditions(term, ['title', 'issue', 'publisher'])
+    termConditions.split(',').forEach(condition => allConditions.add(condition))
+  })
+
+  if (allConditions.size > 0) {
+    query = query.or(Array.from(allConditions).join(','))
   }
 
   const { data, error } = await query
