@@ -11,7 +11,7 @@ export interface SupabaseComic {
   market_value: number
   format?: string
   is_key_issue?: boolean
-  key_issue_reason?: string
+  key_notes?: string
   created_at: string
   updated_at: string
 }
@@ -46,7 +46,7 @@ const transformCollectionEntry = (entry: SupabaseUserCollectionEntry): Collectio
     format: (entry.comic.format as any) || 'single-issue',
     isVariant: false,
     isKeyIssue: entry.comic.is_key_issue || false,
-    keyIssueReason: entry.comic.key_issue_reason,
+    keyIssueReason: entry.comic.key_notes,
     prices: [],
     marketValue: entry.comic.market_value,
     lastUpdated: entry.comic.updated_at
@@ -113,7 +113,7 @@ export const fetchUserCollection = async (
         market_value,
         format,
         is_key_issue,
-        key_issue_reason,
+        key_notes,
         created_at,
         updated_at
       )
@@ -309,7 +309,7 @@ export const fetchUserCollectionEntryById = async (entryId: string, userEmail: s
         market_value,
         format,
         is_key_issue,
-        key_issue_reason,
+        key_notes,
         created_at,
         updated_at
       )
@@ -363,7 +363,7 @@ export interface CreateComicData {
   estimatedValue?: number | null
   coverImageUrl?: string | null
   isKeyIssue: boolean
-  keyIssueReason?: string | null
+  keyNotes?: string | null
 }
 
 // Combined interface for the add comic form (backwards compatibility)
@@ -380,7 +380,7 @@ export interface AddComicData {
   coverImageUrl?: string | null
   notes?: string | null
   isKeyIssue: boolean
-  keyIssueReason?: string | null
+  keyNotes?: string | null
   addedDate: string
 }
 
@@ -408,7 +408,7 @@ export const findOrCreateComic = async (comicData: CreateComicData): Promise<Sup
     market_value: comicData.estimatedValue || 0,
     cover_image: comicData.coverImageUrl || '',
     is_key_issue: comicData.isKeyIssue,
-    key_issue_reason: comicData.keyIssueReason
+    key_notes: comicData.keyNotes
   }
 
   const { data, error } = await supabase
@@ -465,7 +465,7 @@ export const addToCollection = async (userEmail: string, collectionData: AddToCo
         market_value,
         format,
         is_key_issue,
-        key_issue_reason,
+        key_notes,
         created_at,
         updated_at
       )
@@ -498,7 +498,7 @@ export const addComic = async (userEmail: string, comicData: AddComicData): Prom
     estimatedValue: comicData.estimatedValue,
     coverImageUrl: comicData.coverImageUrl,
     isKeyIssue: comicData.isKeyIssue,
-    keyIssueReason: comicData.keyIssueReason
+    keyNotes: comicData.keyNotes
   })
 
   // Then add it to the user's collection
@@ -556,7 +556,7 @@ export const updateCollectionEntry = async (
         market_value,
         format,
         is_key_issue,
-        key_issue_reason,
+        key_notes,
         created_at,
         updated_at
       )
@@ -637,7 +637,7 @@ export const fetchAllComicsForUser = async (userEmail: string): Promise<Collecti
         market_value,
         format,
         is_key_issue,
-        key_issue_reason,
+        key_notes,
         created_at,
         updated_at
       )
@@ -709,7 +709,7 @@ export const fetchComicById = async (comicId: string): Promise<CollectionComic> 
         market_value,
         format,
         is_key_issue,
-        key_issue_reason,
+        key_notes,
         created_at,
         updated_at
       )

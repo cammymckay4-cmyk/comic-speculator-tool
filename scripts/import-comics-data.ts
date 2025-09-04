@@ -40,7 +40,7 @@ interface CSVComicRow {
   variant_description?: string
   is_variant?: string
   is_key_issue?: string
-  key_issue_reason?: string
+  key_notes?: string
   story_arcs?: string
   characters?: string
   teams?: string
@@ -69,7 +69,7 @@ interface ComicInsertData {
   variant_description?: string | null
   is_variant: boolean
   is_key_issue: boolean
-  key_issue_reason?: string | null
+  key_notes?: string | null
   story_arcs?: string[] | null
   characters?: string[] | null
   teams?: string[] | null
@@ -133,7 +133,7 @@ function transformCSVRowToComic(row: CSVComicRow): ComicInsertData {
     variant_description: row.variant_description || null,
     is_variant: row.is_variant?.toLowerCase() === 'true',
     is_key_issue: row.is_key_issue?.toLowerCase() === 'true',
-    key_issue_reason: row.key_issue_reason || null,
+    key_notes: row.key_notes || null,
     story_arcs: parseStringArray(row.story_arcs),
     characters: parseStringArray(row.characters),
     teams: parseStringArray(row.teams),
