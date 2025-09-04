@@ -741,6 +741,115 @@ export const searchMasterComics = async (
   return data || []
 }
 
+// Function to fetch a single comic by ID from master comics table (public access)
+export const fetchPublicComicById = async (comicId: string): Promise<Comic> => {
+  if (!comicId) {
+    throw new Error('Comic ID is required')
+  }
+
+  const { data, error } = await supabase
+    .from('comics')
+    .select(`
+      id,
+      title,
+      issue,
+      publisher,
+      cover_image,
+      market_value,
+      format,
+      is_key_issue,
+      key_notes,
+      description,
+      page_count,
+      story_arcs,
+      characters,
+      created_at,
+      updated_at
+    `)
+    .eq('id', comicId)
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to fetch comic: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error('Comic not found')
+  }
+
+  // Transform the Supabase comic data to match our frontend Comic type
+  const comic: Comic = {
+    id: data.id,
+    title: data.title,
+    issue: data.issue,
+    issueNumber: parseInt(data.issue.replace('#', '')) || 0,
+    publisher: data.publisher,
+    publishDate: data.created_at || new Date().toISOString(), // Use created_at as publish date for now
+    coverImage: data.cover_image || '',
+    creators: [], // You may want to add creator data from your schema
+    description: data.description || undefined,
+    pageCount: data.page_count || undefined,
+    format: (data.format as any) || 'single-issue',
+    isVariant: false,
+    isKeyIssue: data.is_key_issue || false,
+    keyNotes: data.key_notes || undefined,
+    storyArcs: data.story_arcs || undefined,
+    characters: data.characters || undefined,
+    prices: [],
+    marketValue: data.market_value || 0,
+    lastUpdated: data.updated_at
+  }
+
+  return comic
+}
+
+// Function to check if user has this comic in their collection
+export const getUserCollectionEntry = async (comicId: string, userEmail: string): Promise<CollectionComic | null> => {
+  if (!comicId || !userEmail) {
+    return null
+  }
+
+  try {
+    // Get the current user from Supabase Auth
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return null
+    }
+
+    const { data, error } = await supabase
+      .from('user_collection_entries')
+      .select(`
+        *,
+        comic:comics!inner(
+          id,
+          title,
+          issue,
+          publisher,
+          cover_image,
+          market_value,
+          format,
+          is_key_issue,
+          key_notes,
+          created_at,
+          updated_at
+        )
+      `)
+      .eq('comic_id', comicId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (error || !data) {
+      return null
+    }
+
+    // Transform the Supabase data to match our frontend types
+    return transformCollectionEntry(data)
+  } catch (error) {
+    return null
+  }
+}
+
 // Function to fetch a single comic by ID (for ComicDetailPage)
 export const fetchComicById = async (comicId: string): Promise<CollectionComic> => {
   if (!comicId) {
