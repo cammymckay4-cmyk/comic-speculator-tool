@@ -240,13 +240,61 @@ const ComicDetailPage: React.FC = () => {
     if (!comic) return
     
     // Create search query with title and issue
-    const searchQuery = `${comic.title} ${comic.issue}`.trim()
+    const searchQuery = `${comic.title} ${comic.issue} comic`.trim()
     
     // Encode the search query to handle special characters
     const encodedQuery = encodeURIComponent(searchQuery)
     
-    // Construct the eBay search URL
-    const ebayUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodedQuery}`
+    // Construct the eBay UK search URL
+    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}`
+    
+    // Open in new tab
+    window.open(ebayUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleViewLiveListings = () => {
+    if (!comic) return
+    
+    // Create search query with title and issue
+    const searchQuery = `${comic.title} ${comic.issue} comic`.trim()
+    
+    // Encode the search query to handle special characters
+    const encodedQuery = encodeURIComponent(searchQuery)
+    
+    // Construct the eBay UK search URL with UK-only results
+    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&LH_PrefLoc=1`
+    
+    // Open in new tab
+    window.open(ebayUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleEndingSoon = () => {
+    if (!comic) return
+    
+    // Create search query with title and issue
+    const searchQuery = `${comic.title} ${comic.issue} comic`.trim()
+    
+    // Encode the search query to handle special characters
+    const encodedQuery = encodeURIComponent(searchQuery)
+    
+    // Construct the eBay UK search URL with ending soonest sort and UK-only results
+    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&_sop=1&LH_PrefLoc=1`
+    
+    // Open in new tab
+    window.open(ebayUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleSoldListings = () => {
+    if (!comic) return
+    
+    // Create search query with title and issue
+    const searchQuery = `${comic.title} ${comic.issue} comic`.trim()
+    
+    // Encode the search query to handle special characters
+    const encodedQuery = encodeURIComponent(searchQuery)
+    
+    // Construct the eBay UK search URL for sold listings with UK-only results
+    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&LH_Complete=1&LH_PrefLoc=1`
     
     // Open in new tab
     window.open(ebayUrl, '_blank', 'noopener,noreferrer')
@@ -351,6 +399,33 @@ const ComicDetailPage: React.FC = () => {
                 >
                   <ShoppingCart size={18} />
                   <span>Find on eBay</span>
+                </button>
+
+                <button 
+                  onClick={handleViewLiveListings}
+                  className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-white text-ink-black
+                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-gray-50"
+                >
+                  <TrendingUp size={18} />
+                  <span className="font-persona-aura font-semibold">View Live Listings</span>
+                </button>
+
+                <button 
+                  onClick={handleEndingSoon}
+                  className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-white text-ink-black
+                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-gray-50"
+                >
+                  <Calendar size={18} />
+                  <span className="font-persona-aura font-semibold">Ending Soon</span>
+                </button>
+
+                <button 
+                  onClick={handleSoldListings}
+                  className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-white text-ink-black
+                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-gray-50"
+                >
+                  <DollarSign size={18} />
+                  <span className="font-persona-aura font-semibold">Sold Listings</span>
                 </button>
 
                 <button className="w-full flex items-center justify-center space-x-2 py-3 text-stan-lee-blue hover:text-kirby-red transition-colors">
