@@ -287,7 +287,10 @@ const CollectionPage: React.FC = () => {
             <Upload size={18} />
             <span className="font-persona-aura font-semibold">Import Comics</span>
           </button>
-          <button className="flex items-center space-x-2 text-stan-lee-blue hover:text-kirby-red transition-colors">
+          <button 
+            onClick={() => navigate('/wishlist')}
+            className="flex items-center space-x-2 text-stan-lee-blue hover:text-kirby-red transition-colors"
+          >
             <Star size={18} />
             <span className="font-persona-aura font-semibold">Wishlist ({wishlistCount || 0})</span>
           </button>

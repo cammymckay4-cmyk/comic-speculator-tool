@@ -1,5 +1,9 @@
-import React from 'react'
-import { TrendingUp, TrendingDown, Edit, Trash2 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { TrendingUp, TrendingDown, Edit, Trash2, Heart } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { addToWishlist, removeFromWishlist, isComicInWishlist } from '@/services/wishlistService'
+import { useUserStore } from '@/store/userStore'
+import { toast } from '@/store/toastStore'
 
 interface ComicData {
   id: string
@@ -17,7 +21,9 @@ interface ComicCardProps {
   onClick?: () => void
   onEdit?: () => void
   onDelete?: () => void
+  onWishlistChange?: () => void
   variant?: 'default' | 'compact' | 'detailed'
+  showWishlist?: boolean
 }
 
 const ComicCard: React.FC<ComicCardProps> = ({ 
@@ -25,8 +31,86 @@ const ComicCard: React.FC<ComicCardProps> = ({
   onClick,
   onEdit,
   onDelete,
-  variant = 'default' 
+  onWishlistChange,
+  variant = 'default',
+  showWishlist = true
 }) => {
+  const queryClient = useQueryClient()
+  const { user } = useUserStore()
+  const [isInWishlist, setIsInWishlist] = useState(false)
+  const [checkingWishlist, setCheckingWishlist] = useState(false)
+
+  // Check if comic is in wishlist
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      if (!user?.email) return
+      setCheckingWishlist(true)
+      try {
+        const inWishlist = await isComicInWishlist(comic.id, user.email)
+        setIsInWishlist(inWishlist)
+      } catch (error) {
+        console.error('Error checking wishlist status:', error)
+      } finally {
+        setCheckingWishlist(false)
+      }
+    }
+
+    checkWishlistStatus()
+  }, [comic.id, user?.email])
+
+  // Add to wishlist mutation
+  const addToWishlistMutation = useMutation({
+    mutationFn: ({ comicId, userEmail }: { comicId: string; userEmail: string }) => 
+      addToWishlist(userEmail, { comicId }),
+    onSuccess: () => {
+      setIsInWishlist(true)
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] })
+      queryClient.invalidateQueries({ queryKey: ['wishlist-count'] })
+      toast.success('Added to Wishlist', 'Comic has been added to your wishlist')
+      onWishlistChange?.()
+    },
+    onError: (error) => {
+      console.error('Failed to add to wishlist:', error)
+      toast.error('Wishlist Error', 'Failed to add comic to wishlist. Please try again.')
+    }
+  })
+
+  // Remove from wishlist mutation
+  const removeFromWishlistMutation = useMutation({
+    mutationFn: async ({ comicId, userEmail }: { comicId: string; userEmail: string }) => {
+      // First get the wishlist item to find its ID
+      const { getWishlistItemByComicId } = await import('@/services/wishlistService')
+      const wishlistItem = await getWishlistItemByComicId(comicId, userEmail)
+      if (!wishlistItem) throw new Error('Wishlist item not found')
+      return removeFromWishlist(wishlistItem.id, userEmail)
+    },
+    onSuccess: () => {
+      setIsInWishlist(false)
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] })
+      queryClient.invalidateQueries({ queryKey: ['wishlist-count'] })
+      toast.success('Removed from Wishlist', 'Comic has been removed from your wishlist')
+      onWishlistChange?.()
+    },
+    onError: (error) => {
+      console.error('Failed to remove from wishlist:', error)
+      toast.error('Wishlist Error', 'Failed to remove comic from wishlist. Please try again.')
+    }
+  })
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    
+    if (!user?.email) {
+      toast.error('Sign In Required', 'Please sign in to add comics to your wishlist')
+      return
+    }
+
+    if (isInWishlist) {
+      removeFromWishlistMutation.mutate({ comicId: comic.id, userEmail: user.email })
+    } else {
+      addToWishlistMutation.mutate({ comicId: comic.id, userEmail: user.email })
+    }
+  }
   return (
     <div 
       className="comic-card overflow-hidden group"
@@ -61,6 +145,24 @@ const ComicCard: React.FC<ComicCardProps> = ({
         
         {/* Action Buttons */}
         <div className="absolute bottom-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {showWishlist && (
+            <button
+              onClick={handleWishlistToggle}
+              disabled={checkingWishlist || addToWishlistMutation.isPending || removeFromWishlistMutation.isPending}
+              className={`p-2 border-2 border-ink-black shadow-comic-sm transition-colors ${
+                isInWishlist 
+                  ? 'bg-kirby-red text-parchment hover:bg-red-700' 
+                  : 'bg-golden-age-yellow text-ink-black hover:bg-yellow-400'
+              } ${
+                checkingWishlist || addToWishlistMutation.isPending || removeFromWishlistMutation.isPending
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
+              }`}
+              title={isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+            >
+              <Heart size={16} className={isInWishlist ? 'fill-current' : ''} />
+            </button>
+          )}
           {onEdit && (
             <button
               onClick={(e) => {
