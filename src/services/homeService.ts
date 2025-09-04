@@ -35,7 +35,8 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
   const { data: collectionEntries, error: comicsError } = await supabase
     .from('user_collection_entries')
     .select(`
-      comic:comics!inner(market_value)
+      *,
+      comic:comics(market_value)
     `)
     .eq('user_id', user.id)
 
@@ -44,7 +45,10 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
   }
 
   const totalComics = collectionEntries?.length || 0
-  const collectionValue = collectionEntries?.reduce((sum, entry) => sum + (entry.comic.market_value || 0), 0) || 0
+  const collectionValue = collectionEntries?.reduce((sum, entry) => {
+    const marketValue = Array.isArray(entry.comic) ? entry.comic[0]?.market_value : entry.comic?.market_value
+    return sum + (marketValue || 0)
+  }, 0) || 0
 
   // Get active alerts count (assuming alerts table exists)
   const { count: alertsCount, error: alertsError } = await supabase
