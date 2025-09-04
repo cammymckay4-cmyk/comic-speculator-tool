@@ -61,6 +61,7 @@ const AuthConfirmPage: React.FC = () => {
         if (data.user) {
           // Update user store
           setUser({
+            id: data.user.id,
             name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
             email: data.user.email || '',
             avatar: data.user.user_metadata?.avatar_url || null,

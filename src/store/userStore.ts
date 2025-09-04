@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 interface NavbarUserType {
+  id: string
   name: string
   email: string
   avatar?: string | null
