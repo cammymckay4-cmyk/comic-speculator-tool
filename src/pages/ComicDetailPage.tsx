@@ -19,6 +19,7 @@ import {
   Trash2
 } from 'lucide-react'
 import { fetchPublicComicById, getUserCollectionEntry, removeFromCollection } from '@/services/collectionService'
+import { addToWishlist, removeFromWishlist, getWishlistItemByComicId } from '@/services/wishlistService'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditComicForm from '@/components/features/EditComicForm'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
@@ -31,7 +32,6 @@ const ComicDetailPage: React.FC = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useUserStore()
-  const [isInWishlist, setIsInWishlist] = useState(false)
   const [hasAlert, setHasAlert] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -53,6 +53,17 @@ const ComicDetailPage: React.FC = () => {
       if (!id) throw new Error('Comic ID is required')
       if (!user?.email) throw new Error('User email is required')
       return getUserCollectionEntry(id, user.email)
+    },
+    enabled: !!id && !!user?.email, // Only run if ID is present and user is logged in
+  })
+
+  // Fetch user's wishlist entry for this comic (if logged in)
+  const { data: wishlistEntry } = useQuery({
+    queryKey: ['user-wishlist-entry', id, user?.email],
+    queryFn: () => {
+      if (!id) throw new Error('Comic ID is required')
+      if (!user?.email) throw new Error('User email is required')
+      return getWishlistItemByComicId(id, user.email)
     },
     enabled: !!id && !!user?.email, // Only run if ID is present and user is logged in
   })
@@ -83,6 +94,50 @@ const ComicDetailPage: React.FC = () => {
     onError: (error) => {
       console.error('Failed to remove comic from collection:', error)
       toast.error('Remove Failed', 'Failed to remove the comic from your collection. Please try again.')
+    }
+  })
+
+  // Mutation for adding to wishlist
+  const addToWishlistMutation = useMutation({
+    mutationFn: () => {
+      if (!id) throw new Error('Comic ID is required')
+      if (!user?.email) throw new Error('User email is required')
+      return addToWishlist(user.email, { comicId: id })
+    },
+    onSuccess: () => {
+      // Invalidate wishlist queries
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] })
+      queryClient.invalidateQueries({ queryKey: ['wishlist-count'] })
+      queryClient.invalidateQueries({ queryKey: ['user-wishlist-entry'] })
+      
+      // Show success toast
+      toast.success('Added to Wishlist', 'The comic has been added to your wishlist')
+    },
+    onError: (error) => {
+      console.error('Failed to add comic to wishlist:', error)
+      toast.error('Add Failed', 'Failed to add the comic to your wishlist. Please try again.')
+    }
+  })
+
+  // Mutation for removing from wishlist
+  const removeFromWishlistMutation = useMutation({
+    mutationFn: () => {
+      if (!wishlistEntry) throw new Error('Comic not in wishlist')
+      if (!user?.email) throw new Error('User email is required')
+      return removeFromWishlist(wishlistEntry.id, user.email)
+    },
+    onSuccess: () => {
+      // Invalidate wishlist queries
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] })
+      queryClient.invalidateQueries({ queryKey: ['wishlist-count'] })
+      queryClient.invalidateQueries({ queryKey: ['user-wishlist-entry'] })
+      
+      // Show success toast
+      toast.success('Removed from Wishlist', 'The comic has been removed from your wishlist')
+    },
+    onError: (error) => {
+      console.error('Failed to remove comic from wishlist:', error)
+      toast.error('Remove Failed', 'Failed to remove the comic from your wishlist. Please try again.')
     }
   })
 
@@ -160,8 +215,15 @@ const ComicDetailPage: React.FC = () => {
       navigate('/auth')
       return
     }
-    setIsInWishlist(!isInWishlist)
-    // TODO: Implement actual wishlist API calls
+    
+    // Toggle wishlist status
+    if (wishlistEntry) {
+      // Remove from wishlist
+      removeFromWishlistMutation.mutate()
+    } else {
+      // Add to wishlist
+      addToWishlistMutation.mutate()
+    }
   }
 
   const handlePriceAlertClick = () => {
@@ -263,11 +325,11 @@ const ComicDetailPage: React.FC = () => {
                   onClick={handleWishlistClick}
                   className={`w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm
                             transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic
-                            ${isInWishlist ? 'bg-kirby-red text-parchment' : 'bg-white text-ink-black'}`}
+                            ${wishlistEntry ? 'bg-kirby-red text-parchment' : 'bg-white text-ink-black'}`}
                 >
-                  <Heart size={18} fill={isInWishlist ? 'currentColor' : 'none'} />
+                  <Heart size={18} fill={wishlistEntry ? 'currentColor' : 'none'} />
                   <span className="font-persona-aura font-semibold">
-                    {user ? (isInWishlist ? 'In Wishlist' : 'Add to Wishlist') : 'Login to Add to Wishlist'}
+                    {user ? (wishlistEntry ? 'In Wishlist' : 'Add to Wishlist') : 'Login to Add to Wishlist'}
                   </span>
                 </button>
 

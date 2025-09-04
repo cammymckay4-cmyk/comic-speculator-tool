@@ -19,6 +19,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ComicSearchModal from '@/components/features/ComicSearchModal'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import { useCollectionQuery, useCollectionCount } from '@/hooks/useCollectionQuery'
+import { useWishlistCount } from '@/hooks/useWishlistQuery'
 import { getCollectionStats, removeFromCollection } from '@/services/collectionService'
 import { useUserStore } from '@/store/userStore'
 import { toast } from '@/store/toastStore'
@@ -59,6 +60,9 @@ const CollectionPage: React.FC = () => {
     searchTerm,
     filters: activeFilters
   })
+
+  // Get wishlist count for display
+  const { data: wishlistCount } = useWishlistCount()
   
   // For stats, we need to fetch all comics without filtering (or use a separate stats endpoint)
   const { data: allComics } = useCollectionQuery({
@@ -285,7 +289,7 @@ const CollectionPage: React.FC = () => {
           </button>
           <button className="flex items-center space-x-2 text-stan-lee-blue hover:text-kirby-red transition-colors">
             <Star size={18} />
-            <span className="font-persona-aura font-semibold">Wishlist (23)</span>
+            <span className="font-persona-aura font-semibold">Wishlist ({wishlistCount || 0})</span>
           </button>
         </div>
 
