@@ -673,6 +673,11 @@ export const deleteComic = async (comicId: string): Promise<void> => {
   throw new Error('deleteComic is deprecated. Use removeFromCollection with entry ID instead.')
 }
 
+// Backwards compatible update function
+export const updateComic = async (comicId: string, userEmail: string, updatedData: any): Promise<void> => {
+  throw new Error('updateComic is deprecated. Use updateCollectionEntry with entry ID instead.')
+}
+
 export const fetchAllComicsForUser = async (userEmail: string): Promise<CollectionComic[]> => {
   if (!userEmail) {
     throw new Error('User email is required')
