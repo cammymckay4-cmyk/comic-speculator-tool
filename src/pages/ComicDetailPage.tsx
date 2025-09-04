@@ -63,7 +63,7 @@ const ComicDetailPage: React.FC = () => {
       if (!collectionEntry) {
         throw new Error('Comic not in collection')
       }
-      if (!user?.email) {
+      if (!user || !user.email) {
         throw new Error('User email not found')
       }
       return removeFromCollection(collectionEntry.id, user.email)
