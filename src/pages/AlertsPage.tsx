@@ -16,6 +16,7 @@ import {
 import { useAlertsQuery, useUpdateAlertStatus, useDeleteAlert } from '@/hooks/useAlertsQuery'
 import CreateAlertModal from '@/components/features/CreateAlertModal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { toast } from '@/store/toastStore'
 import { formatDistanceToNow } from 'date-fns'
 
 // Helper function to format alert criteria display
@@ -78,13 +79,31 @@ const AlertsPage: React.FC = () => {
     }
   }
 
-  const handleDeleteAlert = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this alert?')) {
+  const handleDeleteAlert = async (id: string, alertName: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the alert "${alertName}"?\n\nThis action cannot be undone.`
+    )
+    
+    if (confirmed) {
       try {
         await deleteAlertMutation.mutateAsync(id)
+        
+        // Show success toast
+        toast.success(
+          'Alert deleted successfully',
+          `"${alertName}" has been removed from your alerts`
+        )
+        
+        // Remove from selected alerts
         setSelectedAlerts(prev => prev.filter(alertId => alertId !== id))
       } catch (error) {
         console.error('Failed to delete alert:', error)
+        
+        // Show error toast
+        toast.error(
+          'Failed to delete alert',
+          error instanceof Error ? error.message : 'An unknown error occurred'
+        )
       }
     }
   }
@@ -330,7 +349,7 @@ const AlertsPage: React.FC = () => {
                               <Edit2 size={16} />
                             </button>
                             <button
-                              onClick={() => handleDeleteAlert(alert.id)}
+                              onClick={() => handleDeleteAlert(alert.id, alert.name)}
                               disabled={deleteAlertMutation.isPending}
                               className="p-2 text-kirby-red hover:bg-kirby-red hover:text-parchment rounded transition-colors disabled:opacity-50"
                               title="Delete"

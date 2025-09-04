@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { X, Plus, TrendingDown, TrendingUp, Bell, Package, Clock } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useCreateAlert } from '@/hooks/useAlertsQuery'
+import { toast } from '@/store/toastStore'
 import type { AlertType, Comic } from '@/lib/types'
 
 interface CreateAlertModalProps {
@@ -18,6 +20,7 @@ const alertTypeOptions = [
 ]
 
 const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, comic }) => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: comic ? `${comic.title} ${comic.issue} Alert` : '',
     alertType: 'price-drop' as AlertType,
@@ -47,25 +50,27 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, co
     }
     
     try {
-      console.log('Submitting alert creation:', {
+      const alertData = {
         name: formData.name,
         alertType: formData.alertType,
         thresholdPrice: formData.thresholdPrice ? parseFloat(formData.thresholdPrice) : undefined,
         priceDirection: formData.priceDirection,
         description: formData.description || undefined,
         comicId: comic?.id,
-      })
+      }
 
-      await createAlertMutation.mutateAsync({
-        name: formData.name,
-        alertType: formData.alertType,
-        thresholdPrice: formData.thresholdPrice ? parseFloat(formData.thresholdPrice) : undefined,
-        priceDirection: formData.priceDirection,
-        description: formData.description || undefined,
-        comicId: comic?.id,
-      })
+      console.log('Submitting alert creation:', alertData)
+
+      const newAlert = await createAlertMutation.mutateAsync(alertData)
       
       console.log('Alert created successfully')
+      
+      // Show success toast with comic title if available
+      const alertTitle = comic ? `${comic.title} ${comic.issue || ''}`.trim() : formData.name
+      toast.success(
+        'Alert created successfully!',
+        `Alert created for ${alertTitle}`
+      )
       
       // Reset form and close modal on success
       setFormData({
@@ -76,6 +81,11 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, co
         description: '',
       })
       onClose()
+      
+      // Redirect to alerts page after a brief delay to show the toast
+      setTimeout(() => {
+        navigate('/alerts')
+      }, 500)
     } catch (error) {
       console.error('Failed to create alert:', error)
       // Error will be handled by the mutation's error state
