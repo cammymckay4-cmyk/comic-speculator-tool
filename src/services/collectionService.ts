@@ -127,12 +127,12 @@ export const fetchUserCollection = async (
   // Apply search filter (search in comic data)
   if (filters.searchTerm && filters.searchTerm.trim()) {
     const searchTerm = filters.searchTerm.trim()
-    query = query.or(`comic.title.ilike.%${searchTerm}%,comic.issue.ilike.%${searchTerm}%,comic.publisher.ilike.%${searchTerm}%`)
+    query = query.or(`title.ilike.%${searchTerm}%,issue.ilike.%${searchTerm}%,publisher.ilike.%${searchTerm}%`)
   }
 
   // Apply publisher filter
   if (filters.publishers && filters.publishers.length > 0) {
-    query = query.in('comic.publisher', filters.publishers)
+    query = query.in('publisher', filters.publishers)
   }
 
   // Apply condition filter  
@@ -142,10 +142,10 @@ export const fetchUserCollection = async (
 
   // Apply price range filter (on market value)
   if (filters.priceRange?.min !== undefined) {
-    query = query.gte('comic.market_value', filters.priceRange.min)
+    query = query.gte('market_value', filters.priceRange.min)
   }
   if (filters.priceRange?.max !== undefined) {
-    query = query.lte('comic.market_value', filters.priceRange.max)
+    query = query.lte('market_value', filters.priceRange.max)
   }
 
   // Apply year range filter (on purchase date)
@@ -164,15 +164,15 @@ export const fetchUserCollection = async (
   
   switch (sortOrder) {
     case 'title':
-      orderColumn = 'comic.title'
+      orderColumn = 'title'
       ascending = true
       break
     case 'issue-number':
-      orderColumn = 'comic.issue'
+      orderColumn = 'issue'
       ascending = true
       break
     case 'market-value':
-      orderColumn = 'comic.market_value'
+      orderColumn = 'market_value'
       ascending = false // Highest first
       break
     case 'purchase-price':
@@ -184,7 +184,7 @@ export const fetchUserCollection = async (
       ascending = false // Most recent first
       break
     case 'publish-date':
-      orderColumn = 'comic.publication_year'
+      orderColumn = 'publication_year'
       ascending = false // Most recent first
       break
     case 'purchase-date':
@@ -250,11 +250,11 @@ export const getCollectionCount = async (
   // Apply the same filters as fetchUserCollection but only for counting
   if (filters.searchTerm && filters.searchTerm.trim()) {
     const searchTerm = filters.searchTerm.trim()
-    query = query.or(`comic.title.ilike.%${searchTerm}%,comic.issue.ilike.%${searchTerm}%,comic.publisher.ilike.%${searchTerm}%`)
+    query = query.or(`title.ilike.%${searchTerm}%,issue.ilike.%${searchTerm}%,publisher.ilike.%${searchTerm}%`)
   }
 
   if (filters.publishers && filters.publishers.length > 0) {
-    query = query.in('comic.publisher', filters.publishers)
+    query = query.in('publisher', filters.publishers)
   }
 
   if (filters.conditions && filters.conditions.length > 0) {
@@ -262,10 +262,10 @@ export const getCollectionCount = async (
   }
 
   if (filters.priceRange?.min !== undefined) {
-    query = query.gte('comic.market_value', filters.priceRange.min)
+    query = query.gte('market_value', filters.priceRange.min)
   }
   if (filters.priceRange?.max !== undefined) {
-    query = query.lte('comic.market_value', filters.priceRange.max)
+    query = query.lte('market_value', filters.priceRange.max)
   }
 
   if (filters.yearRange?.min !== undefined) {
