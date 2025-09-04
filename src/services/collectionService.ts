@@ -783,7 +783,7 @@ export const fetchPublicComicById = async (comicId: string): Promise<Comic> => {
     creators: [], // You may want to add creator data from your schema
     description: data.notes || '', // Use notes field as description
     pageCount: data.page_count || undefined,
-    format: 'single-issue', // Default format since column doesn't exist
+    format: data.variant_description || 'single-issue', // Use variant_description as format
     isVariant: !!data.variant_description, // True if has variant description
     variantDescription: data.variant_description || undefined,
     isKeyIssue: data.is_key_issue || false,
