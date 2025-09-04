@@ -481,8 +481,8 @@ export const debugListAllWishlistItems = async (): Promise<void> => {
       items: data?.map(item => ({
         wishlistItemId: item.id,
         comicId: item.comic_id,
-        comicTitle: item.comic?.title,
-        comicIssue: item.comic?.issue
+        comicTitle: (item.comic as any)?.title,
+        comicIssue: (item.comic as any)?.issue
       })),
       error
     })
