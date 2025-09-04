@@ -3,7 +3,8 @@ import { X, Search, Book, Plus } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { ComicCondition } from '@/lib/types'
-import { searchMasterComics, addToCollection, type SupabaseComic, type AddToCollectionData } from '@/services/collectionService'
+import { addToCollection, type SupabaseComic, type AddToCollectionData } from '@/services/collectionService'
+import { searchPublicComics, type SearchResultComic } from '@/services/searchService'
 import { useUserStore } from '@/store/userStore'
 
 interface ComicSearchModalProps {
@@ -30,6 +31,25 @@ const conditionOptions: { value: ComicCondition; label: string }[] = [
   { value: 'fair', label: 'Fair (FR)' },
   { value: 'poor', label: 'Poor (PR)' },
 ]
+
+// Transform SearchResultComic to SupabaseComic format
+const transformSearchResultToSupabaseComic = (searchResult: SearchResultComic): SupabaseComic => {
+  return {
+    id: searchResult.id,
+    title: searchResult.title,
+    issue: searchResult.issueNumber,
+    publisher: searchResult.publisher,
+    cover_image: searchResult.coverImageUrl,
+    market_value: searchResult.marketValue,
+    is_key_issue: searchResult.isKeyIssue || false,
+    key_notes: searchResult.keyNotes || undefined,
+    variant_description: undefined,
+    page_count: undefined,
+    notes: undefined,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+}
 
 const ComicSearchModal: React.FC<ComicSearchModalProps> = ({ isOpen, onClose }) => {
   const { user } = useUserStore()
@@ -62,8 +82,9 @@ const ComicSearchModal: React.FC<ComicSearchModalProps> = ({ isOpen, onClose }) 
     const searchTimer = setTimeout(async () => {
       setIsSearching(true)
       try {
-        const results = await searchMasterComics(searchTerm)
-        setSearchResults(results)
+        const searchResponse = await searchPublicComics(searchTerm)
+        const transformedResults = searchResponse.results.map(transformSearchResultToSupabaseComic)
+        setSearchResults(transformedResults)
       } catch (error) {
         console.error('Search failed:', error)
         toast.error('Search Failed', { description: 'Could not search comics. Please try again.' })
