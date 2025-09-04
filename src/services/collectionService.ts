@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabaseClient'
-import type { CollectionComic, Comic } from '@/lib/types'
+import type { CollectionComic, Comic, ComicFormat } from '@/lib/types'
 
 // Interface for the comics table in Supabase (master list)
 export interface SupabaseComic {
@@ -45,7 +45,7 @@ const transformCollectionEntry = (entry: SupabaseUserCollectionEntry): Collectio
     publishDate: new Date().toISOString(),
     coverImage: entry.comic.cover_image,
     creators: [], // This should be populated from your schema
-    format: entry.comic.variant_description || 'single-issue', // Use variant_description for format
+    format: (entry.comic.variant_description as ComicFormat) || 'single-issue', // Use variant_description for format
     isVariant: false,
     isKeyIssue: entry.comic.is_key_issue || false,
     keyNotes: entry.comic.key_notes,
@@ -790,7 +790,7 @@ export const fetchPublicComicById = async (comicId: string): Promise<Comic> => {
     creators: [], // You may want to add creator data from your schema
     description: data.notes || '', // Use notes field as description
     pageCount: data.page_count || undefined,
-    format: data.variant_description || 'single-issue', // Use variant_description as format
+    format: (data.variant_description as ComicFormat) || 'single-issue', // Use variant_description as format
     isVariant: !!data.variant_description, // True if has variant description
     variantDescription: data.variant_description || undefined,
     isKeyIssue: data.is_key_issue || false,
