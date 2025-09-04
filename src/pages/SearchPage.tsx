@@ -4,17 +4,19 @@ import { useQuery } from '@tanstack/react-query'
 import { Search, BookOpen } from 'lucide-react'
 import ComicCard from '@/components/ui/ComicCard'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { searchPublicComics, type SearchResultComic } from '@/services/searchService'
+import { searchPublicComics, type SearchResultComic, type SearchResponse } from '@/services/searchService'
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams()
   const searchTerm = searchParams.get('q') || ''
 
-  const { data: searchResults, isLoading, error } = useQuery({
+  const { data: searchResponse, isLoading, error } = useQuery<SearchResponse>({
     queryKey: ['search', searchTerm],
     queryFn: () => searchPublicComics(searchTerm),
     enabled: !!searchTerm, // Only run query if searchTerm exists
   })
+
+  const searchResults = searchResponse?.results || []
 
   // Transform SearchResultComic to ComicCard format
   const transformToComicCardData = (comic: SearchResultComic) => {
@@ -43,9 +45,20 @@ const SearchPage: React.FC = () => {
           </div>
           
           {searchTerm && (
-            <p className="font-persona-aura text-lg text-gray-700">
-              Showing results for: <strong>"{searchTerm}"</strong>
-            </p>
+            <div className="space-y-2">
+              <p className="font-persona-aura text-lg text-gray-700">
+                Showing results for: <strong>"{searchTerm}"</strong>
+              </p>
+              {searchResponse?.correctedQuery && (
+                <p className="font-persona-aura text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
+                  <span className="font-medium">Search corrected to:</span> "{searchResponse.correctedQuery}"
+                  <br />
+                  <span className="text-xs text-blue-500">
+                    (Removed articles like "The" and normalized hyphenated terms)
+                  </span>
+                </p>
+              )}
+            </div>
           )}
         </div>
 
@@ -75,7 +88,7 @@ const SearchPage: React.FC = () => {
               </p>
             </div>
           </div>
-        ) : searchResults && searchResults.length === 0 ? (
+        ) : searchResults.length === 0 ? (
           <div className="text-center py-16">
             <BookOpen className="mx-auto text-gray-400 mb-4" size={64} />
             <h2 className="font-super-squad text-2xl text-gray-600 mb-2">
@@ -90,13 +103,13 @@ const SearchPage: React.FC = () => {
             {/* Results Count */}
             <div className="mb-6">
               <p className="font-persona-aura text-gray-600">
-                Found {searchResults?.length || 0} result{(searchResults?.length || 0) !== 1 ? 's' : ''}
+                Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
               </p>
             </div>
 
             {/* Results Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {searchResults?.map((comic) => (
+              {searchResults.map((comic) => (
                 <ComicCard
                   key={comic.id}
                   comic={transformToComicCardData(comic)}
