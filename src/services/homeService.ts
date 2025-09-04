@@ -25,18 +25,30 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
     throw new Error('User ID is required')
   }
 
-  // Get total comics count and collection value
-  const { data: comics, error: comicsError } = await supabase
-    .from('comics')
-    .select('market_value')
-    .eq('user_id', userId)
+  // Get total comics count and collection value from user collection
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  
+  if (authError || !user) {
+    throw new Error('User not authenticated')
+  }
+
+  const { data: collectionEntries, error: comicsError } = await supabase
+    .from('user_collection_entries')
+    .select(`
+      *,
+      comic:comics(market_value)
+    `)
+    .eq('user_id', user.id)
 
   if (comicsError) {
     throw new Error(`Failed to fetch user stats: ${comicsError.message}`)
   }
 
-  const totalComics = comics?.length || 0
-  const collectionValue = comics?.reduce((sum, comic) => sum + (comic.market_value || 0), 0) || 0
+  const totalComics = collectionEntries?.length || 0
+  const collectionValue = collectionEntries?.reduce((sum, entry) => {
+    const marketValue = Array.isArray(entry.comic) ? entry.comic[0]?.market_value : entry.comic?.market_value
+    return sum + (marketValue || 0)
+  }, 0) || 0
 
   // Get active alerts count (assuming alerts table exists)
   const { count: alertsCount, error: alertsError } = await supabase
@@ -49,15 +61,15 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
     console.warn('Failed to fetch alerts count:', alertsError.message)
   }
 
-  // Get recent additions (comics added in last 7 days)
+  // Get recent additions (collection entries added in last 7 days)
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
   
   const { count: recentCount, error: recentError } = await supabase
-    .from('comics')
+    .from('user_collection_entries')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .gte('created_at', sevenDaysAgo.toISOString())
+    .eq('user_id', user.id)
+    .gte('added_date', sevenDaysAgo.toISOString())
 
   if (recentError) {
     console.warn('Failed to fetch recent additions count:', recentError.message)
@@ -71,7 +83,7 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
   }
 }
 
-// Fetch hot/trending comics (most recently added across all users)
+// Fetch hot/trending comics (most recently added to master list)
 export const fetchHotComics = async (): Promise<HotComic[]> => {
   const { data: comics, error } = await supabase
     .from('comics')

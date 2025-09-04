@@ -8,7 +8,6 @@ export interface SearchResultComic {
   publisher: string
   coverImageUrl: string
   marketValue: number
-  publicationYear?: number
   isKeyIssue?: boolean
   keyIssueReason?: string
 }
@@ -22,7 +21,6 @@ const transformSearchResult = (data: any): SearchResultComic => {
     publisher: data.publisher,
     coverImageUrl: data.cover_image,
     marketValue: data.market_value || 0,
-    publicationYear: data.publication_year,
     isKeyIssue: data.is_key_issue || false,
     keyIssueReason: data.key_issue_reason
   }
@@ -45,7 +43,6 @@ export const searchPublicComics = async (searchTerm: string): Promise<SearchResu
       publisher,
       cover_image,
       market_value,
-      publication_year,
       is_key_issue,
       key_issue_reason
     `)
