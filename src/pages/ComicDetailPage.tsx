@@ -22,6 +22,7 @@ import { fetchPublicComicById, getUserCollectionEntry, removeFromCollection } fr
 import { addToWishlist, removeFromWishlist, getWishlistItemByComicId } from '@/services/wishlistService'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditComicForm from '@/components/features/EditComicForm'
+import AddToCollectionModal from '@/components/features/AddToCollectionModal'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import { toast } from '@/store/toastStore'
 import { useUserStore } from '@/store/userStore'
@@ -35,6 +36,7 @@ const ComicDetailPage: React.FC = () => {
   const [hasAlert, setHasAlert] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isAddToCollectionModalOpen, setIsAddToCollectionModalOpen] = useState(false)
 
   // Fetch comic data from master comics table (public access)
   const { data: comic, isLoading, isError, error } = useQuery({
@@ -205,8 +207,7 @@ const ComicDetailPage: React.FC = () => {
       navigate(`/auth?redirect=${encodeURIComponent(currentPath)}`)
       return
     }
-    // TODO: Implement add to collection modal/form
-    toast.info('Add to Collection', 'Feature coming soon!')
+    setIsAddToCollectionModalOpen(true)
   }
 
   const handleWishlistClick = () => {
@@ -672,6 +673,13 @@ const ComicDetailPage: React.FC = () => {
           comic={collectionEntry}
         />
       )}
+
+      {/* Add to Collection Modal */}
+      <AddToCollectionModal
+        isOpen={isAddToCollectionModalOpen}
+        onClose={() => setIsAddToCollectionModalOpen(false)}
+        comic={comic}
+      />
 
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
