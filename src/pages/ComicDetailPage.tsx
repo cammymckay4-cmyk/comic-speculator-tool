@@ -174,6 +174,22 @@ const ComicDetailPage: React.FC = () => {
     // TODO: Implement actual price alert API calls
   }
 
+  const handleFindOnEbay = () => {
+    if (!comic) return
+    
+    // Create search query with title and issue
+    const searchQuery = `${comic.title} ${comic.issue}`.trim()
+    
+    // Encode the search query to handle special characters
+    const encodedQuery = encodeURIComponent(searchQuery)
+    
+    // Construct the eBay search URL
+    const ebayUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodedQuery}`
+    
+    // Open in new tab
+    window.open(ebayUrl, '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <div className="min-h-screen bg-parchment">
       {/* Back Navigation */}
@@ -267,7 +283,10 @@ const ComicDetailPage: React.FC = () => {
                   </span>
                 </button>
 
-                <button className="w-full comic-button flex items-center justify-center space-x-2">
+                <button 
+                  onClick={handleFindOnEbay}
+                  className="w-full comic-button flex items-center justify-center space-x-2"
+                >
                   <ShoppingCart size={18} />
                   <span>Find on eBay</span>
                 </button>
