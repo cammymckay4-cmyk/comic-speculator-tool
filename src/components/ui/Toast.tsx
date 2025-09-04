@@ -53,7 +53,7 @@ const Toast: React.FC<ToastProps> = ({
   }
 
   return (
-    <div className={`fixed top-4 right-4 z-50 max-w-md w-full mx-4 transform transition-all duration-300 ease-in-out`}>
+    <div className={`max-w-sm w-full transform transition-all duration-300 ease-in-out`}>
       <div className={`${getBgColor()} border-2 comic-border shadow-comic p-4 flex items-start space-x-3`}>
         {getIcon()}
         <div className="flex-1 min-w-0">
