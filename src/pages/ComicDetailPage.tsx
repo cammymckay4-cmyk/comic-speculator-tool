@@ -153,6 +153,26 @@ const ComicDetailPage: React.FC = () => {
     toast.info('Add to Collection', 'Feature coming soon!')
   }
 
+  const handleWishlistClick = () => {
+    if (!user) {
+      // Redirect to login page
+      navigate('/auth')
+      return
+    }
+    setIsInWishlist(!isInWishlist)
+    // TODO: Implement actual wishlist API calls
+  }
+
+  const handlePriceAlertClick = () => {
+    if (!user) {
+      // Redirect to login page
+      navigate('/auth')
+      return
+    }
+    setHasAlert(!hasAlert)
+    // TODO: Implement actual price alert API calls
+  }
+
   return (
     <div className="min-h-screen bg-parchment">
       {/* Back Navigation */}
@@ -223,26 +243,26 @@ const ComicDetailPage: React.FC = () => {
                 
                 {/* Common actions available to all users */}
                 <button
-                  onClick={() => setIsInWishlist(!isInWishlist)}
+                  onClick={handleWishlistClick}
                   className={`w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm
                             transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic
                             ${isInWishlist ? 'bg-kirby-red text-parchment' : 'bg-white text-ink-black'}`}
                 >
                   <Heart size={18} fill={isInWishlist ? 'currentColor' : 'none'} />
                   <span className="font-persona-aura font-semibold">
-                    {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
+                    {user ? (isInWishlist ? 'In Wishlist' : 'Add to Wishlist') : 'Login to Add to Wishlist'}
                   </span>
                 </button>
 
                 <button
-                  onClick={() => setHasAlert(!hasAlert)}
+                  onClick={handlePriceAlertClick}
                   className={`w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm
                             transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic
                             ${hasAlert ? 'bg-golden-age-yellow text-ink-black' : 'bg-white text-ink-black'}`}
                 >
                   <Bell size={18} fill={hasAlert ? 'currentColor' : 'none'} />
                   <span className="font-persona-aura font-semibold">
-                    {hasAlert ? 'Alert Set' : 'Set Price Alert'}
+                    {user ? (hasAlert ? 'Alert Set' : 'Set Price Alert') : 'Login to Set Price Alert'}
                   </span>
                 </button>
 
