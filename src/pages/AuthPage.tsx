@@ -11,7 +11,7 @@ import {
   Check
 } from 'lucide-react'
 import { COMIC_EFFECTS } from '@/utils/constants'
-import { supabase } from '@/lib/supabaseClient'
+import { supabase, createSupabaseClientWithPersistence } from '@/lib/supabaseClient'
 import { useUserStore } from '@/store/userStore'
 
 type AuthMode = 'signin' | 'signup' | 'forgot'
@@ -36,9 +36,12 @@ const AuthPage: React.FC = () => {
 
   const selectedEffect = COMIC_EFFECTS[Math.floor(Math.random() * COMIC_EFFECTS.length)]
 
-  const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async (email: string, password: string, rememberMe: boolean) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Use the appropriate client based on rememberMe preference
+      const authClient = createSupabaseClientWithPersistence(rememberMe)
+      
+      const { data, error } = await authClient.auth.signInWithPassword({
         email,
         password,
       })
@@ -138,7 +141,7 @@ const AuthPage: React.FC = () => {
 
     // Handle authentication
     if (mode === 'signin') {
-      await handleLogin(formData.email, formData.password)
+      await handleLogin(formData.email, formData.password, formData.rememberMe)
     } else if (mode === 'signup') {
       await handleSignup(formData.email, formData.password, formData.name)
     } else if (mode === 'forgot') {
