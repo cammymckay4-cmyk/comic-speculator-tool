@@ -9,9 +9,11 @@ export interface SupabaseComic {
   publisher: string
   cover_image: string
   market_value: number
-  format?: string
   is_key_issue?: boolean
   key_notes?: string
+  page_count?: number
+  notes?: string
+  variant_description?: string
   created_at: string
   updated_at: string
 }
@@ -43,7 +45,7 @@ const transformCollectionEntry = (entry: SupabaseUserCollectionEntry): Collectio
     publishDate: new Date().toISOString(),
     coverImage: entry.comic.cover_image,
     creators: [], // This should be populated from your schema
-    format: (entry.comic.format as any) || 'single-issue',
+    format: 'single-issue', // Default format since column doesn't exist
     isVariant: false,
     isKeyIssue: entry.comic.is_key_issue || false,
     keyNotes: entry.comic.key_notes,
@@ -127,7 +129,6 @@ export const fetchUserCollection = async (
         publisher,
         cover_image,
         market_value,
-        format,
         is_key_issue,
         key_notes,
         created_at,
@@ -351,7 +352,6 @@ export const fetchUserCollectionEntryById = async (entryId: string, userEmail: s
         publisher,
         cover_image,
         market_value,
-        format,
         is_key_issue,
         key_notes,
         created_at,
@@ -403,7 +403,7 @@ export interface CreateComicData {
   title: string
   issueNumber: string
   publisher: string
-  format: string
+  format: string // Keep for frontend compatibility but don't save to DB
   estimatedValue?: number | null
   coverImageUrl?: string | null
   isKeyIssue: boolean
@@ -416,7 +416,7 @@ export interface AddComicData {
   issueNumber: string
   publisher: string
   condition: string
-  format: string
+  format: string // Keep for frontend compatibility but don't save to DB
   estimatedValue?: number | null
   purchasePrice?: number | null
   purchaseDate?: string | null
@@ -448,7 +448,6 @@ export const findOrCreateComic = async (comicData: CreateComicData): Promise<Sup
     title: comicData.title,
     issue: comicData.issueNumber,
     publisher: comicData.publisher,
-    format: comicData.format,
     market_value: comicData.estimatedValue || 0,
     cover_image: comicData.coverImageUrl || '',
     is_key_issue: comicData.isKeyIssue,
@@ -507,7 +506,6 @@ export const addToCollection = async (userEmail: string, collectionData: AddToCo
         publisher,
         cover_image,
         market_value,
-        format,
         is_key_issue,
         key_notes,
         created_at,
@@ -538,7 +536,7 @@ export const addComic = async (userEmail: string, comicData: AddComicData): Prom
     title: comicData.title,
     issueNumber: comicData.issueNumber,
     publisher: comicData.publisher,
-    format: comicData.format,
+    format: comicData.format, // Format is accepted but not saved to DB
     estimatedValue: comicData.estimatedValue,
     coverImageUrl: comicData.coverImageUrl,
     isKeyIssue: comicData.isKeyIssue,
@@ -598,7 +596,6 @@ export const updateCollectionEntry = async (
         publisher,
         cover_image,
         market_value,
-        format,
         is_key_issue,
         key_notes,
         created_at,
@@ -679,7 +676,6 @@ export const fetchAllComicsForUser = async (userEmail: string): Promise<Collecti
         publisher,
         cover_image,
         market_value,
-        format,
         is_key_issue,
         key_notes,
         created_at,
@@ -756,15 +752,13 @@ export const fetchPublicComicById = async (comicId: string): Promise<Comic> => {
       publisher,
       cover_image,
       market_value,
-      format,
       is_key_issue,
       key_notes,
-      description,
       page_count,
-      story_arcs,
-      characters,
       created_at,
-      updated_at
+      updated_at,
+      notes,
+      variant_description
     `)
     .eq('id', comicId)
     .single()
@@ -787,14 +781,15 @@ export const fetchPublicComicById = async (comicId: string): Promise<Comic> => {
     publishDate: data.created_at || new Date().toISOString(), // Use created_at as publish date for now
     coverImage: data.cover_image || '',
     creators: [], // You may want to add creator data from your schema
-    description: data.description || undefined,
+    description: data.notes || '', // Use notes field as description
     pageCount: data.page_count || undefined,
-    format: (data.format as any) || 'single-issue',
-    isVariant: false,
+    format: 'single-issue', // Default format since column doesn't exist
+    isVariant: !!data.variant_description, // True if has variant description
+    variantDescription: data.variant_description || undefined,
     isKeyIssue: data.is_key_issue || false,
     keyNotes: data.key_notes || undefined,
-    storyArcs: data.story_arcs || undefined,
-    characters: data.characters || undefined,
+    storyArcs: [], // Default to empty array since column doesn't exist
+    characters: [], // Default to empty array since column doesn't exist
     prices: [],
     marketValue: data.market_value || 0,
     lastUpdated: data.updated_at
@@ -828,8 +823,7 @@ export const getUserCollectionEntry = async (comicId: string, userEmail: string)
           publisher,
           cover_image,
           market_value,
-          format,
-          is_key_issue,
+            is_key_issue,
           key_notes,
           created_at,
           updated_at
@@ -876,7 +870,6 @@ export const fetchComicById = async (comicId: string): Promise<CollectionComic> 
         publisher,
         cover_image,
         market_value,
-        format,
         is_key_issue,
         key_notes,
         created_at,
