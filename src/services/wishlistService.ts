@@ -349,37 +349,45 @@ export const removeFromWishlist = async (
   wishlistItemId: string,
   userEmail: string
 ): Promise<void> => {
-  console.log('removeFromWishlist called with:', { wishlistItemId, userEmail })
+  console.log('🗑️ removeFromWishlist called with:', { wishlistItemId, userEmail })
   
   if (!wishlistItemId) {
     const error = 'Wishlist item ID is required'
-    console.error('removeFromWishlist validation error:', error)
+    console.error('❌ removeFromWishlist validation error:', error)
     throw new Error(error)
   }
   if (!userEmail) {
     const error = 'User email is required'
-    console.error('removeFromWishlist validation error:', error)
+    console.error('❌ removeFromWishlist validation error:', error)
+    throw new Error(error)
+  }
+
+  // Validate that wishlistItemId looks like a UUID
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!uuidRegex.test(wishlistItemId)) {
+    const error = `Invalid wishlist item ID format: ${wishlistItemId} (expected UUID format)`
+    console.error('❌ removeFromWishlist validation error:', error)
     throw new Error(error)
   }
 
   // Get the current user from Supabase Auth
-  console.log('Getting current user from Supabase Auth...')
+  console.log('🔑 Getting current user from Supabase Auth...')
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   
-  console.log('Auth result:', { user: user ? { id: user.id, email: user.email } : null, authError })
+  console.log('🔑 Auth result:', { user: user ? { id: user.id, email: user.email } : null, authError })
   
   if (authError) {
-    console.error('Auth error:', authError)
+    console.error('❌ Auth error:', authError)
     throw new Error(`User authentication error: ${authError.message}`)
   }
   
   if (!user) {
     const error = 'User not authenticated - no user data returned'
-    console.error('removeFromWishlist auth error:', error)
+    console.error('❌ removeFromWishlist auth error:', error)
     throw new Error(error)
   }
 
-  console.log('Attempting to delete from wishlist_items with:', { 
+  console.log('📋 Attempting to delete from wishlist_items with:', { 
     wishlistItemId, 
     userId: user.id,
     userEmail: user.email 
@@ -393,34 +401,94 @@ export const removeFromWishlist = async (
     .eq('user_id', user.id)
     .single()
 
-  console.log('Existing item check:', { existingItem, selectError })
+  console.log('📋 Existing item check:', { 
+    existingItem: existingItem ? { 
+      id: existingItem.id, 
+      comic_id: existingItem.comic_id,
+      user_id: existingItem.user_id 
+    } : null, 
+    selectError,
+    errorCode: selectError?.code,
+    errorMessage: selectError?.message
+  })
 
   if (selectError && selectError.code !== 'PGRST116') { // PGRST116 is "not found" error
-    console.error('Error checking for existing wishlist item:', selectError)
+    console.error('❌ Error checking for existing wishlist item:', selectError)
     throw new Error(`Failed to verify wishlist item: ${selectError.message}`)
   }
 
   if (!existingItem) {
-    const error = 'Wishlist item not found or does not belong to current user'
-    console.error('removeFromWishlist error:', error)
+    const error = `Wishlist item not found or does not belong to current user. ID: ${wishlistItemId}, User ID: ${user.id}`
+    console.error('❌ removeFromWishlist error:', error)
     throw new Error(error)
   }
 
+  console.log('✅ Found existing item, proceeding with deletion...')
+
   // Proceed with deletion
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from('wishlist_items')
-    .delete()
+    .delete({ count: 'exact' })
     .eq('id', wishlistItemId)
     .eq('user_id', user.id)
 
-  console.log('Delete operation result:', { error })
+  console.log('🗑️ Delete operation result:', { error, count })
 
   if (error) {
-    console.error('Delete operation failed:', error)
+    console.error('❌ Delete operation failed:', error)
     throw new Error(`Failed to remove from wishlist: ${error.message}`)
   }
 
-  console.log('Successfully removed from wishlist')
+  if (count === 0) {
+    console.error('❌ Delete operation succeeded but no rows were affected')
+    throw new Error('No wishlist item was deleted - it may have already been removed')
+  }
+
+  console.log('✅ Successfully removed from wishlist, deleted rows:', count)
+}
+
+// DEBUG: Helper function to list all wishlist items for current user
+export const debugListAllWishlistItems = async (): Promise<void> => {
+  console.log('🔍 DEBUG: Listing all wishlist items for current user...')
+  
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      console.log('❌ DEBUG: No authenticated user')
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('wishlist_items')
+      .select(`
+        id,
+        comic_id,
+        user_id,
+        added_date,
+        comic:comics!inner(
+          id,
+          title,
+          issue
+        )
+      `)
+      .eq('user_id', user.id)
+
+    console.log('📋 DEBUG: All wishlist items:', { 
+      userID: user.id,
+      userEmail: user.email,
+      itemCount: data?.length || 0,
+      items: data?.map(item => ({
+        wishlistItemId: item.id,
+        comicId: item.comic_id,
+        comicTitle: item.comic?.title,
+        comicIssue: item.comic?.issue
+      })),
+      error
+    })
+  } catch (error) {
+    console.error('❌ DEBUG: Error listing wishlist items:', error)
+  }
 }
 
 // Check if a comic is in user's wishlist
@@ -458,32 +526,40 @@ export const getWishlistItemByComicId = async (
   comicId: string,
   userEmail: string
 ): Promise<WishlistItem | null> => {
-  console.log('getWishlistItemByComicId called with:', { comicId, userEmail })
+  console.log('🔍 getWishlistItemByComicId called with:', { comicId, userEmail })
   
   if (!comicId || !userEmail) {
-    console.log('getWishlistItemByComicId: Missing parameters, returning null')
+    console.log('❌ getWishlistItemByComicId: Missing parameters, returning null')
     return null
   }
 
   try {
     // Get the current user from Supabase Auth
-    console.log('getWishlistItemByComicId: Getting current user...')
+    console.log('🔑 getWishlistItemByComicId: Getting current user...')
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    console.log('getWishlistItemByComicId auth result:', { 
+    console.log('🔑 getWishlistItemByComicId auth result:', { 
       user: user ? { id: user.id, email: user.email } : null, 
       authError 
     })
     
     if (authError || !user) {
-      console.log('getWishlistItemByComicId: No authenticated user, returning null')
+      console.log('❌ getWishlistItemByComicId: No authenticated user, returning null')
       return null
     }
 
-    console.log('getWishlistItemByComicId: Querying wishlist_items with:', {
+    console.log('📋 getWishlistItemByComicId: Querying wishlist_items with:', {
       comicId,
       userId: user.id
     })
+
+    // First, let's check if ANY wishlist items exist for this user
+    const { data: allUserItems, error: allError } = await supabase
+      .from('wishlist_items')
+      .select('id, comic_id')
+      .eq('user_id', user.id)
+    
+    console.log('📋 All wishlist items for user:', { allUserItems, allError })
 
     const { data, error } = await supabase
       .from('wishlist_items')
@@ -507,18 +583,30 @@ export const getWishlistItemByComicId = async (
       .eq('user_id', user.id)
       .single()
 
-    console.log('getWishlistItemByComicId query result:', { data, error })
+    console.log('📋 getWishlistItemByComicId query result:', { 
+      data: data ? { id: data.id, comic_id: data.comic_id, user_id: data.user_id } : null, 
+      error,
+      errorCode: error?.code,
+      errorMessage: error?.message
+    })
 
     if (error || !data) {
-      console.log('getWishlistItemByComicId: No data found or error, returning null')
+      console.log('❌ getWishlistItemByComicId: No data found or error, returning null')
+      if (error) {
+        console.error('Full error details:', error)
+      }
       return null
     }
 
     const transformed = transformWishlistItem(data)
-    console.log('getWishlistItemByComicId: Transformed result:', transformed)
+    console.log('✅ getWishlistItemByComicId: Successfully found and transformed wishlist item:', {
+      wishlistItemId: transformed.id,
+      comicId: transformed.comicId,
+      comicTitle: transformed.comic.title
+    })
     return transformed
   } catch (error) {
-    console.error('getWishlistItemByComicId: Exception caught:', error)
+    console.error('❌ getWishlistItemByComicId: Exception caught:', error)
     return null
   }
 }
