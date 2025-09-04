@@ -188,43 +188,32 @@ export const fetchUserCollection = async (
 
   // Apply sorting
   let ascending = false
-  let orderColumn = 'added_date'
   
   switch (sortOrder) {
     case 'title':
-      orderColumn = 'comic.title'
-      ascending = true
+      query = query.order('title', { foreignTable: 'comic', ascending: true })
       break
     case 'issue-number':
-      orderColumn = 'comic.issue'
-      ascending = true
+      query = query.order('issue', { foreignTable: 'comic', ascending: true })
       break
     case 'market-value':
-      orderColumn = 'comic.market_value'
-      ascending = false // Highest first
+      query = query.order('market_value', { foreignTable: 'comic', ascending: false }) // Highest first
       break
     case 'purchase-price':
-      orderColumn = 'purchase_price'
-      ascending = false // Highest first
+      query = query.order('purchase_price', { ascending: false }) // Highest first
       break
     case 'added-date':
-      orderColumn = 'added_date'
-      ascending = false // Most recent first
+      query = query.order('added_date', { ascending: false }) // Most recent first
       break
     case 'publish-date':
-      orderColumn = 'comic.created_at'
-      ascending = false // Most recent first
+      query = query.order('created_at', { foreignTable: 'comic', ascending: false }) // Most recent first
       break
     case 'purchase-date':
-      orderColumn = 'purchase_date'
-      ascending = false // Most recent first
+      query = query.order('purchase_date', { ascending: false }) // Most recent first
       break
     default:
-      orderColumn = 'added_date'
-      ascending = false
+      query = query.order('added_date', { ascending: false })
   }
-
-  query = query.order(orderColumn, { ascending })
 
   // Apply pagination
   const from = (page - 1) * itemsPerPage
