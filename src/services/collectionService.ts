@@ -494,7 +494,6 @@ export const addComic = async (userEmail: string, comicData: AddComicData): Prom
     title: comicData.title,
     issueNumber: comicData.issueNumber,
     publisher: comicData.publisher,
-    publicationYear: comicData.publicationYear,
     format: comicData.format,
     estimatedValue: comicData.estimatedValue,
     coverImageUrl: comicData.coverImageUrl,

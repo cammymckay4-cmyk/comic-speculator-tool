@@ -67,7 +67,6 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
     issueNumber: '',
     publisher: '',
     customPublisher: '',
-    publicationYear: '',
     condition: 'near-mint' as ComicCondition,
     format: 'single-issue' as ComicFormat,
     estimatedValue: '',
@@ -87,7 +86,6 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
   // Populate form with comic data when modal opens or comic changes
   useEffect(() => {
     if (isOpen && comic) {
-      const publicationYear = comic.comic.publishDate ? new Date(comic.comic.publishDate).getFullYear().toString() : ''
       const isCustomPublisher = !publisherOptions.slice(0, -1).includes(comic.comic.publisher)
       
       setFormData({
@@ -95,7 +93,6 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
         issueNumber: comic.comic.issue || '',
         publisher: isCustomPublisher ? 'Other' : comic.comic.publisher || '',
         customPublisher: isCustomPublisher ? comic.comic.publisher || '' : '',
-        publicationYear,
         condition: comic.condition || 'near-mint',
         format: comic.comic.format || 'single-issue',
         estimatedValue: comic.comic.marketValue ? comic.comic.marketValue.toString() : '',
@@ -194,14 +191,6 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
       newErrors.customPublisher = 'Custom publisher name is required'
     }
 
-    if (!formData.publicationYear.trim()) {
-      newErrors.publicationYear = 'Publication year is required'
-    } else {
-      const year = parseInt(formData.publicationYear)
-      if (isNaN(year) || year < 1800 || year > new Date().getFullYear() + 1) {
-        newErrors.publicationYear = 'Please enter a valid year (1800 or later)'
-      }
-    }
 
     if (formData.estimatedValue && isNaN(parseFloat(formData.estimatedValue))) {
       newErrors.estimatedValue = 'Please enter a valid amount'
@@ -244,7 +233,6 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
         title: formData.title.trim(),
         issueNumber: formData.issueNumber.trim(),
         publisher: formData.publisher === 'Other' ? formData.customPublisher.trim() : formData.publisher,
-        publicationYear: parseInt(formData.publicationYear),
         condition: formData.condition,
         format: formData.format,
         estimatedValue: formData.estimatedValue ? parseFloat(formData.estimatedValue) : null,
@@ -390,41 +378,20 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
               </div>
             )}
 
-            {/* Publication Year and Format */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block font-persona-aura font-semibold text-ink-black mb-2">
-                  Publication Year *
-                </label>
-                <input
-                  type="number"
-                  value={formData.publicationYear}
-                  onChange={(e) => handleChange('publicationYear', e.target.value)}
-                  className={`w-full p-3 border-2 comic-border font-persona-aura focus:outline-none focus:ring-2 focus:ring-stan-lee-blue ${
-                    errors.publicationYear ? 'border-red-500' : 'border-ink-black'
-                  }`}
-                  placeholder="e.g., 2024"
-                  min="1800"
-                  max={new Date().getFullYear() + 1}
-                  required
-                />
-                {errors.publicationYear && <p className="mt-1 text-sm text-red-600 font-persona-aura">{errors.publicationYear}</p>}
-              </div>
-
-              <div>
-                <label className="block font-persona-aura font-semibold text-ink-black mb-2">
-                  Format
-                </label>
-                <select
-                  value={formData.format}
-                  onChange={(e) => handleChange('format', e.target.value)}
-                  className="w-full p-3 border-2 border-ink-black comic-border font-persona-aura focus:outline-none focus:ring-2 focus:ring-stan-lee-blue"
-                >
-                  {formatOptions.map(format => (
-                    <option key={format.value} value={format.value}>{format.label}</option>
-                  ))}
-                </select>
-              </div>
+            {/* Format */}
+            <div>
+              <label className="block font-persona-aura font-semibold text-ink-black mb-2">
+                Format
+              </label>
+              <select
+                value={formData.format}
+                onChange={(e) => handleChange('format', e.target.value)}
+                className="w-full p-3 border-2 border-ink-black comic-border font-persona-aura focus:outline-none focus:ring-2 focus:ring-stan-lee-blue"
+              >
+                {formatOptions.map(format => (
+                  <option key={format.value} value={format.value}>{format.label}</option>
+                ))}
+              </select>
             </div>
           </div>
 
