@@ -34,7 +34,7 @@ export const generateCSV = (comics: CollectionComic[]): string => {
     comic.purchaseDate || '',
     comic.purchaseLocation || '',
     comic.comic.publishDate ? new Date(comic.comic.publishDate).getFullYear().toString() : '',
-    comic.comic.format || '',
+    comic.comic.format || 'single-issue', // Default since format column doesn't exist in DB
     comic.comic.isKeyIssue ? 'Yes' : 'No',
     comic.comic.keyNotes || '',
     comic.notes || '',
