@@ -108,6 +108,107 @@ const AlertsPage: React.FC = () => {
     }
   }
 
+  const handleBulkActivate = async () => {
+    if (selectedAlerts.length === 0) return
+    
+    try {
+      // Process all selected alerts
+      const promises = selectedAlerts.map(alertId => 
+        updateAlertStatusMutation.mutateAsync({ alertId, isActive: true })
+      )
+      
+      await Promise.all(promises)
+      
+      // Show success toast
+      toast.success(
+        'Alerts activated',
+        `${selectedAlerts.length} alert(s) have been activated`
+      )
+      
+      // Clear selections
+      setSelectedAlerts([])
+    } catch (error) {
+      console.error('Failed to activate alerts:', error)
+      
+      // Show error toast
+      toast.error(
+        'Failed to activate alerts',
+        error instanceof Error ? error.message : 'Some alerts could not be activated'
+      )
+    }
+  }
+
+  const handleBulkDeactivate = async () => {
+    if (selectedAlerts.length === 0) return
+    
+    try {
+      // Process all selected alerts
+      const promises = selectedAlerts.map(alertId => 
+        updateAlertStatusMutation.mutateAsync({ alertId, isActive: false })
+      )
+      
+      await Promise.all(promises)
+      
+      // Show success toast
+      toast.success(
+        'Alerts deactivated',
+        `${selectedAlerts.length} alert(s) have been deactivated`
+      )
+      
+      // Clear selections
+      setSelectedAlerts([])
+    } catch (error) {
+      console.error('Failed to deactivate alerts:', error)
+      
+      // Show error toast
+      toast.error(
+        'Failed to deactivate alerts',
+        error instanceof Error ? error.message : 'Some alerts could not be deactivated'
+      )
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedAlerts.length === 0) return
+    
+    const selectedAlertNames = alerts
+      .filter(alert => selectedAlerts.includes(alert.id))
+      .map(alert => `"${alert.name}"`)
+      .join(', ')
+    
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${selectedAlerts.length} alert(s)?\n\n${selectedAlertNames}\n\nThis action cannot be undone.`
+    )
+    
+    if (confirmed) {
+      try {
+        // Process all selected alerts
+        const promises = selectedAlerts.map(alertId => 
+          deleteAlertMutation.mutateAsync(alertId)
+        )
+        
+        await Promise.all(promises)
+        
+        // Show success toast
+        toast.success(
+          'Alerts deleted successfully',
+          `${selectedAlerts.length} alert(s) have been removed from your alerts`
+        )
+        
+        // Clear selections
+        setSelectedAlerts([])
+      } catch (error) {
+        console.error('Failed to delete alerts:', error)
+        
+        // Show error toast
+        toast.error(
+          'Failed to delete alerts',
+          error instanceof Error ? error.message : 'Some alerts could not be deleted'
+        )
+      }
+    }
+  }
+
   const toggleSelectAlert = (id: string) => {
     if (selectedAlerts.includes(id)) {
       setSelectedAlerts(selectedAlerts.filter(alertId => alertId !== id))
@@ -375,13 +476,25 @@ const AlertsPage: React.FC = () => {
                 <span className="font-semibold">{selectedAlerts.length}</span> alert(s) selected
               </p>
               <div className="flex space-x-4">
-                <button className="font-persona-aura font-semibold text-ink-black hover:text-kirby-red">
+                <button 
+                  onClick={handleBulkActivate}
+                  disabled={updateAlertStatusMutation.isPending}
+                  className="font-persona-aura font-semibold text-ink-black hover:text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Activate Selected
                 </button>
-                <button className="font-persona-aura font-semibold text-ink-black hover:text-kirby-red">
+                <button 
+                  onClick={handleBulkDeactivate}
+                  disabled={updateAlertStatusMutation.isPending}
+                  className="font-persona-aura font-semibold text-ink-black hover:text-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Deactivate Selected
                 </button>
-                <button className="font-persona-aura font-semibold text-kirby-red hover:text-red-700">
+                <button 
+                  onClick={handleBulkDelete}
+                  disabled={deleteAlertMutation.isPending}
+                  className="font-persona-aura font-semibold text-kirby-red hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Delete Selected
                 </button>
               </div>
