@@ -186,3 +186,25 @@ export const deleteAlert = async (alertId: string): Promise<void> => {
     throw new Error(`Failed to delete alert: ${error.message}`)
   }
 }
+
+export const getActiveAlertsCount = async (): Promise<number> => {
+  // Get the current user from Supabase Auth
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  
+  if (authError || !user) {
+    return 0 // Return 0 if not authenticated instead of throwing error
+  }
+
+  const { count, error } = await supabase
+    .from('alerts')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+
+  if (error) {
+    console.warn('Failed to fetch active alerts count:', error.message)
+    return 0
+  }
+
+  return count || 0
+}

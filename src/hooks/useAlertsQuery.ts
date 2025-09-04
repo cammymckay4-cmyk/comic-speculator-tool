@@ -33,6 +33,8 @@ export const useCreateAlert = () => {
     onSuccess: () => {
       // Invalidate and refetch alerts after successful creation
       queryClient.invalidateQueries({ queryKey: ['alerts', user?.email] })
+      // Also invalidate alerts count
+      queryClient.invalidateQueries({ queryKey: ['alertsCount', user?.id] })
     },
   })
 }
@@ -48,6 +50,8 @@ export const useUpdateAlertStatus = () => {
     onSuccess: () => {
       // Invalidate and refetch alerts after successful update
       queryClient.invalidateQueries({ queryKey: ['alerts', user?.email] })
+      // Also invalidate alerts count
+      queryClient.invalidateQueries({ queryKey: ['alertsCount', user?.id] })
     },
   })
 }
@@ -63,6 +67,8 @@ export const useDeleteAlert = () => {
     onSuccess: () => {
       // Invalidate and refetch alerts after successful deletion
       queryClient.invalidateQueries({ queryKey: ['alerts', user?.email] })
+      // Also invalidate alerts count
+      queryClient.invalidateQueries({ queryKey: ['alertsCount', user?.id] })
     },
   })
 }

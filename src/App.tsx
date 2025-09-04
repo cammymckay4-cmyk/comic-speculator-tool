@@ -8,6 +8,7 @@ import AdminRoute from './components/auth/AdminRoute'
 import { Toaster } from 'sonner'
 import { useUserStore } from './store/userStore'
 import { supabase } from './lib/supabaseClient'
+import { useAlertsCount } from './hooks/useAlertsCount'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 // Lazy load pages for better performance
@@ -26,7 +27,8 @@ const AdminPage = lazy(() => import('./pages/AdminPage'))
 
 function App() {
   const { user, setUser, setLoading } = useUserStore()
-  
+  const { data: alertsCount = 0 } = useAlertsCount()
+
   // Check for existing session on app load
   useEffect(() => {
     const checkSession = async () => {
@@ -76,7 +78,7 @@ function App() {
         user={user || undefined}
         onNavigate={(page) => console.log('Navigate to:', page)}
         onLogout={() => {}}
-        notificationCount={3}
+        notificationCount={alertsCount}
       />
 
       {/* Main Content */}
