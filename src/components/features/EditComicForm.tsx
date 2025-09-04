@@ -102,7 +102,7 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
         coverImage: comic.comic.coverImage || '',
         notes: comic.notes || '',
         isKeyIssue: comic.comic.isKeyIssue || false,
-        keyNotes: comic.comic.keyIssueReason || '',
+        keyNotes: comic.comic.keyNotes || '',
       })
       setPreviewUrl('')
       setSelectedFile(null)

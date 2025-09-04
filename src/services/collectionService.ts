@@ -46,7 +46,7 @@ const transformCollectionEntry = (entry: SupabaseUserCollectionEntry): Collectio
     format: (entry.comic.format as any) || 'single-issue',
     isVariant: false,
     isKeyIssue: entry.comic.is_key_issue || false,
-    keyIssueReason: entry.comic.key_notes,
+    keyNotes: entry.comic.key_notes,
     prices: [],
     marketValue: entry.comic.market_value,
     lastUpdated: entry.comic.updated_at

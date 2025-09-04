@@ -246,14 +246,14 @@ const ComicDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              {comic.isKeyIssue && comic.keyIssueReason && (
+              {comic.isKeyIssue && comic.keyNotes && (
                 <div className="bg-golden-age-yellow bg-opacity-20 border-2 border-golden-age-yellow p-4">
                   <div className="flex items-start space-x-2">
                     <Star size={20} className="text-golden-age-yellow mt-0.5" />
                     <div>
                       <p className="font-super-squad text-sm text-ink-black mb-1">KEY ISSUE</p>
                       <p className="font-persona-aura text-ink-black">
-                        {comic.keyIssueReason}
+                        {comic.keyNotes}
                       </p>
                     </div>
                   </div>

@@ -36,7 +36,7 @@ export const generateCSV = (comics: CollectionComic[]): string => {
     comic.comic.publishDate ? new Date(comic.comic.publishDate).getFullYear().toString() : '',
     comic.comic.format || '',
     comic.comic.isKeyIssue ? 'Yes' : 'No',
-    comic.comic.keyIssueReason || '',
+    comic.comic.keyNotes || '',
     comic.notes || '',
     comic.addedDate ? new Date(comic.addedDate).toLocaleDateString() : ''
   ])
