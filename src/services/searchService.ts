@@ -31,29 +31,20 @@ const normalizeSearchTerm = (term: string): string => {
   return term.toLowerCase().replace(/-/g, '')
 }
 
-const buildSearchQuery = (searchTerms: string[]) => {
-  const conditions: string[] = []
+// Helper function to build OR conditions without duplicates
+const buildTermConditions = (term: string, fields: string[]): string => {
+  const normalizedTerm = normalizeSearchTerm(term)
+  const conditions = new Set<string>() // Use Set to avoid duplicates
   
-  searchTerms.forEach(term => {
-    const normalizedTerm = normalizeSearchTerm(term)
-    // Search for each term in title OR issue fields
-    // Also search for the original term with hyphens in case the data has hyphens
-    const titleConditions = [
-      `title.ilike.%${term}%`,
-      `title.ilike.%${normalizedTerm}%`
-    ]
-    const issueConditions = [
-      `issue.ilike.%${term}%`,
-      `issue.ilike.%${normalizedTerm}%`
-    ]
-    
-    // Combine title and issue conditions with OR
-    const termConditions = [...titleConditions, ...issueConditions].join(',')
-    conditions.push(`(${termConditions})`)
+  fields.forEach(field => {
+    conditions.add(`${field}.ilike.%${term}%`)
+    // Only add normalized version if it's different from original
+    if (normalizedTerm !== term) {
+      conditions.add(`${field}.ilike.%${normalizedTerm}%`)
+    }
   })
   
-  // Join all term conditions with AND - all terms must match somewhere
-  return conditions.join(',')
+  return Array.from(conditions).join(',')
 }
 
 export const searchPublicComics = async (searchTerm: string): Promise<SearchResultComic[]> => {
@@ -81,12 +72,14 @@ export const searchPublicComics = async (searchTerm: string): Promise<SearchResu
   if (searchTerms.length === 1) {
     // Single term - search in title OR issue
     const term = searchTerms[0]
-    const normalizedTerm = normalizeSearchTerm(term)
-    query = query.or(`title.ilike.%${term}%,title.ilike.%${normalizedTerm}%,issue.ilike.%${term}%,issue.ilike.%${normalizedTerm}%`)
+    const conditions = buildTermConditions(term, ['title', 'issue'])
+    query = query.or(conditions)
   } else {
-    // Multiple terms - use AND logic with each term matching title OR issue
-    const searchConditions = buildSearchQuery(searchTerms)
-    query = query.or(searchConditions)
+    // Multiple terms - chain OR conditions, each term must match somewhere
+    searchTerms.forEach(term => {
+      const conditions = buildTermConditions(term, ['title', 'issue'])
+      query = query.or(conditions)
+    })
   }
 
   const { data, error } = await query
