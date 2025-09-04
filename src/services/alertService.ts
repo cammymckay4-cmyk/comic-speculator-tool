@@ -39,11 +39,7 @@ const transformSupabaseAlert = (supabaseAlert: SupabaseAlert): UserAlert => {
   return userAlert
 }
 
-export const fetchAlerts = async (userEmail: string): Promise<UserAlert[]> => {
-  if (!userEmail) {
-    throw new Error('User email is required')
-  }
-
+export const fetchAlerts = async (): Promise<UserAlert[]> => {
   // Get the current user from Supabase Auth
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   
@@ -69,7 +65,6 @@ export const fetchAlerts = async (userEmail: string): Promise<UserAlert[]> => {
 }
 
 export interface CreateAlertData {
-  userEmail: string
   comicId?: string
   name: string
   alertType: AlertType
@@ -79,20 +74,16 @@ export interface CreateAlertData {
 }
 
 export const createAlert = async (alertData: CreateAlertData): Promise<UserAlert> => {
-  // Validate required fields
-  if (!alertData.userEmail) {
-    throw new Error('User email is required to create an alert')
-  }
-  
-  if (!alertData.name?.trim()) {
-    throw new Error('Alert name is required')
-  }
-
   // Get the current user from Supabase Auth
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   
   if (authError || !user) {
     throw new Error('User not authenticated')
+  }
+
+  // Validate required fields
+  if (!alertData.name?.trim()) {
+    throw new Error('Alert name is required')
   }
 
   // Validate price-related fields for price alerts
