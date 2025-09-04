@@ -640,11 +640,6 @@ export const updateCollectionEntry = async (
   return transformCollectionEntry(data)
 }
 
-// Backwards compatible update function
-export const updateComic = async (comicId: string, updatedData: Partial<AddComicData>): Promise<CollectionComic> => {
-  // This function is now deprecated - we need the entry ID, not the comic ID
-  throw new Error('updateComic is deprecated. Use updateCollectionEntry with entry ID instead.')
-}
 
 // Remove a comic from user's collection (delete collection entry)
 export const removeFromCollection = async (entryId: string, userEmail: string): Promise<void> => {

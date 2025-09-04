@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { ComicCondition, ComicFormat, CollectionComic } from '@/lib/types'
 import { uploadComicImage } from '@/services/storageService'
-import { updateComic, type AddComicData } from '@/services/collectionService'
+import { updateCollectionEntry, type AddToCollectionData } from '@/services/collectionService'
 import { useUserStore } from '@/store/userStore'
 
 interface EditComicFormProps {
@@ -112,8 +112,14 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
   
   // TanStack Query mutation for updating comic
   const updateComicMutation = useMutation({
-    mutationFn: (comicData: AddComicData) => {
-      return updateComic(comic.comicId, comicData)
+    mutationFn: (comicData: AddToCollectionData) => {
+      if (!comic.id) {
+        throw new Error('Comic entry ID is required')
+      }
+      if (!user?.email) {
+        throw new Error('User email is required')
+      }
+      return updateCollectionEntry(comic.id, user.email, comicData)
     },
     onSuccess: () => {
       // Invalidate and refetch the collection query
@@ -228,22 +234,14 @@ const EditComicForm: React.FC<EditComicFormProps> = ({ isOpen, onClose, comic })
         }
       }
 
-      // Prepare comic data with uploaded image URL
-      const comicData: AddComicData = {
-        title: formData.title.trim(),
-        issueNumber: formData.issueNumber.trim(),
-        publisher: formData.publisher === 'Other' ? formData.customPublisher.trim() : formData.publisher,
+      // Prepare collection entry data with comicId for updates
+      const comicData: AddToCollectionData = {
+        comicId: comic.comicId,
         condition: formData.condition,
-        format: formData.format,
-        estimatedValue: formData.estimatedValue ? parseFloat(formData.estimatedValue) : null,
         purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
         purchaseDate: formData.purchaseDate || null,
         purchaseLocation: formData.purchaseLocation.trim() || null,
-        coverImageUrl: coverImageUrl || null,
         notes: formData.notes.trim() || null,
-        isKeyIssue: formData.isKeyIssue,
-        keyNotes: formData.keyNotes.trim() || null,
-        addedDate: new Date().toISOString(),
       }
 
       // Use the mutation to update the comic
