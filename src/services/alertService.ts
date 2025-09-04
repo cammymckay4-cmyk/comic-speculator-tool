@@ -168,10 +168,18 @@ export const updateAlertStatus = async (alertId: string, isActive: boolean): Pro
 }
 
 export const deleteAlert = async (alertId: string): Promise<void> => {
+  // Get the current user from Supabase Auth
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  
+  if (authError || !user) {
+    throw new Error('User not authenticated')
+  }
+
   const { error } = await supabase
     .from('alerts')
     .delete()
     .eq('id', alertId)
+    .eq('user_id', user.id) // Ensure user can only delete their own alerts
 
   if (error) {
     throw new Error(`Failed to delete alert: ${error.message}`)
