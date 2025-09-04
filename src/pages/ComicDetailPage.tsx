@@ -145,8 +145,9 @@ const ComicDetailPage: React.FC = () => {
   
   const handleAddToCollection = () => {
     if (!user) {
-      // Redirect to login page
-      navigate('/auth')
+      // Redirect to login page with current URL as redirect parameter
+      const currentPath = window.location.pathname
+      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}`)
       return
     }
     // TODO: Implement add to collection modal/form
