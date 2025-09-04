@@ -245,8 +245,8 @@ const ComicDetailPage: React.FC = () => {
     // Encode the search query to handle special characters
     const encodedQuery = encodeURIComponent(searchQuery)
     
-    // Construct the eBay UK search URL
-    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}`
+    // Construct the eBay UK search URL with UK-only results
+    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&LH_PrefLoc=1`
     
     // Open in new tab
     window.open(ebayUrl, '_blank', 'noopener,noreferrer')
@@ -256,13 +256,13 @@ const ComicDetailPage: React.FC = () => {
     if (!comic) return
     
     // Create search query with title and issue
-    const searchQuery = `${comic.title} ${comic.issue} comic`.trim()
+    const searchQuery = `${comic.title} ${comic.issue}`.trim()
     
     // Encode the search query to handle special characters
     const encodedQuery = encodeURIComponent(searchQuery)
     
-    // Construct the eBay UK search URL with UK-only results
-    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&LH_PrefLoc=1`
+    // Construct the eBay UK search URL with UK-only results and sorted by ending soonest
+    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&LH_PrefLoc=1&_sop=10`
     
     // Open in new tab
     window.open(ebayUrl, '_blank', 'noopener,noreferrer')
@@ -272,13 +272,13 @@ const ComicDetailPage: React.FC = () => {
     if (!comic) return
     
     // Create search query with title and issue
-    const searchQuery = `${comic.title} ${comic.issue} comic`.trim()
+    const searchQuery = `${comic.title} ${comic.issue}`.trim()
     
     // Encode the search query to handle special characters
     const encodedQuery = encodeURIComponent(searchQuery)
     
-    // Construct the eBay UK search URL with ending soonest sort and UK-only results
-    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&_sop=1&LH_PrefLoc=1`
+    // Construct the eBay UK search URL with ending soonest sort, auctions only, and UK-only results
+    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&LH_PrefLoc=1&LH_Auction=1&_sop=1`
     
     // Open in new tab
     window.open(ebayUrl, '_blank', 'noopener,noreferrer')
@@ -288,13 +288,13 @@ const ComicDetailPage: React.FC = () => {
     if (!comic) return
     
     // Create search query with title and issue
-    const searchQuery = `${comic.title} ${comic.issue} comic`.trim()
+    const searchQuery = `${comic.title} ${comic.issue}`.trim()
     
     // Encode the search query to handle special characters
     const encodedQuery = encodeURIComponent(searchQuery)
     
     // Construct the eBay UK search URL for sold listings with UK-only results
-    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&LH_Complete=1&LH_PrefLoc=1`
+    const ebayUrl = `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedQuery}&LH_PrefLoc=1&LH_Complete=1&LH_Sold=1`
     
     // Open in new tab
     window.open(ebayUrl, '_blank', 'noopener,noreferrer')
