@@ -9,7 +9,6 @@ export interface SupabaseComic {
   publisher: string
   cover_image: string
   market_value: number
-  publication_year?: number
   format?: string
   is_key_issue?: boolean
   key_issue_reason?: string
@@ -41,9 +40,7 @@ const transformCollectionEntry = (entry: SupabaseUserCollectionEntry): Collectio
     issue: entry.comic.issue,
     issueNumber: parseInt(entry.comic.issue.replace('#', '')) || 0,
     publisher: entry.comic.publisher,
-    publishDate: entry.comic.publication_year ? 
-      new Date(entry.comic.publication_year, 0, 1).toISOString() : 
-      new Date().toISOString(),
+    publishDate: new Date().toISOString(),
     coverImage: entry.comic.cover_image,
     creators: [], // This should be populated from your schema
     format: (entry.comic.format as any) || 'single-issue',
@@ -114,7 +111,6 @@ export const fetchUserCollection = async (
         publisher,
         cover_image,
         market_value,
-        publication_year,
         format,
         is_key_issue,
         key_issue_reason,
@@ -184,7 +180,7 @@ export const fetchUserCollection = async (
       ascending = false // Most recent first
       break
     case 'publish-date':
-      orderColumn = 'comic.publication_year'
+      orderColumn = 'comic.created_at'
       ascending = false // Most recent first
       break
     case 'purchase-date':
@@ -242,7 +238,6 @@ export const getCollectionCount = async (
         issue,
         publisher,
         market_value,
-        publication_year
       )
     `, { count: 'exact', head: true })
     .eq('user_id', user.id)
@@ -312,7 +307,6 @@ export const fetchUserCollectionEntryById = async (entryId: string, userEmail: s
         publisher,
         cover_image,
         market_value,
-        publication_year,
         format,
         is_key_issue,
         key_issue_reason,
@@ -365,7 +359,6 @@ export interface CreateComicData {
   title: string
   issueNumber: string
   publisher: string
-  publicationYear: number
   format: string
   estimatedValue?: number | null
   coverImageUrl?: string | null
@@ -378,7 +371,6 @@ export interface AddComicData {
   title: string
   issueNumber: string
   publisher: string
-  publicationYear: number
   condition: string
   format: string
   estimatedValue?: number | null
@@ -412,7 +404,6 @@ export const findOrCreateComic = async (comicData: CreateComicData): Promise<Sup
     title: comicData.title,
     issue: comicData.issueNumber,
     publisher: comicData.publisher,
-    publication_year: comicData.publicationYear,
     format: comicData.format,
     market_value: comicData.estimatedValue || 0,
     cover_image: comicData.coverImageUrl || '',
@@ -472,7 +463,6 @@ export const addToCollection = async (userEmail: string, collectionData: AddToCo
         publisher,
         cover_image,
         market_value,
-        publication_year,
         format,
         is_key_issue,
         key_issue_reason,
@@ -565,7 +555,6 @@ export const updateCollectionEntry = async (
         publisher,
         cover_image,
         market_value,
-        publication_year,
         format,
         is_key_issue,
         key_issue_reason,
@@ -647,7 +636,6 @@ export const fetchAllComicsForUser = async (userEmail: string): Promise<Collecti
         publisher,
         cover_image,
         market_value,
-        publication_year,
         format,
         is_key_issue,
         key_issue_reason,
@@ -720,7 +708,6 @@ export const fetchComicById = async (comicId: string): Promise<CollectionComic> 
         publisher,
         cover_image,
         market_value,
-        publication_year,
         format,
         is_key_issue,
         key_issue_reason,

@@ -266,7 +266,6 @@ const ComicSearchModal: React.FC<ComicSearchModalProps> = ({ isOpen, onClose }) 
                             </h4>
                             <p className="font-persona-aura text-gray-600 mb-1">
                               {comic.publisher}
-                              {comic.publication_year && ` • ${comic.publication_year}`}
                             </p>
                             {comic.is_key_issue && (
                               <p className="font-persona-aura text-kirby-red font-semibold mb-1">
@@ -315,7 +314,6 @@ const ComicSearchModal: React.FC<ComicSearchModalProps> = ({ isOpen, onClose }) 
                     </h4>
                     <p className="font-persona-aura text-gray-600 mb-1">
                       {selectedComic?.publisher}
-                      {selectedComic?.publication_year && ` • ${selectedComic.publication_year}`}
                     </p>
                     <p className="font-persona-aura text-stan-lee-blue font-semibold">
                       Market Value: £{selectedComic?.market_value.toFixed(2)}
