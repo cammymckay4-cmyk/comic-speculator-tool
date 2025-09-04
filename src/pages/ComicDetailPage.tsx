@@ -18,7 +18,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react'
-import { fetchComicById, deleteComic } from '@/services/collectionService'
+import { fetchPublicComicById, getUserCollectionEntry, removeFromCollection } from '@/services/collectionService'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditComicForm from '@/components/features/EditComicForm'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
@@ -36,30 +36,40 @@ const ComicDetailPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
-  // Fetch comic data based on id from URL
-  const { data: collectionComic, isLoading, isError, error } = useQuery({
-    queryKey: ['comic', id],
-    queryFn: () => fetchComicById(id!),
+  // Fetch comic data from master comics table (public access)
+  const { data: comic, isLoading, isError, error } = useQuery({
+    queryKey: ['public-comic', id],
+    queryFn: () => fetchPublicComicById(id!),
     enabled: !!id, // Only run query if ID is present
   })
 
-  // Delete mutation
+  // Fetch user's collection entry for this comic (if logged in)
+  const { data: collectionEntry } = useQuery({
+    queryKey: ['user-collection-entry', id, user?.email],
+    queryFn: () => getUserCollectionEntry(id!, user?.email!),
+    enabled: !!id && !!user?.email, // Only run if ID is present and user is logged in
+  })
+
+  // Delete mutation for removing from collection
   const deleteMutation = useMutation({
-    mutationFn: () => deleteComic(id!),
+    mutationFn: () => {
+      if (!collectionEntry) {
+        throw new Error('Comic not in collection')
+      }
+      return removeFromCollection(collectionEntry.id, user?.email!)
+    },
     onSuccess: () => {
       // Invalidate collection queries
       queryClient.invalidateQueries({ queryKey: ['collection'] })
       queryClient.invalidateQueries({ queryKey: ['collection-count'] })
+      queryClient.invalidateQueries({ queryKey: ['user-collection-entry'] })
       
       // Show success toast
-      toast.success('Comic Deleted', 'The comic has been removed from your collection')
-      
-      // Navigate back to collection
-      navigate('/collection')
+      toast.success('Comic Removed', 'The comic has been removed from your collection')
     },
     onError: (error) => {
-      console.error('Failed to delete comic:', error)
-      toast.error('Delete Failed', 'Failed to delete the comic. Please try again.')
+      console.error('Failed to remove comic from collection:', error)
+      toast.error('Remove Failed', 'Failed to remove the comic from your collection. Please try again.')
     }
   })
 
@@ -82,7 +92,7 @@ const ComicDetailPage: React.FC = () => {
   }
 
   // Handle error state
-  if (isError || !collectionComic) {
+  if (isError || !comic) {
     return (
       <div className="min-h-screen bg-parchment">
         <div className="bg-white border-b-comic border-ink-black shadow-comic-sm">
@@ -109,7 +119,7 @@ const ComicDetailPage: React.FC = () => {
               onClick={() => navigate('/collection')}
               className="comic-button"
             >
-              Back to Collection
+              Go Back
             </button>
           </div>
         </div>
@@ -117,7 +127,18 @@ const ComicDetailPage: React.FC = () => {
     )
   }
 
-  const comic = collectionComic.comic
+  // For users with this comic in their collection, show additional actions
+  const isInUserCollection = !!collectionEntry
+  
+  const handleAddToCollection = () => {
+    if (!user) {
+      // Redirect to login page
+      navigate('/auth')
+      return
+    }
+    // TODO: Implement add to collection modal/form
+    toast.info('Add to Collection', 'Feature coming soon!')
+  }
 
   return (
     <div className="min-h-screen bg-parchment">
@@ -129,7 +150,7 @@ const ComicDetailPage: React.FC = () => {
             className="flex items-center space-x-2 text-stan-lee-blue hover:text-kirby-red transition-colors"
           >
             <ArrowLeft size={20} />
-            <span className="font-persona-aura font-semibold">Back to Collection</span>
+            <span className="font-persona-aura font-semibold">Back</span>
           </button>
         </div>
       </div>
@@ -148,28 +169,46 @@ const ComicDetailPage: React.FC = () => {
               
               {/* Quick Actions */}
               <div className="mt-4 space-y-3">
-                <button
-                  onClick={() => setIsEditModalOpen(true)}
-                  className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-golden-age-yellow text-ink-black
-                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-yellow-400"
-                >
-                  <Edit size={18} />
-                  <span className="font-persona-aura font-semibold">
-                    Edit Comic
-                  </span>
-                </button>
+                {isInUserCollection ? (
+                  <>
+                    {/* Collection-specific actions for users who own this comic */}
+                    <button
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-golden-age-yellow text-ink-black
+                                transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-yellow-400"
+                    >
+                      <Edit size={18} />
+                      <span className="font-persona-aura font-semibold">
+                        Edit Comic
+                      </span>
+                    </button>
 
-                <button
-                  onClick={handleDeleteClick}
-                  className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-kirby-red text-parchment
-                            transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-red-700"
-                >
-                  <Trash2 size={18} />
-                  <span className="font-persona-aura font-semibold">
-                    Delete Comic
-                  </span>
-                </button>
+                    <button
+                      onClick={handleDeleteClick}
+                      className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-kirby-red text-parchment
+                                transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-red-700"
+                    >
+                      <Trash2 size={18} />
+                      <span className="font-persona-aura font-semibold">
+                        Remove from Collection
+                      </span>
+                    </button>
+                  </>
+                ) : (
+                  /* Add to Collection button for users who don't have this comic */
+                  <button
+                    onClick={handleAddToCollection}
+                    className="w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm bg-golden-age-yellow text-ink-black
+                              transition-all duration-150 hover:translate-y-[-2px] hover:shadow-comic hover:bg-yellow-400"
+                  >
+                    <Star size={18} />
+                    <span className="font-persona-aura font-semibold">
+                      {user ? 'Add to Collection' : 'Login to Add to Collection'}
+                    </span>
+                  </button>
+                )}
                 
+                {/* Common actions available to all users */}
                 <button
                   onClick={() => setIsInWishlist(!isInWishlist)}
                   className={`w-full flex items-center justify-center space-x-2 py-3 border-comic border-ink-black shadow-comic-sm
@@ -297,39 +336,60 @@ const ComicDetailPage: React.FC = () => {
               </div>
             )}
 
-            {/* Current Condition and Price */}
+            {/* Market Value and Collection Info */}
             <div className="bg-white comic-border shadow-comic p-6">
               <h2 className="font-super-squad text-2xl text-ink-black mb-4">
-                CONDITION & VALUE
+                VALUE & INFO
               </h2>
               <div className="space-y-4">
+                {/* Market Value - always shown */}
                 <div className="flex justify-between items-center p-4 bg-golden-age-yellow border-2 border-ink-black shadow-comic">
                   <div className="text-left">
                     <p className="font-persona-aura font-semibold text-ink-black">
-                      {collectionComic.condition.charAt(0).toUpperCase() + collectionComic.condition.slice(1).replace(/-/g, ' ')}
+                      Market Value
                     </p>
                     <p className="font-persona-aura text-xs text-gray-800">
-                      Current condition
+                      Current estimated value
                     </p>
                   </div>
                   <p className="font-super-squad text-xl text-ink-black">
                     £{(comic.marketValue || 0).toLocaleString()}
                   </p>
                 </div>
-                {collectionComic.purchasePrice && (
-                  <div className="flex justify-between items-center p-4 bg-gray-50 border-2 border-gray-300">
-                    <div className="text-left">
-                      <p className="font-persona-aura font-semibold text-ink-black">
-                        Purchase Price
-                      </p>
-                      <p className="font-persona-aura text-xs text-gray-600">
-                        {collectionComic.purchaseDate ? new Date(collectionComic.purchaseDate).toLocaleDateString('en-GB') : 'Date unknown'}
+                
+                {/* Collection-specific info - only shown if user has this comic */}
+                {collectionEntry && (
+                  <>
+                    <div className="flex justify-between items-center p-4 bg-stan-lee-blue text-parchment border-2 border-ink-black shadow-comic">
+                      <div className="text-left">
+                        <p className="font-persona-aura font-semibold">
+                          Your Copy's Condition
+                        </p>
+                        <p className="font-persona-aura text-xs">
+                          Added {new Date(collectionEntry.addedDate).toLocaleDateString('en-GB')}
+                        </p>
+                      </div>
+                      <p className="font-super-squad text-xl">
+                        {collectionEntry.condition.charAt(0).toUpperCase() + collectionEntry.condition.slice(1).replace(/-/g, ' ')}
                       </p>
                     </div>
-                    <p className="font-super-squad text-xl text-ink-black">
-                      £{collectionComic.purchasePrice.toLocaleString()}
-                    </p>
-                  </div>
+                    
+                    {collectionEntry.purchasePrice && (
+                      <div className="flex justify-between items-center p-4 bg-gray-50 border-2 border-gray-300">
+                        <div className="text-left">
+                          <p className="font-persona-aura font-semibold text-ink-black">
+                            Purchase Price
+                          </p>
+                          <p className="font-persona-aura text-xs text-gray-600">
+                            {collectionEntry.purchaseDate ? new Date(collectionEntry.purchaseDate).toLocaleDateString('en-GB') : 'Date unknown'}
+                          </p>
+                        </div>
+                        <p className="font-super-squad text-xl text-ink-black">
+                          £{collectionEntry.purchasePrice.toLocaleString()}
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -368,9 +428,9 @@ const ComicDetailPage: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <User size={18} className="text-gray-400" />
-                    <span className="font-persona-aura text-gray-600">Added:</span>
+                    <span className="font-persona-aura text-gray-600">Publisher:</span>
                     <span className="font-persona-aura font-semibold text-ink-black">
-                      {new Date(collectionComic.addedDate).toLocaleDateString('en-GB')}
+                      {comic.publisher}
                     </span>
                   </div>
                 </div>
@@ -415,11 +475,11 @@ const ComicDetailPage: React.FC = () => {
       </div>
       
       {/* Edit Comic Modal */}
-      {collectionComic && (
+      {collectionEntry && (
         <EditComicForm
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          comic={collectionComic}
+          comic={collectionEntry}
         />
       )}
 
@@ -428,9 +488,9 @@ const ComicDetailPage: React.FC = () => {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="DELETE COMIC"
-        message={`Are you sure you want to delete "${collectionComic?.comic.title} ${collectionComic?.comic.issue}" from your collection? This action cannot be undone.`}
-        confirmText="Delete Comic"
+        title="REMOVE FROM COLLECTION"
+        message={`Are you sure you want to remove "${comic.title} ${comic.issue}" from your collection? This action cannot be undone.`}
+        confirmText="Remove from Collection"
         cancelText="Cancel"
         isLoading={deleteMutation.isPending}
         variant="danger"
