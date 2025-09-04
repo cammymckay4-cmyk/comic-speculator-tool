@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useAlertsQuery, useUpdateAlertStatus, useDeleteAlert } from '@/hooks/useAlertsQuery'
 import CreateAlertModal from '@/components/features/CreateAlertModal'
+import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { toast } from '@/store/toastStore'
 import { formatDistanceToNow } from 'date-fns'
@@ -66,6 +67,17 @@ const alertTypeConfig = {
 const AlertsPage: React.FC = () => {
   const [selectedAlerts, setSelectedAlerts] = useState<string[]>([])
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
+    isOpen: boolean
+    alertId: string
+    alertName: string
+    isBulk: boolean
+  }>({
+    isOpen: false,
+    alertId: '',
+    alertName: '',
+    isBulk: false
+  })
   
   const { data: alerts = [], isLoading, isError, error } = useAlertsQuery()
   const updateAlertStatusMutation = useUpdateAlertStatus()
@@ -79,32 +91,46 @@ const AlertsPage: React.FC = () => {
     }
   }
 
-  const handleDeleteAlert = async (id: string, alertName: string) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete the alert "${alertName}"?\n\nThis action cannot be undone.`
-    )
+  const handleDeleteAlert = (id: string, alertName: string) => {
+    // Handle case where alert name might be null/undefined
+    const displayName = alertName || 'Unnamed Alert'
     
-    if (confirmed) {
-      try {
-        await deleteAlertMutation.mutateAsync(id)
-        
-        // Show success toast
-        toast.success(
-          'Alert deleted successfully',
-          `"${alertName}" has been removed from your alerts`
-        )
-        
-        // Remove from selected alerts
-        setSelectedAlerts(prev => prev.filter(alertId => alertId !== id))
-      } catch (error) {
-        console.error('Failed to delete alert:', error)
-        
-        // Show error toast
-        toast.error(
-          'Failed to delete alert',
-          error instanceof Error ? error.message : 'An unknown error occurred'
-        )
-      }
+    setDeleteConfirmModal({
+      isOpen: true,
+      alertId: id,
+      alertName: displayName,
+      isBulk: false
+    })
+  }
+
+  const executeDeleteAlert = async () => {
+    const { alertId, alertName } = deleteConfirmModal
+    
+    try {
+      await deleteAlertMutation.mutateAsync(alertId)
+      
+      // Show success toast
+      toast.success(
+        'Alert deleted successfully',
+        `"${alertName}" has been removed from your alerts`
+      )
+      
+      // Remove from selected alerts
+      setSelectedAlerts(prev => prev.filter(alertIdToRemove => alertIdToRemove !== alertId))
+      
+      // Close modal
+      setDeleteConfirmModal({ isOpen: false, alertId: '', alertName: '', isBulk: false })
+    } catch (error) {
+      console.error('Failed to delete alert:', error)
+      
+      // Show error toast
+      toast.error(
+        'Failed to delete alert',
+        error instanceof Error ? error.message : 'An unknown error occurred'
+      )
+      
+      // Close modal
+      setDeleteConfirmModal({ isOpen: false, alertId: '', alertName: '', isBulk: false })
     }
   }
 
@@ -168,44 +194,51 @@ const AlertsPage: React.FC = () => {
     }
   }
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedAlerts.length === 0) return
     
     const selectedAlertNames = alerts
       .filter(alert => selectedAlerts.includes(alert.id))
-      .map(alert => `"${alert.name}"`)
+      .map(alert => alert.name || 'Unnamed Alert')
       .join(', ')
     
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${selectedAlerts.length} alert(s)?\n\n${selectedAlertNames}\n\nThis action cannot be undone.`
-    )
-    
-    if (confirmed) {
-      try {
-        // Process all selected alerts
-        const promises = selectedAlerts.map(alertId => 
-          deleteAlertMutation.mutateAsync(alertId)
-        )
-        
-        await Promise.all(promises)
-        
-        // Show success toast
-        toast.success(
-          'Alerts deleted successfully',
-          `${selectedAlerts.length} alert(s) have been removed from your alerts`
-        )
-        
-        // Clear selections
-        setSelectedAlerts([])
-      } catch (error) {
-        console.error('Failed to delete alerts:', error)
-        
-        // Show error toast
-        toast.error(
-          'Failed to delete alerts',
-          error instanceof Error ? error.message : 'Some alerts could not be deleted'
-        )
-      }
+    setDeleteConfirmModal({
+      isOpen: true,
+      alertId: '', // Not used for bulk delete
+      alertName: selectedAlertNames,
+      isBulk: true
+    })
+  }
+
+  const executeBulkDelete = async () => {
+    try {
+      // Process all selected alerts
+      const promises = selectedAlerts.map(alertId => 
+        deleteAlertMutation.mutateAsync(alertId)
+      )
+      
+      await Promise.all(promises)
+      
+      // Show success toast
+      toast.success(
+        'Alerts deleted successfully',
+        `${selectedAlerts.length} alert(s) have been removed from your alerts`
+      )
+      
+      // Clear selections and close modal
+      setSelectedAlerts([])
+      setDeleteConfirmModal({ isOpen: false, alertId: '', alertName: '', isBulk: false })
+    } catch (error) {
+      console.error('Failed to delete alerts:', error)
+      
+      // Show error toast
+      toast.error(
+        'Failed to delete alerts',
+        error instanceof Error ? error.message : 'Some alerts could not be deleted'
+      )
+      
+      // Close modal
+      setDeleteConfirmModal({ isOpen: false, alertId: '', alertName: '', isBulk: false })
     }
   }
 
@@ -502,6 +535,22 @@ const AlertsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirmModal.isOpen}
+        onClose={() => setDeleteConfirmModal({ isOpen: false, alertId: '', alertName: '', isBulk: false })}
+        onConfirm={deleteConfirmModal.isBulk ? executeBulkDelete : executeDeleteAlert}
+        title={deleteConfirmModal.isBulk ? 'Delete Selected Alerts' : 'Delete Alert'}
+        message={
+          deleteConfirmModal.isBulk
+            ? `Are you sure you want to delete ${selectedAlerts.length} alert(s)?\n\n${deleteConfirmModal.alertName}\n\nThis action cannot be undone.`
+            : `Are you sure you want to delete the alert "${deleteConfirmModal.alertName}"?\n\nThis action cannot be undone.`
+        }
+        confirmText="Delete"
+        isLoading={deleteAlertMutation.isPending}
+        variant="danger"
+      />
 
       {/* Create Alert Modal */}
       <CreateAlertModal
