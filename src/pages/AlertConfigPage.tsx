@@ -123,7 +123,12 @@ const AlertConfigPage: React.FC = () => {
         description: formData.description || undefined
       })
       
-      toast.success('Alert Created', 'Your price alert has been set up successfully')
+      const selectedOption = alertTypeOptions.find(opt => opt.value === formData.alertType)
+      const alertTypeLabel = selectedOption?.label || formData.alertType
+      toast.success(
+        `${alertTypeLabel} alert created for ${comic.title} ${comic.issue}`,
+        'You will be notified when your criteria are met'
+      )
       navigate('/alerts')
     } catch (error) {
       console.error('Failed to create alert:', error)
