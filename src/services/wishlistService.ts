@@ -349,29 +349,78 @@ export const removeFromWishlist = async (
   wishlistItemId: string,
   userEmail: string
 ): Promise<void> => {
+  console.log('removeFromWishlist called with:', { wishlistItemId, userEmail })
+  
   if (!wishlistItemId) {
-    throw new Error('Wishlist item ID is required')
+    const error = 'Wishlist item ID is required'
+    console.error('removeFromWishlist validation error:', error)
+    throw new Error(error)
   }
   if (!userEmail) {
-    throw new Error('User email is required')
+    const error = 'User email is required'
+    console.error('removeFromWishlist validation error:', error)
+    throw new Error(error)
   }
 
   // Get the current user from Supabase Auth
+  console.log('Getting current user from Supabase Auth...')
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   
-  if (authError || !user) {
-    throw new Error('User not authenticated')
+  console.log('Auth result:', { user: user ? { id: user.id, email: user.email } : null, authError })
+  
+  if (authError) {
+    console.error('Auth error:', authError)
+    throw new Error(`User authentication error: ${authError.message}`)
+  }
+  
+  if (!user) {
+    const error = 'User not authenticated - no user data returned'
+    console.error('removeFromWishlist auth error:', error)
+    throw new Error(error)
   }
 
+  console.log('Attempting to delete from wishlist_items with:', { 
+    wishlistItemId, 
+    userId: user.id,
+    userEmail: user.email 
+  })
+
+  // First, let's check if the item exists
+  const { data: existingItem, error: selectError } = await supabase
+    .from('wishlist_items')
+    .select('*')
+    .eq('id', wishlistItemId)
+    .eq('user_id', user.id)
+    .single()
+
+  console.log('Existing item check:', { existingItem, selectError })
+
+  if (selectError && selectError.code !== 'PGRST116') { // PGRST116 is "not found" error
+    console.error('Error checking for existing wishlist item:', selectError)
+    throw new Error(`Failed to verify wishlist item: ${selectError.message}`)
+  }
+
+  if (!existingItem) {
+    const error = 'Wishlist item not found or does not belong to current user'
+    console.error('removeFromWishlist error:', error)
+    throw new Error(error)
+  }
+
+  // Proceed with deletion
   const { error } = await supabase
     .from('wishlist_items')
     .delete()
     .eq('id', wishlistItemId)
     .eq('user_id', user.id)
 
+  console.log('Delete operation result:', { error })
+
   if (error) {
+    console.error('Delete operation failed:', error)
     throw new Error(`Failed to remove from wishlist: ${error.message}`)
   }
+
+  console.log('Successfully removed from wishlist')
 }
 
 // Check if a comic is in user's wishlist
@@ -409,17 +458,32 @@ export const getWishlistItemByComicId = async (
   comicId: string,
   userEmail: string
 ): Promise<WishlistItem | null> => {
+  console.log('getWishlistItemByComicId called with:', { comicId, userEmail })
+  
   if (!comicId || !userEmail) {
+    console.log('getWishlistItemByComicId: Missing parameters, returning null')
     return null
   }
 
   try {
     // Get the current user from Supabase Auth
+    console.log('getWishlistItemByComicId: Getting current user...')
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
+    console.log('getWishlistItemByComicId auth result:', { 
+      user: user ? { id: user.id, email: user.email } : null, 
+      authError 
+    })
+    
     if (authError || !user) {
+      console.log('getWishlistItemByComicId: No authenticated user, returning null')
       return null
     }
+
+    console.log('getWishlistItemByComicId: Querying wishlist_items with:', {
+      comicId,
+      userId: user.id
+    })
 
     const { data, error } = await supabase
       .from('wishlist_items')
@@ -443,12 +507,18 @@ export const getWishlistItemByComicId = async (
       .eq('user_id', user.id)
       .single()
 
+    console.log('getWishlistItemByComicId query result:', { data, error })
+
     if (error || !data) {
+      console.log('getWishlistItemByComicId: No data found or error, returning null')
       return null
     }
 
-    return transformWishlistItem(data)
+    const transformed = transformWishlistItem(data)
+    console.log('getWishlistItemByComicId: Transformed result:', transformed)
+    return transformed
   } catch (error) {
+    console.error('getWishlistItemByComicId: Exception caught:', error)
     return null
   }
 }

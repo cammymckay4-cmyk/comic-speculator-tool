@@ -126,8 +126,27 @@ const ComicDetailPage: React.FC = () => {
   // Mutation for removing from wishlist
   const removeFromWishlistMutation = useMutation({
     mutationFn: () => {
-      if (!wishlistEntry) throw new Error('Comic not in wishlist')
-      if (!user?.email) throw new Error('User email is required')
+      console.log('removeFromWishlistMutation called with:', {
+        wishlistEntry,
+        user: user ? { email: user.email, id: user.id } : null
+      })
+      
+      if (!wishlistEntry) {
+        const error = 'Comic not in wishlist'
+        console.error('removeFromWishlistMutation validation error:', error)
+        throw new Error(error)
+      }
+      if (!user?.email) {
+        const error = 'User email is required'
+        console.error('removeFromWishlistMutation validation error:', error)
+        throw new Error(error)
+      }
+      
+      console.log('Calling removeFromWishlist with:', {
+        wishlistItemId: wishlistEntry.id,
+        userEmail: user.email
+      })
+      
       return removeFromWishlist(wishlistEntry.id, user.email)
     },
     onSuccess: () => {
