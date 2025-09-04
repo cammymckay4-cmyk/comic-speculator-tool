@@ -39,15 +39,22 @@ const transformSupabaseAlert = (supabaseAlert: SupabaseAlert): UserAlert => {
   return userAlert
 }
 
-export const fetchAlerts = async (userId: string): Promise<UserAlert[]> => {
-  if (!userId) {
-    throw new Error('User ID is required')
+export const fetchAlerts = async (userEmail: string): Promise<UserAlert[]> => {
+  if (!userEmail) {
+    throw new Error('User email is required')
+  }
+
+  // Get the current user from Supabase Auth
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  
+  if (authError || !user) {
+    throw new Error('User not authenticated')
   }
 
   const { data, error } = await supabase
     .from('alerts')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -62,7 +69,7 @@ export const fetchAlerts = async (userId: string): Promise<UserAlert[]> => {
 }
 
 export interface CreateAlertData {
-  userId: string
+  userEmail: string
   comicId?: string
   name: string
   alertType: AlertType
@@ -73,12 +80,19 @@ export interface CreateAlertData {
 
 export const createAlert = async (alertData: CreateAlertData): Promise<UserAlert> => {
   // Validate required fields
-  if (!alertData.userId) {
-    throw new Error('User ID is required to create an alert')
+  if (!alertData.userEmail) {
+    throw new Error('User email is required to create an alert')
   }
   
   if (!alertData.name?.trim()) {
     throw new Error('Alert name is required')
+  }
+
+  // Get the current user from Supabase Auth
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  
+  if (authError || !user) {
+    throw new Error('User not authenticated')
   }
 
   // Validate price-related fields for price alerts
@@ -92,7 +106,7 @@ export const createAlert = async (alertData: CreateAlertData): Promise<UserAlert
   }
 
   console.log('Creating alert with data:', {
-    userId: alertData.userId,
+    userId: user.id,
     comicId: alertData.comicId,
     name: alertData.name,
     alertType: alertData.alertType,
@@ -101,13 +115,13 @@ export const createAlert = async (alertData: CreateAlertData): Promise<UserAlert
   })
 
   const supabaseAlertData = {
-    user_id: alertData.userId,
-    comic_id: alertData.comicId,
-    name: alertData.name.trim(),
+    user_id: user.id,
+    comic_id: alertData.comicId || null,
+    name: alertData.name.trim() || 'Unnamed Alert',
     alert_type: alertData.alertType,
-    threshold_price: alertData.thresholdPrice,
-    price_direction: alertData.priceDirection,
-    description: alertData.description?.trim() || null,
+    threshold_price: alertData.thresholdPrice || null,
+    price_direction: alertData.priceDirection || null,
+    description: alertData.description?.trim() || `Alert for ${alertData.alertType} notifications`,
     is_active: true,
     trigger_count: 0,
   }

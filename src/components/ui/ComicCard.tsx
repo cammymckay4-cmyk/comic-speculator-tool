@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { addToWishlist, removeFromWishlist, isComicInWishlist } from '@/services/wishlistService'
 import { useUserStore } from '@/store/userStore'
 import { toast } from '@/store/toastStore'
+import { LiveAuctionBadge, BidCountDisplay, AuctionStatusBadge } from './EbayBadges'
 import type { EbayStatus } from '@/lib/types'
 
 interface ComicData {
@@ -145,21 +146,16 @@ const ComicCard: React.FC<ComicCardProps> = ({
           </div>
         )}
         
-        {/* eBay Status Badges */}
-        <div className="absolute bottom-2 left-2 flex flex-col space-y-1">
+        {/* eBay Status Badges - Using Custom Components */}
+        <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
           {comic.ebayStatus?.hasLiveListings && (
-            <div className="bg-stan-lee-blue text-parchment px-2 py-1 border-2 border-ink-black shadow-comic-sm">
-              <span className="font-persona-aura text-xs font-bold">
-                Live ({comic.ebayStatus.liveListingsCount})
-              </span>
-            </div>
+            <>
+              <LiveAuctionBadge />
+              <BidCountDisplay bidCount={comic.ebayStatus.liveListingsCount} />
+            </>
           )}
           {comic.ebayStatus?.hasEndingSoon && (
-            <div className="bg-orange-500 text-white px-2 py-1 border-2 border-ink-black shadow-comic-sm">
-              <span className="font-persona-aura text-xs font-bold">
-                Ending Soon ({comic.ebayStatus.endingSoonCount})
-              </span>
-            </div>
+            <AuctionStatusBadge status="auction" />
           )}
         </div>
         
