@@ -270,7 +270,7 @@ const ComicSearchModal: React.FC<ComicSearchModalProps> = ({ isOpen, onClose }) 
                             {comic.is_key_issue && (
                               <p className="font-persona-aura text-kirby-red font-semibold mb-1">
                                 ⭐ Key Issue
-                                {comic.key_issue_reason && `: ${comic.key_issue_reason}`}
+                                {comic.key_notes && `: ${comic.key_notes}`}
                               </p>
                             )}
                             <p className="font-persona-aura text-stan-lee-blue font-semibold">

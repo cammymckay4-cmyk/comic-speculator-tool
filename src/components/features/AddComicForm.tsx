@@ -75,7 +75,7 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
     coverImage: '',
     notes: '',
     isKeyIssue: false,
-    keyIssueReason: '',
+    keyNotes: '',
   })
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -162,7 +162,7 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
       coverImage: '',
       notes: '',
       isKeyIssue: false,
-      keyIssueReason: '',
+      keyNotes: '',
     })
     setSelectedFile(null)
     setPreviewUrl('')
@@ -245,7 +245,7 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
         coverImageUrl: coverImageUrl || null,
         notes: formData.notes.trim() || null,
         isKeyIssue: formData.isKeyIssue,
-        keyIssueReason: formData.keyIssueReason.trim() || null,
+        keyNotes: formData.keyNotes.trim() || null,
         addedDate: new Date().toISOString(),
       }
 
@@ -602,8 +602,8 @@ const AddComicForm: React.FC<AddComicFormProps> = ({ isOpen, onClose }) => {
                   </label>
                   <input
                     type="text"
-                    value={formData.keyIssueReason}
-                    onChange={(e) => handleChange('keyIssueReason', e.target.value)}
+                    value={formData.keyNotes}
+                    onChange={(e) => handleChange('keyNotes', e.target.value)}
                     className="w-full p-3 border-2 border-ink-black comic-border font-persona-aura focus:outline-none focus:ring-2 focus:ring-stan-lee-blue"
                     placeholder="e.g., First appearance of Spider-Man"
                   />

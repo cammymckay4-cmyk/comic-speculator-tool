@@ -9,7 +9,7 @@ export interface SearchResultComic {
   coverImageUrl: string
   marketValue: number
   isKeyIssue?: boolean
-  keyIssueReason?: string
+  keyNotes?: string
 }
 
 // Transform Supabase data to SearchResultComic format
@@ -22,7 +22,7 @@ const transformSearchResult = (data: any): SearchResultComic => {
     coverImageUrl: data.cover_image,
     marketValue: data.market_value || 0,
     isKeyIssue: data.is_key_issue || false,
-    keyIssueReason: data.key_issue_reason
+    keyNotes: data.key_notes
   }
 }
 
@@ -44,7 +44,7 @@ export const searchPublicComics = async (searchTerm: string): Promise<SearchResu
       cover_image,
       market_value,
       is_key_issue,
-      key_issue_reason
+      key_notes
     `)
     .ilike('title', `%${trimmedSearch}%`)
     .order('title', { ascending: true })

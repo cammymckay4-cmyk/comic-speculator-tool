@@ -67,7 +67,7 @@ export interface Comic {
   variantDescription?: string;
   isVariant: boolean;
   isKeyIssue: boolean;
-  keyIssueReason?: string;
+  keyNotes?: string;
   storyArcs?: string[];
   characters?: string[];
   teams?: string[];
