@@ -36,7 +36,7 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, co
     
     // Validate form before submission
     if (!formData.name.trim() && !comic) {
-      console.error('Alert name is required')
+      toast.error('Alert name is required', 'Please enter a name for your alert')
       return
     }
 
@@ -44,7 +44,7 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, co
     if (['price-drop', 'price-increase'].includes(formData.alertType)) {
       const price = parseFloat(formData.thresholdPrice)
       if (!formData.thresholdPrice || isNaN(price) || price <= 0) {
-        console.error('Valid threshold price is required for price alerts')
+        toast.error('Valid price required', 'Please enter a valid threshold price for price alerts')
         return
       }
     }
@@ -67,9 +67,10 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, co
       
       // Show success toast with comic title if available
       const alertTitle = comic ? `${comic.title} ${comic.issue || ''}`.trim() : formData.name
+      const alertTypeLabel = selectedAlertType?.label || formData.alertType
       toast.success(
-        'Alert created successfully!',
-        `Alert created for ${alertTitle}`
+        `${alertTypeLabel} alert created for ${alertTitle}`,
+        'You will be notified when your criteria are met'
       )
       
       // Reset form and close modal on success
@@ -88,7 +89,10 @@ const CreateAlertModal: React.FC<CreateAlertModalProps> = ({ isOpen, onClose, co
       }, 500)
     } catch (error) {
       console.error('Failed to create alert:', error)
-      // Error will be handled by the mutation's error state
+      toast.error(
+        'Failed to create alert',
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      )
     }
   }
 
