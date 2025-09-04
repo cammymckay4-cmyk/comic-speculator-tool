@@ -170,8 +170,8 @@ const ComicDetailPage: React.FC = () => {
       navigate('/auth')
       return
     }
-    setHasAlert(!hasAlert)
-    // TODO: Implement actual price alert API calls
+    // Navigate to alert configuration page
+    navigate(`/alerts/configure/${id}`)
   }
 
   const handleFindOnEbay = () => {

@@ -14,6 +14,7 @@ import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 const HomePage = lazy(() => import('./pages/HomePage'))
 const CollectionPage = lazy(() => import('./pages/CollectionPage'))
 const AlertsPage = lazy(() => import('./pages/AlertsPage'))
+const AlertConfigPage = lazy(() => import('./pages/AlertConfigPage'))
 const AccountPage = lazy(() => import('./pages/AccountPage'))
 const NewsPage = lazy(() => import('./pages/NewsPage'))
 const ComicDetailPage = lazy(() => import('./pages/ComicDetailPage'))
@@ -94,6 +95,7 @@ function App() {
             {/* Protected Routes (add auth guard later) */}
             <Route path="/collection" element={<CollectionPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="/alerts/configure/:comicId" element={<AlertConfigPage />} />
             <Route path="/account" element={<AccountPage />} />
             
             {/* Admin Routes */}
