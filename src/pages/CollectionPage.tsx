@@ -120,6 +120,7 @@ const CollectionPage: React.FC = () => {
     purchaseDate: collectionComic.purchaseDate ? new Date(collectionComic.purchaseDate).toLocaleDateString() : 'N/A',
     purchaseDateValue: collectionComic.purchaseDate ? new Date(collectionComic.purchaseDate) : null,
     addedDate: collectionComic.addedDate ? new Date(collectionComic.addedDate) : new Date(),
+    ebayStatus: collectionComic.comic.ebayStatus
   })) || []
 
   const totalPages = Math.ceil((totalItems || 0) / itemsPerPage)

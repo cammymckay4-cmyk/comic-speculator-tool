@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabaseClient'
-import type { Comic, NewsArticle } from '@/lib/types'
+import type { Comic, NewsArticle, EbayStatus } from '@/lib/types'
+import { addEbayStatusToComic } from '@/lib/ebayUtils'
 
 export interface UserStats {
   totalComics: number
@@ -17,6 +18,7 @@ export interface HotComic {
   value: string
   trend: 'up' | 'down' | 'neutral'
   change: string
+  ebayStatus?: EbayStatus
 }
 
 // Fetch user's collection statistics
@@ -100,16 +102,21 @@ export const fetchHotComics = async (): Promise<HotComic[]> => {
   }
 
   // Transform the data to match the expected format
-  return comics.map((comic, index) => ({
-    id: comic.id,
-    title: comic.title,
-    issue: comic.issue,
-    publisher: comic.publisher,
-    coverImage: comic.cover_image || `https://via.placeholder.com/200x300/D62828/FDF6E3?text=${encodeURIComponent(comic.title)}`,
-    value: `£${comic.market_value?.toLocaleString() || '0'}`,
-    trend: index < 3 ? 'up' : 'neutral' as const, // Mock trend for now
-    change: index < 3 ? `+${5 + index * 3}%` : '0%'
-  }))
+  return comics.map((comic, index) => {
+    const baseComic = {
+      id: comic.id,
+      title: comic.title,
+      issue: comic.issue,
+      publisher: comic.publisher,
+      coverImage: comic.cover_image || `https://via.placeholder.com/200x300/D62828/FDF6E3?text=${encodeURIComponent(comic.title)}`,
+      value: `£${comic.market_value?.toLocaleString() || '0'}`,
+      trend: index < 3 ? 'up' : 'neutral' as const, // Mock trend for now
+      change: index < 3 ? `+${5 + index * 3}%` : '0%'
+    }
+    
+    // Add eBay status using utility function
+    return addEbayStatusToComic(baseComic)
+  })
 }
 
 // Fetch recent news articles

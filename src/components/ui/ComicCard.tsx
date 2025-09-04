@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { addToWishlist, removeFromWishlist, isComicInWishlist } from '@/services/wishlistService'
 import { useUserStore } from '@/store/userStore'
 import { toast } from '@/store/toastStore'
+import type { EbayStatus } from '@/lib/types'
 
 interface ComicData {
   id: string
@@ -14,6 +15,7 @@ interface ComicData {
   value: string
   trend: 'up' | 'down' | 'neutral'
   change: string
+  ebayStatus?: EbayStatus
 }
 
 interface ComicCardProps {
@@ -142,6 +144,24 @@ const ComicCard: React.FC<ComicCardProps> = ({
             <span className="font-persona-aura text-xs font-bold">{comic.change}</span>
           </div>
         )}
+        
+        {/* eBay Status Badges */}
+        <div className="absolute bottom-2 left-2 flex flex-col space-y-1">
+          {comic.ebayStatus?.hasLiveListings && (
+            <div className="bg-stan-lee-blue text-parchment px-2 py-1 border-2 border-ink-black shadow-comic-sm">
+              <span className="font-persona-aura text-xs font-bold">
+                Live ({comic.ebayStatus.liveListingsCount})
+              </span>
+            </div>
+          )}
+          {comic.ebayStatus?.hasEndingSoon && (
+            <div className="bg-orange-500 text-white px-2 py-1 border-2 border-ink-black shadow-comic-sm">
+              <span className="font-persona-aura text-xs font-bold">
+                Ending Soon ({comic.ebayStatus.endingSoonCount})
+              </span>
+            </div>
+          )}
+        </div>
         
         {/* Action Buttons */}
         <div className="absolute bottom-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">

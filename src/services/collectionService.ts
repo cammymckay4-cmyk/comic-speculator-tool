@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabaseClient'
 import type { CollectionComic, Comic, ComicFormat } from '@/lib/types'
+import { addEbayStatusToComic } from '@/lib/ebayUtils'
 
 // Interface for the comics table in Supabase (master list)
 export interface SupabaseComic {
@@ -36,7 +37,7 @@ export interface SupabaseUserCollectionEntry {
 // Transform Supabase collection entry with comic data to match our frontend types
 const transformCollectionEntry = (entry: SupabaseUserCollectionEntry): CollectionComic => {
   // Create a Comic object from the Supabase comic data
-  const comic: Comic = {
+  const baseComic: Comic = {
     id: entry.comic.id,
     title: entry.comic.title,
     issue: entry.comic.issue,
@@ -53,6 +54,9 @@ const transformCollectionEntry = (entry: SupabaseUserCollectionEntry): Collectio
     marketValue: entry.comic.market_value,
     lastUpdated: entry.comic.updated_at
   }
+  
+  // Add eBay status to the comic
+  const comic = addEbayStatusToComic(baseComic)
 
   // Create a CollectionComic object
   const collectionComic: CollectionComic = {
