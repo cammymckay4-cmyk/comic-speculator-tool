@@ -23,6 +23,7 @@ import { addToWishlist, removeFromWishlist, getWishlistItemByComicId } from '@/s
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import EditComicForm from '@/components/features/EditComicForm'
 import AddToCollectionModal from '@/components/features/AddToCollectionModal'
+import CreateAlertModal from '@/components/features/CreateAlertModal'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import { toast } from '@/store/toastStore'
 import { useUserStore } from '@/store/userStore'
@@ -37,6 +38,7 @@ const ComicDetailPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isAddToCollectionModalOpen, setIsAddToCollectionModalOpen] = useState(false)
+  const [isCreateAlertModalOpen, setIsCreateAlertModalOpen] = useState(false)
 
   // Fetch comic data from master comics table (public access)
   const { data: comic, isLoading, isError, error } = useQuery({
@@ -233,8 +235,8 @@ const ComicDetailPage: React.FC = () => {
       navigate('/auth')
       return
     }
-    // Navigate to alert configuration page
-    navigate(`/alerts/configure/${id}`)
+    // Open alert creation modal
+    setIsCreateAlertModalOpen(true)
   }
 
   const handleFindOnEbay = () => {
@@ -655,6 +657,13 @@ const ComicDetailPage: React.FC = () => {
       <AddToCollectionModal
         isOpen={isAddToCollectionModalOpen}
         onClose={() => setIsAddToCollectionModalOpen(false)}
+        comic={comic}
+      />
+
+      {/* Create Alert Modal */}
+      <CreateAlertModal
+        isOpen={isCreateAlertModalOpen}
+        onClose={() => setIsCreateAlertModalOpen(false)}
         comic={comic}
       />
 
