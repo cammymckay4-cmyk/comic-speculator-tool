@@ -32,5 +32,6 @@ const ToastContainer: React.FC = () => {
       </div>
     </div>
   )
+}
 
 export default ToastContainer
