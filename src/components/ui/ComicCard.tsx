@@ -9,6 +9,7 @@ import type { EbayStatus } from '@/lib/types'
 
 interface ComicData {
   id: string
+  entryId?: string // Wishlist entry ID for removal operations
   title: string
   issue: string
   publisher: string
@@ -80,30 +81,36 @@ const ComicCard: React.FC<ComicCardProps> = ({
 
   // Remove from wishlist mutation
   const removeFromWishlistMutation = useMutation({
-    mutationFn: async ({ comicId, userEmail }: { comicId: string; userEmail: string }) => {
-      console.log('🗑️ ComicCard removeFromWishlistMutation called with:', { comicId, userEmail })
+    mutationFn: async ({ comicId, userEmail, entryId }: { comicId: string; userEmail: string; entryId?: string }) => {
+      console.log('🗑️ ComicCard removeFromWishlistMutation called with:', { comicId, userEmail, entryId })
       
-      // First get the wishlist item to find its ID
-      const { getWishlistItemByComicId } = await import('@/services/wishlistService')
-      console.log('🔍 ComicCard: Getting wishlist item by comic ID...')
+      let wishlistItemId = entryId
       
-      const wishlistItem = await getWishlistItemByComicId(comicId, userEmail)
-      console.log('📋 ComicCard: Retrieved wishlist item:', wishlistItem)
-      
-      if (!wishlistItem) {
-        const error = 'Wishlist item not found - comic may not be in wishlist'
-        console.error('❌ ComicCard error:', error)
-        console.log('🔍 ComicCard: Checking if comic is actually in wishlist state:', { isInWishlist })
+      // If we don't have the entryId, we need to look it up by comic ID
+      if (!wishlistItemId) {
+        console.log('🔍 ComicCard: No entryId provided, getting wishlist item by comic ID...')
+        const { getWishlistItemByComicId } = await import('@/services/wishlistService')
         
-        // Debug: List all wishlist items to see what's actually in the database
-        const { debugListAllWishlistItems } = await import('@/services/wishlistService')
-        await debugListAllWishlistItems()
+        const wishlistItem = await getWishlistItemByComicId(comicId, userEmail)
+        console.log('📋 ComicCard: Retrieved wishlist item:', wishlistItem)
         
-        throw new Error(error)
+        if (!wishlistItem) {
+          const error = 'Wishlist item not found - comic may not be in wishlist'
+          console.error('❌ ComicCard error:', error)
+          console.log('🔍 ComicCard: Checking if comic is actually in wishlist state:', { isInWishlist })
+          
+          // Debug: List all wishlist items to see what's actually in the database
+          const { debugListAllWishlistItems } = await import('@/services/wishlistService')
+          await debugListAllWishlistItems()
+          
+          throw new Error(error)
+        }
+        
+        wishlistItemId = wishlistItem.id
       }
       
-      console.log('🗑️ ComicCard: Calling removeFromWishlist with item ID:', wishlistItem.id)
-      const result = await removeFromWishlist(wishlistItem.id, userEmail)
+      console.log('🗑️ ComicCard: Calling removeFromWishlist with item ID:', wishlistItemId)
+      const result = await removeFromWishlist(wishlistItemId, userEmail)
       console.log('✅ ComicCard: removeFromWishlist completed successfully')
       return result
     },
@@ -129,7 +136,7 @@ const ComicCard: React.FC<ComicCardProps> = ({
     }
 
     if (isInWishlist) {
-      removeFromWishlistMutation.mutate({ comicId: comic.id, userEmail: user.email })
+      removeFromWishlistMutation.mutate({ comicId: comic.id, userEmail: user.email, entryId: comic.entryId })
     } else {
       addToWishlistMutation.mutate({ comicId: comic.id, userEmail: user.email })
     }
