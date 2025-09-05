@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   User, 
   Mail, 
@@ -13,15 +13,18 @@ import {
   AlertCircle,
   Zap,
   Download,
-  Database
+  Database,
+  Loader2
 } from 'lucide-react'
 import { SUBSCRIPTION_TIERS } from '@/utils/constants'
 import { fetchAllComicsForUser } from '@/services/collectionService'
 import { generateCSV, downloadCSV } from '@/utils/csvExport'
 import { supabase } from '@/lib/supabaseClient'
+import { useUserStore } from '@/store/userStore'
 import { toast } from 'sonner'
 
 const AccountPage: React.FC = () => {
+  const { user, isLoading } = useUserStore()
   const [activeTab, setActiveTab] = useState('profile')
   const [notifications, setNotifications] = useState({
     email: true,
@@ -30,6 +33,44 @@ const AccountPage: React.FC = () => {
     priceAlerts: true,
   })
   const [isExporting, setIsExporting] = useState(false)
+  
+  // Profile form state
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    displayName: '',
+    bio: ''
+  })
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
+
+  // Parse user data when user changes
+  useEffect(() => {
+    if (user) {
+      // Parse full_name if available, otherwise use fallback
+      let firstName = ''
+      let lastName = ''
+      
+      if (user.name && user.name !== user.email?.split('@')[0]) {
+        // If name exists and is not just the email username, parse it
+        const nameParts = user.name.trim().split(' ')
+        firstName = nameParts[0] || ''
+        lastName = nameParts.slice(1).join(' ') || ''
+      } else {
+        // Use email username as fallback
+        firstName = user.email?.split('@')[0] || ''
+        lastName = ''
+      }
+      
+      setProfileData({
+        firstName,
+        lastName,
+        email: user.email || '',
+        displayName: user.name || user.email?.split('@')[0] || '',
+        bio: 'Passionate comic collector specializing in Silver Age Marvel and modern indie titles.'
+      })
+    }
+  }, [user])
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -38,6 +79,41 @@ const AccountPage: React.FC = () => {
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'data', label: 'Data Management', icon: Database },
   ]
+
+  // Handle profile update
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!user) {
+      toast.error('Please log in to update your profile.')
+      return
+    }
+    
+    try {
+      setIsUpdatingProfile(true)
+      
+      // Update user metadata in Supabase Auth
+      const { error } = await supabase.auth.updateUser({
+        email: profileData.email,
+        data: {
+          full_name: `${profileData.firstName} ${profileData.lastName}`.trim(),
+          display_name: profileData.displayName,
+          bio: profileData.bio
+        }
+      })
+      
+      if (error) {
+        throw error
+      }
+      
+      toast.success('Profile updated successfully!')
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast.error('Failed to update profile. Please try again.')
+    } finally {
+      setIsUpdatingProfile(false)
+    }
+  }
 
   const handleExportCSV = async () => {
     try {
@@ -115,7 +191,18 @@ const AccountPage: React.FC = () => {
               </nav>
 
               <div className="mt-8 pt-8 border-t-2 border-gray-200">
-                <button className="w-full flex items-center justify-center space-x-2 text-kirby-red hover:bg-kirby-red hover:text-parchment px-4 py-3 transition-colors">
+                <button 
+                  onClick={async () => {
+                    try {
+                      await supabase.auth.signOut()
+                      window.location.href = '/'
+                    } catch (error) {
+                      console.error('Error signing out:', error)
+                      toast.error('Failed to sign out. Please try again.')
+                    }
+                  }}
+                  className="w-full flex items-center justify-center space-x-2 text-kirby-red hover:bg-kirby-red hover:text-parchment px-4 py-3 transition-colors"
+                >
                   <LogOut size={18} />
                   <span className="font-persona-aura font-semibold">Sign Out</span>
                 </button>
@@ -132,72 +219,131 @@ const AccountPage: React.FC = () => {
                   PROFILE INFORMATION
                 </h2>
                 
-                <form className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 size={32} className="animate-spin text-kirby-red" />
+                    <span className="ml-3 font-persona-aura text-gray-600">Loading profile...</span>
+                  </div>
+                ) : !user ? (
+                  <div className="text-center py-12">
+                    <AlertCircle size={48} className="text-gray-400 mx-auto mb-4" />
+                    <p className="font-persona-aura text-gray-600 mb-4">Please log in to view your profile.</p>
+                    <button 
+                      onClick={() => window.location.href = '/auth'} 
+                      className="comic-button"
+                    >
+                      Go to Login
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleProfileUpdate} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block font-persona-aura font-semibold text-ink-black mb-2">
+                          First Name
+                        </label>
+                        <input
+                          type="text"
+                          value={profileData.firstName}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
+                          className="w-full comic-input"
+                          placeholder="Enter your first name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-persona-aura font-semibold text-ink-black mb-2">
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          value={profileData.lastName}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
+                          className="w-full comic-input"
+                          placeholder="Enter your last name"
+                        />
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block font-persona-aura font-semibold text-ink-black mb-2">
-                        First Name
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={profileData.email}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full comic-input"
+                        placeholder="Enter your email address"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-persona-aura font-semibold text-ink-black mb-2">
+                        Display Name
                       </label>
                       <input
                         type="text"
-                        defaultValue="Comic"
+                        value={profileData.displayName}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
                         className="w-full comic-input"
+                        placeholder="Enter your display name"
                       />
                     </div>
+
                     <div>
                       <label className="block font-persona-aura font-semibold text-ink-black mb-2">
-                        Last Name
+                        Bio
                       </label>
-                      <input
-                        type="text"
-                        defaultValue="Fan"
-                        className="w-full comic-input"
+                      <textarea
+                        rows={4}
+                        value={profileData.bio}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                        className="w-full comic-input resize-none"
+                        placeholder="Tell us about yourself and your comic collecting interests"
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block font-persona-aura font-semibold text-ink-black mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      defaultValue="fan@comicscout.uk"
-                      className="w-full comic-input"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-persona-aura font-semibold text-ink-black mb-2">
-                      Display Name
-                    </label>
-                    <input
-                      type="text"
-                      defaultValue="ComicCollector2024"
-                      className="w-full comic-input"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-persona-aura font-semibold text-ink-black mb-2">
-                      Bio
-                    </label>
-                    <textarea
-                      rows={4}
-                      defaultValue="Passionate comic collector specializing in Silver Age Marvel and modern indie titles."
-                      className="w-full comic-input resize-none"
-                    />
-                  </div>
-
-                  <div className="flex justify-end space-x-4">
-                    <button type="button" className="px-6 py-3 font-persona-aura font-semibold text-ink-black hover:text-kirby-red">
-                      Cancel
-                    </button>
-                    <button type="submit" className="comic-button">
-                      Save Changes
-                    </button>
-                  </div>
-                </form>
+                    <div className="flex justify-end space-x-4">
+                      <button 
+                        type="button" 
+                        className="px-6 py-3 font-persona-aura font-semibold text-ink-black hover:text-kirby-red"
+                        onClick={() => {
+                          // Reset form to current user data
+                          if (user) {
+                            const nameParts = user.name.trim().split(' ')
+                            const firstName = nameParts[0] || ''
+                            const lastName = nameParts.slice(1).join(' ') || ''
+                            
+                            setProfileData({
+                              firstName,
+                              lastName,
+                              email: user.email || '',
+                              displayName: user.name || user.email?.split('@')[0] || '',
+                              bio: 'Passionate comic collector specializing in Silver Age Marvel and modern indie titles.'
+                            })
+                          }
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit" 
+                        className="comic-button flex items-center space-x-2"
+                        disabled={isUpdatingProfile}
+                      >
+                        {isUpdatingProfile ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            <span>Updating...</span>
+                          </>
+                        ) : (
+                          <span>Save Changes</span>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             )}
 
