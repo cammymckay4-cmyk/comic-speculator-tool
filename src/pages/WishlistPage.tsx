@@ -17,10 +17,12 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ComicSearchModal from '@/components/features/ComicSearchModal'
 import { useWishlistQuery, useWishlistCount } from '@/hooks/useWishlistQuery'
 import { useUserStore } from '@/store/userStore'
+import { useQueryClient } from '@tanstack/react-query'
 
 const WishlistPage: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useUserStore()
+  const queryClient = useQueryClient()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [showComicSearchModal, setShowComicSearchModal] = useState(false)
@@ -77,6 +79,12 @@ const WishlistPage: React.FC = () => {
   })) || []
 
   const totalPages = Math.ceil((totalItems || 0) / itemsPerPage)
+
+  // Handle wishlist changes (when items are removed)
+  const handleWishlistChange = () => {
+    queryClient.invalidateQueries({ queryKey: ['wishlist'] })
+    queryClient.invalidateQueries({ queryKey: ['wishlist-count'] })
+  }
 
   // Reset current page when search term, sort order, or filters change
   useEffect(() => {
@@ -254,7 +262,8 @@ const WishlistPage: React.FC = () => {
                 key={comic.id} 
                 comic={comic} 
                 variant="detailed"
-                showWishlist={false} // Don't show wishlist button on wishlist page
+                showWishlist={true} // Enable wishlist removal from wishlist page
+                onWishlistChange={handleWishlistChange}
                 onClick={() => navigate(`/comic/${comic.id}`)}
               />
             ))}
