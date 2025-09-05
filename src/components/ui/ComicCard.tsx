@@ -81,23 +81,31 @@ const ComicCard: React.FC<ComicCardProps> = ({
   // Remove from wishlist mutation
   const removeFromWishlistMutation = useMutation({
     mutationFn: async ({ comicId, userEmail }: { comicId: string; userEmail: string }) => {
-      console.log('ComicCard removeFromWishlistMutation called with:', { comicId, userEmail })
+      console.log('🗑️ ComicCard removeFromWishlistMutation called with:', { comicId, userEmail })
       
       // First get the wishlist item to find its ID
       const { getWishlistItemByComicId } = await import('@/services/wishlistService')
-      console.log('ComicCard: Getting wishlist item by comic ID...')
+      console.log('🔍 ComicCard: Getting wishlist item by comic ID...')
       
       const wishlistItem = await getWishlistItemByComicId(comicId, userEmail)
-      console.log('ComicCard: Retrieved wishlist item:', wishlistItem)
+      console.log('📋 ComicCard: Retrieved wishlist item:', wishlistItem)
       
       if (!wishlistItem) {
         const error = 'Wishlist item not found - comic may not be in wishlist'
-        console.error('ComicCard error:', error)
+        console.error('❌ ComicCard error:', error)
+        console.log('🔍 ComicCard: Checking if comic is actually in wishlist state:', { isInWishlist })
+        
+        // Debug: List all wishlist items to see what's actually in the database
+        const { debugListAllWishlistItems } = await import('@/services/wishlistService')
+        await debugListAllWishlistItems()
+        
         throw new Error(error)
       }
       
-      console.log('ComicCard: Calling removeFromWishlist with item ID:', wishlistItem.id)
-      return removeFromWishlist(wishlistItem.id, userEmail)
+      console.log('🗑️ ComicCard: Calling removeFromWishlist with item ID:', wishlistItem.id)
+      const result = await removeFromWishlist(wishlistItem.id, userEmail)
+      console.log('✅ ComicCard: removeFromWishlist completed successfully')
+      return result
     },
     onSuccess: () => {
       setIsInWishlist(false)
