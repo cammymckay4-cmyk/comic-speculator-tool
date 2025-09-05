@@ -142,12 +142,12 @@ const ComicDetailPage: React.FC = () => {
         throw new Error(error)
       }
       
-      console.log('Calling removeFromWishlist with:', {
-        wishlistItemId: wishlistEntry.id,
+      console.log('Calling removeFromWishlist with want_id:', {
+        want_id: wishlistEntry.id,
         userEmail: user.email
       })
       
-      return removeFromWishlist(wishlistEntry.id, user.email)
+      return removeFromWishlist(wishlistEntry.id, user.email)  // wishlistEntry.id is the want_id
     },
     onSuccess: () => {
       // Invalidate wishlist queries

@@ -104,7 +104,7 @@ const ComicCard: React.FC<ComicCardProps> = ({
       }
       
       console.log('🗑️ ComicCard: Calling removeFromWishlist with want_id:', wishlistItemId)
-      const result = await removeFromWishlist(wishlistItemId, userEmail)
+      const result = await removeFromWishlist(wishlistItemId, userEmail)  // wishlistItemId is the want_id
       console.log('✅ ComicCard: removeFromWishlist completed successfully')
       return result
     },
