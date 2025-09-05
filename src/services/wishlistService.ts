@@ -344,15 +344,20 @@ export const addToWishlist = async (
   return transformWishlistItem(data)
 }
 
-// Remove a comic from user's wishlist
+// Remove a comic from user's wishlist using the wishlist entry ID (want_id)
+// IMPORTANT: The first parameter must be the wishlist item's ID (want_id), NOT the comic_id
 export const removeFromWishlist = async (
-  wishlistItemId: string,
+  want_id: string,  // The wishlist item's unique ID (NOT the comic_id)
   userEmail: string
 ): Promise<void> => {
-  console.log('🗑️ removeFromWishlist called with:', { wishlistItemId, userEmail })
+  console.log('🗑️ removeFromWishlist called with:', { want_id, userEmail })
+  console.log('🔍 IMPORTANT: Using want_id (wishlist item ID) for deletion, NOT comic_id')
   
-  if (!wishlistItemId) {
-    const error = 'Wishlist item ID is required'
+  // Additional validation: ensure this is not a comic_id being passed by mistake
+  // Comic IDs and wishlist item IDs are both UUIDs, but we can add extra safety checks
+  
+  if (!want_id) {
+    const error = 'Wishlist item ID (want_id) is required'
     console.error('❌ removeFromWishlist validation error:', error)
     throw new Error(error)
   }
@@ -362,10 +367,10 @@ export const removeFromWishlist = async (
     throw new Error(error)
   }
 
-  // Validate that wishlistItemId looks like a UUID
+  // Validate that want_id looks like a UUID
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  if (!uuidRegex.test(wishlistItemId)) {
-    const error = `Invalid wishlist item ID format: ${wishlistItemId} (expected UUID format)`
+  if (!uuidRegex.test(want_id)) {
+    const error = `Invalid wishlist item ID format: ${want_id} (expected UUID format)`
     console.error('❌ removeFromWishlist validation error:', error)
     throw new Error(error)
   }
@@ -388,16 +393,16 @@ export const removeFromWishlist = async (
   }
 
   console.log('📋 Attempting to delete from wishlist_items with:', { 
-    wishlistItemId, 
+    want_id, 
     userId: user.id,
     userEmail: user.email 
   })
 
-  // First, let's check if the item exists
+  // First, let's check if the item exists using the want_id
   const { data: existingItem, error: selectError } = await supabase
     .from('wishlist_items')
     .select('*')
-    .eq('id', wishlistItemId)
+    .eq('id', want_id)  // Using want_id (wishlist item ID) for lookup
     .eq('user_id', user.id)
     .single()
 
@@ -418,18 +423,18 @@ export const removeFromWishlist = async (
   }
 
   if (!existingItem) {
-    const error = `Wishlist item not found or does not belong to current user. ID: ${wishlistItemId}, User ID: ${user.id}`
+    const error = `Wishlist item not found or does not belong to current user. want_id: ${want_id}, User ID: ${user.id}`
     console.error('❌ removeFromWishlist error:', error)
     throw new Error(error)
   }
 
   console.log('✅ Found existing item, proceeding with deletion...')
 
-  // Proceed with deletion
+  // Proceed with deletion using the want_id (wishlist item ID)
   const { error, count } = await supabase
     .from('wishlist_items')
     .delete({ count: 'exact' })
-    .eq('id', wishlistItemId)
+    .eq('id', want_id)  // CRITICAL: Using want_id (wishlist item ID), NOT comic_id
     .eq('user_id', user.id)
 
   console.log('🗑️ Delete operation result:', { error, count })
