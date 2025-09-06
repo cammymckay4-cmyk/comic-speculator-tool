@@ -6,14 +6,14 @@ export const useUserStatsQuery = () => {
   const { user } = useUserStore()
 
   return useQuery({
-    queryKey: ['userStats', user?.email],
+    queryKey: ['userStats', user?.id],
     queryFn: () => {
-      if (!user?.email) {
+      if (!user?.id) {
         throw new Error('No user found')
       }
-      return fetchUserStats(user.email)
+      return fetchUserStats(user.id)
     },
-    enabled: !!user?.email,
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
   })
