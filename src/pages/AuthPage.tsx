@@ -86,7 +86,14 @@ const AuthPage: React.FC = () => {
       })
 
       if (error) {
-        setErrors({ auth: error.message })
+        // Check if error is due to user already existing
+        if (error.message?.toLowerCase().includes('already registered') || 
+            error.message?.toLowerCase().includes('email already exists') ||
+            error.message?.toLowerCase().includes('user already exists')) {
+          setErrors({ auth: 'This email is already registered. Please sign in instead.' })
+        } else {
+          setErrors({ auth: error.message })
+        }
         return
       }
 
