@@ -10,6 +10,7 @@ import { useUserStore } from './store/userStore'
 import { supabase } from './lib/supabaseClient'
 import { useAlertsCount } from './hooks/useAlertsCount'
 import { usePostAuthActions } from './hooks/usePostAuthActions'
+import { setAuthStorage, getAuthStorage, clearAuthStorage, cleanupExpiredAuthStorage } from './utils/authStorage'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 // Lazy load pages for better performance
@@ -34,7 +35,12 @@ function App() {
   // Handle post-auth actions
   usePostAuthActions()
 
-  // Track where users came from using URL params and sessionStorage
+  // Clean up expired auth storage on app load
+  useEffect(() => {
+    cleanupExpiredAuthStorage()
+  }, [])
+
+  // Track where users came from using URL params and localStorage
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const hasToken = urlParams.has('token_hash')
@@ -44,18 +50,18 @@ function App() {
     const actionParam = urlParams.get('action')
     
     // Store redirect path from URL params
-    if (redirectParam && !sessionStorage.getItem('authReturnPath')) {
-      sessionStorage.setItem('authReturnPath', redirectParam)
+    if (redirectParam && !getAuthStorage('authReturnPath')) {
+      setAuthStorage('authReturnPath', redirectParam)
     }
     
     // Store intended action if present
-    if (actionParam && !sessionStorage.getItem('authIntendedAction')) {
-      sessionStorage.setItem('authIntendedAction', actionParam)
+    if (actionParam && !getAuthStorage('authIntendedAction')) {
+      setAuthStorage('authIntendedAction', actionParam)
     }
     
     if (hasToken || hasType || hasError) {
       console.log('[APP] Email confirmation detected - setting redirect flag')
-      sessionStorage.setItem('shouldRedirectToAccount', 'true')
+      setAuthStorage('shouldRedirectToAccount', 'true')
     }
   }, [])
 
@@ -97,10 +103,10 @@ function App() {
           console.log('[APP] User signed out or no session - clearing user state and flags')
           setUser(null)
           // Clear redirect flags on logout
-          sessionStorage.removeItem('shouldRedirectToAccount')
-          sessionStorage.removeItem('hasNavigatedAfterAuth')
-          sessionStorage.removeItem('authReturnPath')
-          sessionStorage.removeItem('authIntendedAction')
+          clearAuthStorage('shouldRedirectToAccount')
+          clearAuthStorage('hasNavigatedAfterAuth')
+          clearAuthStorage('authReturnPath')
+          clearAuthStorage('authIntendedAction')
         } else if (event === 'SIGNED_IN' && session?.user) {
           console.log('[APP] User signed in - setting user state:', {
             userId: session.user.id,
@@ -119,12 +125,15 @@ function App() {
           const userCreatedAt = new Date(session.user.created_at)
           const now = new Date()
           const isNewSignup = (now.getTime() - userCreatedAt.getTime()) < 60000 // 60 seconds
-          const shouldRedirectToAccount = sessionStorage.getItem('shouldRedirectToAccount')
-          const authReturnPath = sessionStorage.getItem('authReturnPath')
+          const shouldRedirectToAccount = getAuthStorage('shouldRedirectToAccount')
+          const authReturnPath = getAuthStorage('authReturnPath')
           const urlParams = new URLSearchParams(window.location.search)
           const redirectParam = urlParams.get('redirect')
           
-          if (!sessionStorage.getItem('hasNavigatedAfterAuth')) {
+          console.log('Auth Return Path from storage:', authReturnPath)
+          console.log('Redirect param:', redirectParam)
+          
+          if (!getAuthStorage('hasNavigatedAfterAuth')) {
             console.log('[APP] Determining post-auth destination:', {
               isNewSignup,
               shouldRedirectToAccount: !!shouldRedirectToAccount,
@@ -134,7 +143,7 @@ function App() {
               now: now.toISOString()
             })
             
-            sessionStorage.setItem('hasNavigatedAfterAuth', 'true')
+            setAuthStorage('hasNavigatedAfterAuth', 'true')
             
             let destination = '/'
             
@@ -147,7 +156,7 @@ function App() {
               console.log('[APP] Email confirmation redirect - going to account page')
               destination = '/account'
             } else if (authReturnPath) {
-              // Return to stored path from sessionStorage
+              // Return to stored path from localStorage
               console.log('[APP] Returning to stored path:', authReturnPath)
               destination = authReturnPath
             } else if (redirectParam) {
@@ -160,9 +169,11 @@ function App() {
               destination = '/'
             }
             
+            console.log('Final destination:', destination)
+            
             // Clear redirect data after use
-            sessionStorage.removeItem('shouldRedirectToAccount')
-            sessionStorage.removeItem('authReturnPath')
+            clearAuthStorage('shouldRedirectToAccount')
+            clearAuthStorage('authReturnPath')
             
             // Note: Keep authIntendedAction for post-auth action completion
             navigate(destination)
