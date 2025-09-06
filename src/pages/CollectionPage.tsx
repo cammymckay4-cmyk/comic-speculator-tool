@@ -6,7 +6,8 @@ import {
   Plus,
   Download,
   Upload,
-  Star
+  Star,
+  LogIn
 } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
@@ -141,10 +142,40 @@ const CollectionPage: React.FC = () => {
     navigate(`/collection/${comic.id}`)
   }
 
+  // Check for authentication and redirect if needed
+  useEffect(() => {
+    if (!user) {
+      // Redirect to auth with collection as redirect target
+      navigate('/auth?redirect=/collection')
+      return
+    }
+  }, [user, navigate])
+
   // Reset current page when search term, sort order, or filters change
   useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm, sortOrder, activeFilters])
+
+  // If user is not authenticated, show a login prompt as fallback
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-parchment flex items-center justify-center">
+        <div className="bg-white comic-border shadow-comic p-8 max-w-md text-center">
+          <h2 className="font-super-squad text-2xl text-ink-black mb-4">Login Required</h2>
+          <p className="font-persona-aura text-gray-600 mb-6">
+            You need to be logged in to view your collection.
+          </p>
+          <button 
+            onClick={() => navigate('/auth?redirect=/collection')}
+            className="comic-button flex items-center space-x-2 mx-auto"
+          >
+            <LogIn size={18} />
+            <span>Login to Continue</span>
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   // Handle loading state
   if (isLoading) {
