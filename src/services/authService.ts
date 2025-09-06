@@ -21,11 +21,21 @@ export interface AuthResult {
   error?: string
 }
 
-export const signIn = async (credentials: LoginCredentials): Promise<AuthResult> => {
+export const signIn = async (credentials: LoginCredentials, rememberMe = true): Promise<AuthResult> => {
   try {
+    // Set session persistence to 'local' (30 days) by default, 'session' only if explicitly not remember me
+    const persistence = rememberMe ? 'local' : 'session'
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email: credentials.email,
       password: credentials.password,
+      options: {
+        persistSession: true,
+        // This affects the session duration
+        data: {
+          persistence: persistence
+        }
+      }
     })
 
     if (error) {
@@ -89,6 +99,7 @@ export const signUp = async (signupData: SignupData): Promise<AuthResult> => {
     console.log('[SIGNUP] Signup response:', data)
 
     if (error) {
+      console.log('Signup error:', error)
       // Enhanced check for user already existing with more error patterns
       const errorMsg = error.message?.toLowerCase() || ''
       if (errorMsg.includes('already registered') || 

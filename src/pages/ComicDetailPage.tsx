@@ -27,6 +27,7 @@ import CreateAlertModal from '@/components/features/CreateAlertModal'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import { toast } from '@/store/toastStore'
 import { useUserStore } from '@/store/userStore'
+import { setAuthStorage } from '@/utils/authStorage'
 
 
 const ComicDetailPage: React.FC = () => {
@@ -225,8 +226,10 @@ const ComicDetailPage: React.FC = () => {
     if (!user) {
       // Store current path and intended action for post-auth completion
       const currentPath = window.location.pathname
-      sessionStorage.setItem('authReturnPath', currentPath)
-      sessionStorage.setItem('authIntendedAction', 'add_to_collection')
+      console.log('Storing return path:', currentPath)
+      console.log('Storing action:', 'add_to_collection')
+      setAuthStorage('authReturnPath', currentPath)
+      setAuthStorage('authIntendedAction', 'add_to_collection')
       navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=add_to_collection`)
       return
     }
@@ -237,8 +240,10 @@ const ComicDetailPage: React.FC = () => {
     if (!user) {
       // Store current path and intended action for post-auth completion
       const currentPath = window.location.pathname
-      sessionStorage.setItem('authReturnPath', currentPath)
-      sessionStorage.setItem('authIntendedAction', 'add_to_wishlist')
+      console.log('Storing return path:', currentPath)
+      console.log('Storing action:', 'add_to_wishlist')
+      setAuthStorage('authReturnPath', currentPath)
+      setAuthStorage('authIntendedAction', 'add_to_wishlist')
       navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=add_to_wishlist`)
       return
     }
@@ -257,8 +262,10 @@ const ComicDetailPage: React.FC = () => {
     if (!user) {
       // Store current path and intended action for post-auth completion
       const currentPath = window.location.pathname
-      sessionStorage.setItem('authReturnPath', currentPath)
-      sessionStorage.setItem('authIntendedAction', 'set_price_alert')
+      console.log('Storing return path:', currentPath)
+      console.log('Storing action:', 'set_price_alert')
+      setAuthStorage('authReturnPath', currentPath)
+      setAuthStorage('authIntendedAction', 'set_price_alert')
       navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=set_price_alert`)
       return
     }

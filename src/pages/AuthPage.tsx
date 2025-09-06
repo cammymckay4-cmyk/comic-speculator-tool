@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { COMIC_EFFECTS } from '@/utils/constants'
 import { supabase, createSupabaseClientWithPersistence } from '@/lib/supabaseClient'
-import { signUp } from '@/services/authService'
+import { signUp, signIn } from '@/services/authService'
 import { useUserStore } from '@/store/userStore'
 
 type AuthMode = 'signin' | 'signup' | 'forgot'
@@ -40,26 +40,15 @@ const AuthPage: React.FC = () => {
 
   const handleLogin = async (email: string, password: string, rememberMe: boolean) => {
     try {
-      // Use the appropriate client based on rememberMe preference
-      const authClient = createSupabaseClientWithPersistence(rememberMe)
-      
-      const { data, error } = await authClient.auth.signInWithPassword({
-        email,
-        password,
-      })
+      const result = await signIn({ email, password }, rememberMe)
 
-      if (error) {
-        setErrors({ auth: error.message })
+      if (!result.success) {
+        setErrors({ auth: result.error || 'Sign in failed' })
         return
       }
 
-      if (data.user) {
-        setUser({
-          id: data.user.id,
-          name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
-          email: data.user.email || '',
-          avatar: data.user.user_metadata?.avatar_url || null,
-        })
+      if (result.user) {
+        setUser(result.user)
         
         // Check for redirect parameter and navigate to it, otherwise go to account page
         const redirectTo = searchParams.get('redirect')
@@ -75,7 +64,11 @@ const AuthPage: React.FC = () => {
       const result = await signUp({ email, password, name })
 
       if (!result.success) {
-        // Check if it's a duplicate email error
+        // Any error means we should show error message, NOT success message
+        setErrors({ auth: result.error || 'An error occurred during signup' })
+        setSuccessMessage('') // Clear any success message
+        
+        // Check if it's a duplicate email error to auto-switch to sign in
         const errorMsg = result.error?.toLowerCase() || ''
         const isDuplicateEmail = errorMsg.includes('already registered') ||
                                 errorMsg.includes('email already exists') ||
@@ -86,18 +79,14 @@ const AuthPage: React.FC = () => {
                                 errorMsg.includes('user with this email already exists')
         
         if (isDuplicateEmail) {
-          // Show error toast for duplicate email - do NOT show success message
-          setErrors({ auth: 'Email already registered. Please sign in instead.' })
-          // Auto-switch to sign in tab
+          // Auto-switch to sign in tab after showing error
           setTimeout(() => setMode('signin'), 2000)
-        } else {
-          // Other errors
-          setErrors({ auth: result.error || 'An error occurred during signup' })
         }
         return
       }
 
-      // Only show success message if signup was actually successful
+      // Only show success message if signup was actually successful (no error)
+      setErrors({}) // Clear any errors
       setSuccessMessage('Check your email to confirm your account!')
       setFormData({
         name: '',
@@ -109,6 +98,7 @@ const AuthPage: React.FC = () => {
       })
     } catch (error) {
       setErrors({ auth: 'An unexpected error occurred' })
+      setSuccessMessage('') // Clear any success message
     }
   }
 
