@@ -113,15 +113,16 @@ const MainNavbar: React.FC<MainNavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-center">
             <button
               onClick={() => handleNavClick('/')}
-              className="flex items-center space-x-2"
+              className="flex items-center justify-center"
             >
               <img 
-                src="/Logo.svg" 
-                alt="ComicScout UK" 
-                className="h-[40px] w-auto hover:scale-105 transition-transform duration-200"
+                src="/trace.svg" 
+                alt="ComicScout UK Logo" 
+                className="h-[50px] w-auto hover:scale-105 transition-transform duration-200"
+                style={{ filter: 'drop-shadow(0 0 2px rgba(255, 255, 255, 0.8))' }}
               />
             </button>
           </div>
