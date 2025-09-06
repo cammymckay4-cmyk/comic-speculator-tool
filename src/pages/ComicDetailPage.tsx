@@ -223,9 +223,11 @@ const ComicDetailPage: React.FC = () => {
   
   const handleAddToCollection = () => {
     if (!user) {
-      // Redirect to login page with current URL as redirect parameter
+      // Store current path and intended action for post-auth completion
       const currentPath = window.location.pathname
-      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}`)
+      sessionStorage.setItem('authReturnPath', currentPath)
+      sessionStorage.setItem('authIntendedAction', 'add_to_collection')
+      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=add_to_collection`)
       return
     }
     setIsAddToCollectionModalOpen(true)
@@ -233,8 +235,11 @@ const ComicDetailPage: React.FC = () => {
 
   const handleWishlistClick = () => {
     if (!user) {
-      // Redirect to login page
-      navigate('/auth')
+      // Store current path and intended action for post-auth completion
+      const currentPath = window.location.pathname
+      sessionStorage.setItem('authReturnPath', currentPath)
+      sessionStorage.setItem('authIntendedAction', 'add_to_wishlist')
+      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=add_to_wishlist`)
       return
     }
     
@@ -250,8 +255,11 @@ const ComicDetailPage: React.FC = () => {
 
   const handlePriceAlertClick = () => {
     if (!user) {
-      // Redirect to login page
-      navigate('/auth')
+      // Store current path and intended action for post-auth completion
+      const currentPath = window.location.pathname
+      sessionStorage.setItem('authReturnPath', currentPath)
+      sessionStorage.setItem('authIntendedAction', 'set_price_alert')
+      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=set_price_alert`)
       return
     }
     // Open alert creation modal
@@ -370,7 +378,7 @@ const ComicDetailPage: React.FC = () => {
                   >
                     <Star size={18} />
                     <span className="font-persona-aura font-semibold">
-                      {user ? 'Add to Collection' : 'Login to Add to Collection'}
+                      Add to Collection
                     </span>
                   </button>
                 )}
@@ -384,7 +392,7 @@ const ComicDetailPage: React.FC = () => {
                 >
                   <Heart size={18} fill={wishlistEntry ? 'currentColor' : 'none'} />
                   <span className="font-persona-aura font-semibold">
-                    {user ? (wishlistEntry ? 'In Wishlist' : 'Add to Wishlist') : 'Login to Add to Wishlist'}
+                    {wishlistEntry ? 'In Wishlist' : 'Add to Wishlist'}
                   </span>
                 </button>
 
@@ -396,7 +404,7 @@ const ComicDetailPage: React.FC = () => {
                 >
                   <Bell size={18} fill={hasAlert ? 'currentColor' : 'none'} />
                   <span className="font-persona-aura font-semibold">
-                    {user ? (hasAlert ? 'Alert Set' : 'Set Price Alert') : 'Login to Set Price Alert'}
+                    {hasAlert ? 'Alert Set' : 'Set Price Alert'}
                   </span>
                 </button>
 
