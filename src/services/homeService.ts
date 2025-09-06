@@ -56,7 +56,7 @@ export const fetchUserStats = async (userId: string): Promise<UserStats> => {
   const { count: alertsCount, error: alertsError } = await supabase
     .from('alerts')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .eq('is_active', true)
 
   if (alertsError) {
