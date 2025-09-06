@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import MainNavbar from './components/layout/MainNavbar'
 import Footer from './components/layout/Footer'
 import LoadingSpinner from './components/ui/LoadingSpinner'
@@ -28,6 +28,7 @@ const AdminPage = lazy(() => import('./pages/AdminPage'))
 function App() {
   const { user, setUser, setLoading } = useUserStore()
   const { data: alertsCount = 0 } = useAlertsCount()
+  const navigate = useNavigate()
 
   // Check for existing session on app load
   useEffect(() => {
@@ -80,6 +81,23 @@ function App() {
             avatar: session.user.user_metadata?.avatar_url || null,
           })
           
+          // Handle email confirmation redirects
+          if (!sessionStorage.getItem('hasNavigatedAfterAuth')) {
+            sessionStorage.setItem('hasNavigatedAfterAuth', 'true')
+            
+            // Check if this is from email confirmation
+            const urlParams = new URLSearchParams(window.location.search)
+            const isEmailConfirm = urlParams.get('type') === 'signup' || 
+                                  urlParams.get('type') === 'recovery'
+            
+            if (isEmailConfirm && window.location.pathname === '/') {
+              // Redirect new signups to account page
+              console.log('[APP] Email confirmation detected - redirecting to account page')
+              navigate('/account')
+              return
+            }
+          }
+          
           // Check if this auth change is causing an unwanted redirect
           console.log('[APP] User set in store, current location:', window.location.pathname)
           console.log('[APP] No automatic redirect triggered from App.tsx auth listener')
@@ -88,7 +106,7 @@ function App() {
     )
 
     return () => subscription.unsubscribe()
-  }, [setUser, setLoading])
+  }, [setUser, setLoading, navigate])
   
   return (
     <div className="min-h-screen bg-parchment flex flex-col">
