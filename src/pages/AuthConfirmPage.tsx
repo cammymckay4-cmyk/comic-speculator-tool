@@ -20,8 +20,8 @@ const AuthConfirmPage: React.FC = () => {
         // First check if user is already authenticated (no token needed)
         const { data: { session } } = await supabase.auth.getSession()
         if (session) {
-          // User is already verified, redirect to home
-          navigate('/')
+          // User is already verified, redirect to account page
+          navigate('/account')
           return
         }
 
@@ -70,9 +70,9 @@ const AuthConfirmPage: React.FC = () => {
           setStatus('success')
           setMessage('Your email has been confirmed successfully!')
           
-          // Redirect to home page after a short delay
+          // Redirect to account page after a short delay
           setTimeout(() => {
-            navigate('/')
+            navigate('/account')
           }, 2000)
         } else {
           setStatus('error')
@@ -125,7 +125,7 @@ const AuthConfirmPage: React.FC = () => {
                 {message}
               </p>
               <p className="font-persona-aura text-sm text-gray-500">
-                Redirecting you to the homepage...
+                Redirecting you to your account page...
               </p>
             </div>
           )}
