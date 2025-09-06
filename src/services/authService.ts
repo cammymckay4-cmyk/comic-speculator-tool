@@ -89,6 +89,15 @@ export const signUp = async (signupData: SignupData): Promise<AuthResult> => {
     console.log('[SIGNUP] Signup response:', data)
 
     if (error) {
+      // Check if error is due to user already existing
+      if (error.message?.toLowerCase().includes('already registered') || 
+          error.message?.toLowerCase().includes('email already exists') ||
+          error.message?.toLowerCase().includes('user already exists')) {
+        return {
+          success: false,
+          error: 'This email is already registered. Please sign in instead.',
+        }
+      }
       return {
         success: false,
         error: error.message,
