@@ -201,10 +201,18 @@ const AuthPage: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/Logo.png" 
+              alt="ComicScout UK - Discover. Track. Triumph." 
+              className="w-48 h-auto"
+              style={{ maxWidth: '200px' }}
+            />
+          </div>
           <h1 className="font-super-squad text-5xl text-parchment mb-2">
             {selectedEffect}
           </h1>
-          <h2 className="font-super-squad text-3xl text-parchment">
+          <h2 className="sr-only font-super-squad text-3xl text-parchment">
             COMICSCOUT UK
           </h2>
         </div>

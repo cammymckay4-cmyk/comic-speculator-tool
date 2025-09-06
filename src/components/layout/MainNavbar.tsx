@@ -118,7 +118,13 @@ const MainNavbar: React.FC<MainNavbarProps> = ({
               onClick={() => handleNavClick('/')}
               className="flex items-center space-x-2"
             >
-              <span className="font-super-squad text-2xl text-parchment">
+              <img 
+                src="/Logo.png" 
+                alt="ComicScout UK - Discover. Track. Triumph." 
+                className="w-24 md:w-32 lg:w-36 h-auto"
+                style={{ maxHeight: '48px' }}
+              />
+              <span className="sr-only font-super-squad text-2xl text-parchment">
                 COMICSCOUT UK
               </span>
             </button>
