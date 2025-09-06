@@ -63,6 +63,11 @@ const AuthPage: React.FC = () => {
     try {
       const result = await signUp({ email, password, name })
 
+      // Debug logs after signUp call
+      console.log('Signup error:', result.success ? null : result.error);
+      console.log('Error type:', typeof result.error);
+      console.log('Error message:', result.error);
+
       if (!result.success) {
         // Any error means we should show error message, NOT success message
         setErrors({ auth: result.error || 'An error occurred during signup' })
@@ -85,9 +90,13 @@ const AuthPage: React.FC = () => {
         return
       }
 
+      // Debug log before setting success message
+      console.log('About to show success - should not reach here if error');
+
       // Only show success message if signup was actually successful (no error)
       setErrors({}) // Clear any errors
       setSuccessMessage('Check your email to confirm your account!')
+      console.log('Success message set:', 'Check your email to confirm your account!');
       setFormData({
         name: '',
         email: '',

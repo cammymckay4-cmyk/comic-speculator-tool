@@ -6,7 +6,8 @@ import {
   Plus,
   Download,
   Upload,
-  Star
+  Star,
+  LogIn
 } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
@@ -151,6 +152,27 @@ const CollectionPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-parchment flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading your collection" />
+      </div>
+    )
+  }
+
+  // Handle authentication - show login required UI instead of redirecting
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-parchment flex items-center justify-center">
+        <div className="bg-white comic-border shadow-comic p-8 max-w-md text-center">
+          <h2 className="font-super-squad text-2xl text-stan-lee-blue mb-4">Login Required</h2>
+          <p className="font-persona-aura text-ink-black mb-6">
+            You need to be logged in to view your collection.
+          </p>
+          <button 
+            onClick={() => navigate('/auth?redirect=/collection')}
+            className="comic-button flex items-center space-x-2 mx-auto"
+          >
+            <LogIn size={18} />
+            <span>Login to Continue</span>
+          </button>
+        </div>
       </div>
     )
   }
