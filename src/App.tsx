@@ -55,15 +55,34 @@ function App() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
+        console.log('[APP] Auth state change detected:', {
+          event,
+          hasSession: !!session,
+          userEmail: session?.user?.email,
+          currentPath: window.location.pathname,
+          timestamp: new Date().toISOString()
+        })
+        
         if (event === 'SIGNED_OUT' || !session) {
+          console.log('[APP] User signed out or no session - clearing user state')
           setUser(null)
         } else if (event === 'SIGNED_IN' && session?.user) {
+          console.log('[APP] User signed in - setting user state:', {
+            userId: session.user.id,
+            email: session.user.email,
+            name: session.user.user_metadata?.full_name
+          })
+          
           setUser({
             id: session.user.id,
             name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
             email: session.user.email || '',
             avatar: session.user.user_metadata?.avatar_url || null,
           })
+          
+          // Check if this auth change is causing an unwanted redirect
+          console.log('[APP] User set in store, current location:', window.location.pathname)
+          console.log('[APP] No automatic redirect triggered from App.tsx auth listener')
         }
       }
     )

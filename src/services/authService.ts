@@ -61,6 +61,13 @@ export const signIn = async (credentials: LoginCredentials): Promise<AuthResult>
 
 export const signUp = async (signupData: SignupData): Promise<AuthResult> => {
   try {
+    const emailRedirectTo = `${window.location.origin}/auth/confirm?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`
+    
+    console.log('[AUTH] SignUp function called')
+    console.log('[AUTH] Signup data:', { email: signupData.email, name: signupData.name })
+    console.log('[AUTH] Current location:', window.location.pathname + window.location.search)
+    console.log('[AUTH] Email redirect URL:', emailRedirectTo)
+    
     const { data, error } = await supabase.auth.signUp({
       email: signupData.email,
       password: signupData.password,
@@ -68,9 +75,12 @@ export const signUp = async (signupData: SignupData): Promise<AuthResult> => {
         data: {
           full_name: signupData.name,
         },
-        emailRedirectTo: `${window.location.origin}/auth/confirm?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+        emailRedirectTo,
       },
     })
+    
+    console.log('[AUTH] Supabase signUp response:', { data: data?.user ? 'User object present' : 'No user', error: error?.message })
+    console.log('[AUTH] Actual confirmation URL that will be in email:', emailRedirectTo)
 
     if (error) {
       return {

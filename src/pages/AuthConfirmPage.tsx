@@ -17,16 +17,26 @@ const AuthConfirmPage: React.FC = () => {
   useEffect(() => {
     const confirmUser = async () => {
       try {
+        console.log('[CONFIRM] AuthConfirmPage component mounted')
+        console.log('[CONFIRM] Current URL:', window.location.href)
+        console.log('[CONFIRM] Search params:', Object.fromEntries(searchParams.entries()))
+        
         // Get redirect parameter from URL
         const redirectTo = searchParams.get('redirect')
-        console.log('Auth confirmation - redirect parameter:', redirectTo)
+        console.log('[CONFIRM] Redirect param:', redirectTo)
+        console.log('[CONFIRM] Decoded redirect param:', redirectTo ? decodeURIComponent(redirectTo) : null)
         
         // First check if user is already authenticated (no token needed)
         const { data: { session } } = await supabase.auth.getSession()
+        console.log('[CONFIRM] Current session check:', session ? 'Session exists' : 'No session')
+        
         if (session) {
           // User is already verified, redirect to intended destination or account page
-          console.log('User already authenticated, redirecting to:', redirectTo || '/account')
-          navigate(redirectTo || '/account')
+          const finalPath = redirectTo || '/account'
+          console.log('[CONFIRM] User already authenticated')
+          console.log('[CONFIRM] Final redirect path:', finalPath)
+          console.log('[CONFIRM] About to navigate to:', finalPath)
+          navigate(finalPath)
           return
         }
 
@@ -35,7 +45,7 @@ const AuthConfirmPage: React.FC = () => {
         const type = searchParams.get('type')
 
         // Debug logging for troubleshooting
-        console.log('Auth confirmation attempt:', {
+        console.log('[CONFIRM] Token verification details:', {
           token_hash: searchParams.get('token_hash'),
           token: searchParams.get('token'),
           finalToken: token,
@@ -47,10 +57,13 @@ const AuthConfirmPage: React.FC = () => {
 
         // Only try token verification if NOT already authenticated and token exists
         if (!token) {
+          console.log('[CONFIRM] ERROR: No token found in URL parameters')
           setStatus('error')
           setMessage('Invalid or expired verification link. Please sign up again or contact support.')
           return
         }
+        
+        console.log('[CONFIRM] Proceeding with token verification using token:', token)
 
         // Verify the user's email
         const { data, error } = await supabase.auth.verifyOtp({
@@ -58,13 +71,23 @@ const AuthConfirmPage: React.FC = () => {
           type: type as any || 'signup'
         })
 
+        console.log('[CONFIRM] VerifyOtp response:', {
+          success: !error,
+          hasUser: !!data?.user,
+          error: error?.message,
+          userEmail: data?.user?.email
+        })
+
         if (error) {
+          console.log('[CONFIRM] ERROR during verification:', error.message)
           setStatus('error')
           setMessage(error.message || 'Failed to confirm email. The link may have expired.')
           return
         }
 
         if (data.user) {
+          console.log('[CONFIRM] Email verification successful for user:', data.user.email)
+          
           // Update user store
           setUser({
             id: data.user.id,
@@ -78,11 +101,16 @@ const AuthConfirmPage: React.FC = () => {
           
           // Redirect to intended destination or account page after a short delay
           const finalDestination = redirectTo || '/account'
-          console.log('Email confirmed successfully, redirecting to:', finalDestination)
+          console.log('[CONFIRM] Email confirmed successfully')
+          console.log('[CONFIRM] Final destination determined:', finalDestination)
+          console.log('[CONFIRM] Setting timeout to navigate in 2 seconds')
+          
           setTimeout(() => {
+            console.log('[CONFIRM] Timeout executing - navigating to:', finalDestination)
             navigate(finalDestination)
           }, 2000)
         } else {
+          console.log('[CONFIRM] ERROR: No user data in verification response')
           setStatus('error')
           setMessage('Failed to confirm email. Please try again.')
         }
