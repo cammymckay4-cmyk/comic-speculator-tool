@@ -1,193 +1,217 @@
 import React, { useState } from 'react'
-import { Play, AlertCircle, CheckCircle, Clock } from 'lucide-react'
-import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
-interface ApiResponse {
-  status: number
+interface TestResult {
+  url: string
+  success: boolean
   data: any
   error?: string
+  timestamp: string
 }
 
+const API_KEY = import.meta.env.VITE_GOCOLLECT_API_KEY || 'demo-key'
+
 const ApiTestPage: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [response, setResponse] = useState<ApiResponse | null>(null)
+  const [results, setResults] = useState<Record<string, TestResult | null>>({
+    test1: null,
+    test2: null,
+    test3: null,
+    test4: null
+  })
+  const [loading, setLoading] = useState<Record<string, boolean>>({
+    test1: false,
+    test2: false,
+    test3: false,
+    test4: false
+  })
 
-  const testGoCollectApi = async () => {
-    setIsLoading(true)
-    setResponse(null)
+  const testEndpoints = [
+    {
+      key: 'test1',
+      label: 'Test 1: Search Comics',
+      url: 'https://api.gocollect.com/v1/comics/search?q=Amazing Spider-Man 1'
+    },
+    {
+      key: 'test2',
+      label: 'Test 2: Comics by Title/Issue',
+      url: 'https://api.gocollect.com/v1/comics?title=Amazing Spider-Man&issue=1'
+    },
+    {
+      key: 'test3',
+      label: 'Test 3: Search Comics Alt',
+      url: 'https://api.gocollect.com/v1/search/comics?query=Amazing Spider-Man 1'
+    },
+    {
+      key: 'test4',
+      label: 'Test 4: General Search',
+      url: 'https://api.gocollect.com/api/v1/search?q=Amazing Spider-Man 1'
+    }
+  ]
 
+  const runTest = async (testKey: string, url: string) => {
+    setLoading(prev => ({ ...prev, [testKey]: true }))
+    
     try {
-      const apiKey = '7GnRRxsw3JMYnZF9rW8fF7VU8gJVK5q71KKvURNwd2a24cf0'
-      const query = 'Amazing Spider-Man 1'
+      console.log(`Running ${testKey}: ${url}`)
       
-      // GoCollect API endpoint (assuming based on common API patterns)
-      const url = `https://gocollect.com/api/search?query=${encodeURIComponent(query)}&key=${apiKey}`
-      
-      const apiResponse = await fetch(url, {
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': apiKey, // Alternative header format
-        },
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
       })
-
-      const data = await apiResponse.json()
-
-      setResponse({
-        status: apiResponse.status,
-        data: data,
-        error: apiResponse.ok ? undefined : `HTTP ${apiResponse.status}: ${apiResponse.statusText}`
-      })
+      
+      let data
+      const contentType = response.headers.get('content-type')
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json()
+      } else {
+        data = await response.text()
+      }
+      
+      const result: TestResult = {
+        url,
+        success: response.ok,
+        data,
+        timestamp: new Date().toISOString()
+      }
+      
+      if (!response.ok) {
+        result.error = `HTTP ${response.status}: ${response.statusText}`
+      }
+      
+      setResults(prev => ({ ...prev, [testKey]: result }))
+      
     } catch (error) {
-      setResponse({
-        status: 0,
-        data: null,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
-      })
+      console.error(`Error in ${testKey}:`, error)
+      
+      setResults(prev => ({ 
+        ...prev, 
+        [testKey]: {
+          url,
+          success: false,
+          data: null,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        }
+      }))
     } finally {
-      setIsLoading(false)
+      setLoading(prev => ({ ...prev, [testKey]: false }))
     }
   }
 
-  const getStatusIcon = () => {
-    if (!response) return null
-    
-    if (response.error) {
-      return <AlertCircle className="text-red-500" size={20} />
-    } else if (response.status >= 200 && response.status < 300) {
-      return <CheckCircle className="text-green-500" size={20} />
-    } else {
-      return <AlertCircle className="text-yellow-500" size={20} />
-    }
-  }
-
-  const getStatusColor = () => {
-    if (!response) return 'text-gray-500'
-    
-    if (response.error) {
-      return 'text-red-600'
-    } else if (response.status >= 200 && response.status < 300) {
-      return 'text-green-600'
-    } else {
-      return 'text-yellow-600'
-    }
+  const clearResults = () => {
+    setResults({
+      test1: null,
+      test2: null,
+      test3: null,
+      test4: null
+    })
   }
 
   return (
-    <div className="min-h-screen bg-parchment py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white comic-border shadow-comic p-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="font-super-squad text-3xl text-ink-black mb-2">
-              🔬 GOCOLLECT API TEST
-            </h1>
-            <p className="font-persona-aura text-gray-600">
-              Temporary testing page for GoCollect API integration
-            </p>
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-yellow-800 font-persona-aura text-sm">
-                <strong>Note:</strong> This is a temporary test page and will be removed after confirming API functionality.
-              </p>
-            </div>
-          </div>
-
-          {/* Test Section */}
-          <div className="mb-8">
-            <h2 className="font-super-squad text-xl text-ink-black mb-4">
-              TEST CONFIGURATION
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Test Query
-                </label>
-                <p className="font-mono text-sm text-gray-900 bg-white p-2 rounded border">
-                  Amazing Spider-Man 1
-                </p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  API Key
-                </label>
-                <p className="font-mono text-sm text-gray-900 bg-white p-2 rounded border truncate">
-                  7GnRRxsw3JMYnZF9rW8fF7VU8gJVK5q71KKvURNwd2a24cf0
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Test Button */}
-          <div className="mb-8">
-            <button
-              onClick={testGoCollectApi}
-              disabled={isLoading}
-              className="comic-button flex items-center justify-center space-x-2 w-full md:w-auto"
-            >
-              {isLoading ? (
-                <>
-                  <Clock size={20} className="animate-spin" />
-                  <span>Testing API...</span>
-                </>
-              ) : (
-                <>
-                  <Play size={20} />
-                  <span>Test GoCollect API</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Loading State */}
-          {isLoading && (
-            <div className="mb-8 flex justify-center">
-              <LoadingSpinner size="md" text="Calling GoCollect API..." />
-            </div>
-          )}
-
-          {/* Response Section */}
-          {response && (
-            <div className="space-y-6">
-              <h2 className="font-super-squad text-xl text-ink-black">
-                API RESPONSE
-              </h2>
-
-              {/* Status */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex items-center space-x-2 mb-2">
-                  {getStatusIcon()}
-                  <h3 className="font-semibold text-gray-900">Status</h3>
-                </div>
-                <p className={`font-mono text-lg ${getStatusColor()}`}>
-                  {response.status > 0 ? `HTTP ${response.status}` : 'Network Error'}
-                </p>
-                {response.error && (
-                  <p className="text-red-600 mt-2 text-sm">{response.error}</p>
-                )}
-              </div>
-
-              {/* Response Data */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-2">Response Data</h3>
-                <div className="bg-white p-4 rounded border overflow-auto max-h-96">
-                  <pre className="text-sm text-gray-800 whitespace-pre-wrap break-words">
-                    {JSON.stringify(response.data, null, 2)}
-                  </pre>
-                </div>
-              </div>
-
-              {/* Response Headers Info */}
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-blue-900 mb-2">Response Info</h3>
-                <div className="text-sm text-blue-800">
-                  <p><strong>Status Code:</strong> {response.status}</p>
-                  <p><strong>Timestamp:</strong> {new Date().toLocaleString()}</p>
-                  <p><strong>Query:</strong> Amazing Spider-Man 1</p>
-                </div>
-              </div>
-            </div>
-          )}
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8 text-center">GoCollect API Test Page</h1>
+        
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <h2 className="font-semibold mb-2">API Configuration</h2>
+          <p className="text-sm text-gray-600">
+            Using API Key: {API_KEY === 'demo-key' ? 'No API key configured (using demo-key)' : '***configured***'}
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            Set VITE_GOCOLLECT_API_KEY in your .env file to use a real API key.
+          </p>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {testEndpoints.map(endpoint => (
+            <div key={endpoint.key} className="border border-gray-300 rounded-lg p-4">
+              <h3 className="font-semibold mb-2">{endpoint.label}</h3>
+              <p className="text-sm text-gray-600 mb-3 font-mono bg-gray-100 p-2 rounded">
+                {endpoint.url}
+              </p>
+              <button
+                onClick={() => runTest(endpoint.key, endpoint.url)}
+                disabled={loading[endpoint.key]}
+                className={`w-full py-2 px-4 rounded font-medium ${
+                  loading[endpoint.key]
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                }`}
+              >
+                {loading[endpoint.key] ? 'Testing...' : 'Run Test'}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="mb-6 flex justify-center">
+          <button
+            onClick={clearResults}
+            className="py-2 px-6 bg-gray-500 hover:bg-gray-600 text-white rounded font-medium"
+          >
+            Clear All Results
+          </button>
+        </div>
+
+        {Object.entries(results).some(([_, result]) => result !== null) && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Test Results</h2>
+            
+            {testEndpoints.map(endpoint => {
+              const result = results[endpoint.key]
+              if (!result) return null
+              
+              return (
+                <div key={endpoint.key} className="border border-gray-300 rounded-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">{endpoint.label}</h3>
+                    <span className={`px-3 py-1 rounded text-sm font-medium ${
+                      result.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {result.success ? 'Success' : 'Failed'}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <strong>URL:</strong>
+                      <div className="font-mono text-sm bg-gray-100 p-2 rounded mt-1">
+                        {result.url}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <strong>Timestamp:</strong>
+                      <span className="ml-2 text-sm text-gray-600">{result.timestamp}</span>
+                    </div>
+                    
+                    {result.error && (
+                      <div>
+                        <strong>Error:</strong>
+                        <div className="text-red-600 bg-red-50 p-2 rounded mt-1">
+                          {result.error}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <strong>Response:</strong>
+                      <pre className="text-sm bg-gray-100 p-3 rounded mt-1 overflow-auto max-h-96">
+                        {typeof result.data === 'string' 
+                          ? result.data 
+                          : JSON.stringify(result.data, null, 2)
+                        }
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
