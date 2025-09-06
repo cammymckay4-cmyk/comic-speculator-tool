@@ -14,7 +14,8 @@
     "gen:types": "supabase gen types typescript --linked > src/lib/database.types.ts",
     "db:seed": "tsx scripts/import-comics-data.ts",
     "populate:market-values": "tsx scripts/populate-market-values.ts",
-    "populate:ebay-prices": "tsx scripts/populate-ebay-prices.ts"
+    "populate:ebay-prices": "tsx scripts/populate-ebay-prices.ts",
+    "populate:comic-covers": "tsx scripts/populate-comic-covers.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.56.1",
