@@ -30,7 +30,6 @@ export const signIn = async (credentials: LoginCredentials, rememberMe = true): 
       email: credentials.email,
       password: credentials.password,
       options: {
-        persistSession: true,
         // This affects the session duration
         data: {
           persistence: persistence
