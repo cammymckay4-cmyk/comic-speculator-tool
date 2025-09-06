@@ -46,9 +46,16 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <h3 className="font-super-squad text-3xl text-golden-age-yellow mb-4">
-              COMICSCOUT UK
-            </h3>
+            <div className="flex items-center mb-4">
+              <img 
+                src="/Logo.png" 
+                alt="ComicScout UK" 
+                className="w-[80px] h-auto mr-4"
+              />
+              <h3 className="font-super-squad text-3xl text-golden-age-yellow">
+                COMICSCOUT UK
+              </h3>
+            </div>
             <p className="font-persona-aura text-parchment opacity-80 mb-4">
               Your ultimate comic collection manager. Track, value, and discover comics with the power of a superhero sidekick.
             </p>
