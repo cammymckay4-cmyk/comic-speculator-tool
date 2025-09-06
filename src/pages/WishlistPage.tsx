@@ -5,7 +5,8 @@ import {
   List, 
   Plus,
   Star,
-  BookOpen
+  BookOpen,
+  LogIn
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import ComicCard from '@/components/ui/ComicCard'
@@ -90,6 +91,27 @@ const WishlistPage: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm, sortOrder, activeFilters])
+
+  // Show login prompt if user is not logged in
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-parchment flex items-center justify-center">
+        <div className="bg-white comic-border shadow-comic p-8 max-w-md text-center">
+          <h2 className="font-super-squad text-2xl text-stan-lee-blue mb-4">Login Required</h2>
+          <p className="font-persona-aura text-ink-black mb-6">
+            You need to be logged in to view your wishlist.
+          </p>
+          <button 
+            onClick={() => navigate('/auth?redirect=/wishlist')}
+            className="comic-button flex items-center space-x-2 mx-auto"
+          >
+            <LogIn size={18} />
+            <span>Login to Continue</span>
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   // Handle loading state
   if (isLoading) {

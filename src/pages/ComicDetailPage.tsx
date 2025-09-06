@@ -40,6 +40,8 @@ const ComicDetailPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isAddToCollectionModalOpen, setIsAddToCollectionModalOpen] = useState(false)
   const [isCreateAlertModalOpen, setIsCreateAlertModalOpen] = useState(false)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [loginAction, setLoginAction] = useState<'add_to_collection' | 'add_to_wishlist' | 'set_price_alert' | null>(null)
 
   // Fetch comic data from master comics table (public access)
   const { data: comic, isLoading, isError, error } = useQuery({
@@ -174,6 +176,18 @@ const ComicDetailPage: React.FC = () => {
     setIsDeleteModalOpen(false)
   }
 
+  const handleLoginConfirm = () => {
+    if (!loginAction) return
+    
+    // Store current path and intended action for post-auth completion
+    const currentPath = window.location.pathname
+    setAuthStorage('authReturnPath', currentPath)
+    setAuthStorage('authIntendedAction', loginAction)
+    navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=${loginAction}`)
+    setIsLoginModalOpen(false)
+    setLoginAction(null)
+  }
+
   // Handle loading state
   if (isLoading) {
     return (
@@ -224,13 +238,8 @@ const ComicDetailPage: React.FC = () => {
   
   const handleAddToCollection = () => {
     if (!user) {
-      // Store current path and intended action for post-auth completion
-      const currentPath = window.location.pathname
-      console.log('Storing return path:', currentPath)
-      console.log('Storing action:', 'add_to_collection')
-      setAuthStorage('authReturnPath', currentPath)
-      setAuthStorage('authIntendedAction', 'add_to_collection')
-      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=add_to_collection`)
+      setLoginAction('add_to_collection')
+      setIsLoginModalOpen(true)
       return
     }
     setIsAddToCollectionModalOpen(true)
@@ -238,13 +247,8 @@ const ComicDetailPage: React.FC = () => {
 
   const handleWishlistClick = () => {
     if (!user) {
-      // Store current path and intended action for post-auth completion
-      const currentPath = window.location.pathname
-      console.log('Storing return path:', currentPath)
-      console.log('Storing action:', 'add_to_wishlist')
-      setAuthStorage('authReturnPath', currentPath)
-      setAuthStorage('authIntendedAction', 'add_to_wishlist')
-      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=add_to_wishlist`)
+      setLoginAction('add_to_wishlist')
+      setIsLoginModalOpen(true)
       return
     }
     
@@ -260,13 +264,8 @@ const ComicDetailPage: React.FC = () => {
 
   const handlePriceAlertClick = () => {
     if (!user) {
-      // Store current path and intended action for post-auth completion
-      const currentPath = window.location.pathname
-      console.log('Storing return path:', currentPath)
-      console.log('Storing action:', 'set_price_alert')
-      setAuthStorage('authReturnPath', currentPath)
-      setAuthStorage('authIntendedAction', 'set_price_alert')
-      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}&action=set_price_alert`)
+      setLoginAction('set_price_alert')
+      setIsLoginModalOpen(true)
       return
     }
     // Open alert creation modal
@@ -712,6 +711,26 @@ const ComicDetailPage: React.FC = () => {
         cancelText="Cancel"
         isLoading={deleteMutation.isPending}
         variant="danger"
+      />
+
+      {/* Login Required Modal */}
+      <ConfirmationModal
+        isOpen={isLoginModalOpen}
+        onClose={() => {
+          setIsLoginModalOpen(false)
+          setLoginAction(null)
+        }}
+        onConfirm={handleLoginConfirm}
+        title="LOGIN REQUIRED"
+        message={`You need to be logged in to ${
+          loginAction === 'add_to_collection' ? 'add comics to your collection' :
+          loginAction === 'add_to_wishlist' ? 'add comics to your wishlist' :
+          loginAction === 'set_price_alert' ? 'set price alerts' :
+          'continue'
+        }.`}
+        confirmText="Login to Continue"
+        cancelText="Cancel"
+        variant="info"
       />
     </div>
   )
