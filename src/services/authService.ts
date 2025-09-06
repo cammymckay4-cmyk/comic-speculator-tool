@@ -86,6 +86,7 @@ export const signUp = async (signupData: SignupData): Promise<AuthResult> => {
       },
     })
     
+    console.log('Supabase signup response:', { data, error });
     console.log('[SIGNUP] Signup response:', data)
 
     if (error) {
