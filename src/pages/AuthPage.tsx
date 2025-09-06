@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { COMIC_EFFECTS } from '@/utils/constants'
 import { supabase, createSupabaseClientWithPersistence } from '@/lib/supabaseClient'
+import { signUp } from '@/services/authService'
 import { useUserStore } from '@/store/userStore'
 
 type AuthMode = 'signin' | 'signup' | 'forgot'
@@ -71,30 +72,13 @@ const AuthPage: React.FC = () => {
 
   const handleSignup = async (email: string, password: string, name: string) => {
     try {
-      // Sign up user - our database trigger will handle sending confirmation email
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-          },
-          // Let our custom trigger handle email confirmation  
-          // Pass the current redirect parameter to preserve original destination
-          emailRedirectTo: `${window.location.origin}/auth/confirm${searchParams.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`,
-        },
-      })
+      const result = await signUp({ email, password, name })
 
-      if (error) {
-        // Check if error is due to user already existing
-        if (error.message?.toLowerCase().includes('already registered') || 
-            error.message?.toLowerCase().includes('email already exists') ||
-            error.message?.toLowerCase().includes('user already exists') ||
-            error.message?.toLowerCase().includes('already been registered') ||
-            error.message?.toLowerCase().includes('duplicate key value')) {
-          setErrors({ auth: 'Email already registered. Please sign in instead.' })
-        } else {
-          setErrors({ auth: error.message })
+      if (!result.success) {
+        setErrors({ auth: result.error || 'An error occurred during signup' })
+        // Auto-switch to sign in tab if email already exists
+        if (result.error?.includes('already registered')) {
+          setTimeout(() => setMode('signin'), 2000)
         }
         return
       }
