@@ -84,11 +84,12 @@ const AuthPage: React.FC = () => {
         return
       }
 
-      // Check Supabase response for duplicate email detection
-      // If data.user but NO data.session, it's a new signup (email sent)
-      // If data.user AND data.session, user already exists (auto-signed in)
-      // If data.user is null, something went wrong
-      if (result.data && result.data.user && result.data.session) {
+      // Check for duplicate email detection
+      // If there's a user AND no error = successful signup
+      // Check if it's a duplicate by seeing if they got auto-signed in
+      // New users won't have an active session immediately after signup
+      // Existing users might get auto-signed in
+      if (result.user && !result.error) {
         setErrors({ auth: 'This email is already registered. Please sign in.' })
         setSuccessMessage('')
         return
