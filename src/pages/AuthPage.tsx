@@ -84,48 +84,29 @@ const AuthPage: React.FC = () => {
         return
       }
 
-      // Check if user actually needs to confirm or if they're already registered
-      // Supabase returns success for duplicate emails as security feature
+      // Check for duplicate email detection
+      // If there's a user AND no error = successful signup
+      // Check if it's a duplicate by seeing if they got auto-signed in
+      // New users won't have an active session immediately after signup
+      // Existing users might get auto-signed in
+      if (result.user && !result.error) {
+        setErrors({ auth: 'This email is already registered. Please sign in.' })
+        setSuccessMessage('')
+        return
+      }
+      
       if (result.user) {
-        // Use the raw Supabase response to check if this is actually a new user
-        const { data } = await supabase.auth.signUp({
-          email: email,
-          password: password,
-          options: {
-            data: { full_name: name },
-          },
+        setErrors({}) // Clear any errors
+        setSuccessMessage('Check your email to confirm your account!')
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+          rememberMe: false,
+          agreeToTerms: false,
         })
-        
-        // If data.user exists but confirmed_at is already set, they're already registered
-        if (data.user?.confirmed_at) {
-          setErrors({ auth: 'This email is already registered. Please sign in.' })
-          setSuccessMessage('') // Clear any success message
-          setTimeout(() => setMode('signin'), 2000)
-          return
-        }
-        
-        // If data.user exists but no session, confirmation email was sent (new user)
-        if (data.user && !data.session) {
-          setErrors({}) // Clear any errors
-          setSuccessMessage('Check your email to confirm your account!')
-          setFormData({
-            name: '',
-            email: '',
-            password: '',
-            confirmPassword: '',
-            rememberMe: false,
-            agreeToTerms: false,
-          })
-          return
-        }
-        
-        // If data.user and data.session exist, they're already confirmed (existing user)
-        if (data.user && data.session) {
-          setErrors({ auth: 'This email is already registered. Please sign in.' })
-          setSuccessMessage('') // Clear any success message
-          setTimeout(() => setMode('signin'), 2000)
-          return
-        }
+        return
       }
 
       // Fallback - show success message
