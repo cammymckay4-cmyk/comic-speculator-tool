@@ -13,7 +13,8 @@
     "test:run": "vitest run",
     "gen:types": "supabase gen types typescript --linked > src/lib/database.types.ts",
     "db:seed": "tsx scripts/import-comics-data.ts",
-    "populate:market-values": "tsx scripts/populate-market-values.ts"
+    "populate:market-values": "tsx scripts/populate-market-values.ts",
+    "populate:ebay-prices": "tsx scripts/populate-ebay-prices.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.56.1",
