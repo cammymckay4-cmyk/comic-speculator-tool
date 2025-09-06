@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
+// NOTE: Ensure Supabase Site URL is set to: https://comicscout.uk
+// This allows the code to handle redirects properly instead of Supabase config override
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 

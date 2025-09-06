@@ -9,6 +9,7 @@ import { Toaster } from 'sonner'
 import { useUserStore } from './store/userStore'
 import { supabase } from './lib/supabaseClient'
 import { useAlertsCount } from './hooks/useAlertsCount'
+import { usePostAuthActions } from './hooks/usePostAuthActions'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 // Lazy load pages for better performance
@@ -29,13 +30,28 @@ function App() {
   const { user, setUser, setLoading } = useUserStore()
   const { data: alertsCount = 0 } = useAlertsCount()
   const navigate = useNavigate()
+  
+  // Handle post-auth actions
+  usePostAuthActions()
 
-  // Detect email confirmation parameters on mount (before Supabase redirect)
+  // Track where users came from using URL params and sessionStorage
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const hasToken = urlParams.has('token_hash')
     const hasType = urlParams.has('type')
     const hasError = urlParams.has('error_code')
+    const redirectParam = urlParams.get('redirect')
+    const actionParam = urlParams.get('action')
+    
+    // Store redirect path from URL params
+    if (redirectParam && !sessionStorage.getItem('authReturnPath')) {
+      sessionStorage.setItem('authReturnPath', redirectParam)
+    }
+    
+    // Store intended action if present
+    if (actionParam && !sessionStorage.getItem('authIntendedAction')) {
+      sessionStorage.setItem('authIntendedAction', actionParam)
+    }
     
     if (hasToken || hasType || hasError) {
       console.log('[APP] Email confirmation detected - setting redirect flag')
@@ -83,6 +99,8 @@ function App() {
           // Clear redirect flags on logout
           sessionStorage.removeItem('shouldRedirectToAccount')
           sessionStorage.removeItem('hasNavigatedAfterAuth')
+          sessionStorage.removeItem('authReturnPath')
+          sessionStorage.removeItem('authIntendedAction')
         } else if (event === 'SIGNED_IN' && session?.user) {
           console.log('[APP] User signed in - setting user state:', {
             userId: session.user.id,
@@ -97,13 +115,57 @@ function App() {
             avatar: session.user.user_metadata?.avatar_url || null,
           })
           
-          // Check if we should redirect to account page after email confirmation
-          const shouldRedirect = sessionStorage.getItem('shouldRedirectToAccount')
-          if (shouldRedirect && !sessionStorage.getItem('hasNavigatedAfterAuth')) {
-            console.log('[APP] Email confirmation redirect flag found - redirecting to account page')
+          // Determine correct destination after successful auth
+          const userCreatedAt = new Date(session.user.created_at)
+          const now = new Date()
+          const isNewSignup = (now.getTime() - userCreatedAt.getTime()) < 60000 // 60 seconds
+          const shouldRedirectToAccount = sessionStorage.getItem('shouldRedirectToAccount')
+          const authReturnPath = sessionStorage.getItem('authReturnPath')
+          const urlParams = new URLSearchParams(window.location.search)
+          const redirectParam = urlParams.get('redirect')
+          
+          if (!sessionStorage.getItem('hasNavigatedAfterAuth')) {
+            console.log('[APP] Determining post-auth destination:', {
+              isNewSignup,
+              shouldRedirectToAccount: !!shouldRedirectToAccount,
+              authReturnPath,
+              redirectParam,
+              userCreatedAt: userCreatedAt.toISOString(),
+              now: now.toISOString()
+            })
+            
             sessionStorage.setItem('hasNavigatedAfterAuth', 'true')
+            
+            let destination = '/'
+            
+            if (isNewSignup) {
+              // New signup → go to /account to complete profile
+              console.log('[APP] New signup detected - redirecting to account page')
+              destination = '/account'
+            } else if (shouldRedirectToAccount) {
+              // Email confirmation → go to account
+              console.log('[APP] Email confirmation redirect - going to account page')
+              destination = '/account'
+            } else if (authReturnPath) {
+              // Return to stored path from sessionStorage
+              console.log('[APP] Returning to stored path:', authReturnPath)
+              destination = authReturnPath
+            } else if (redirectParam) {
+              // Use redirect param from URL
+              console.log('[APP] Using redirect param:', redirectParam)
+              destination = redirectParam
+            } else {
+              // Regular sign-in → home page
+              console.log('[APP] Regular sign-in - going to home page')
+              destination = '/'
+            }
+            
+            // Clear redirect data after use
             sessionStorage.removeItem('shouldRedirectToAccount')
-            navigate('/account')
+            sessionStorage.removeItem('authReturnPath')
+            
+            // Note: Keep authIntendedAction for post-auth action completion
+            navigate(destination)
             return
           }
           

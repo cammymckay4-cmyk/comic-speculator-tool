@@ -75,14 +75,29 @@ const AuthPage: React.FC = () => {
       const result = await signUp({ email, password, name })
 
       if (!result.success) {
-        setErrors({ auth: result.error || 'An error occurred during signup' })
-        // Auto-switch to sign in tab if email already exists
-        if (result.error?.includes('already registered')) {
+        // Check if it's a duplicate email error
+        const errorMsg = result.error?.toLowerCase() || ''
+        const isDuplicateEmail = errorMsg.includes('already registered') ||
+                                errorMsg.includes('email already exists') ||
+                                errorMsg.includes('user already exists') ||
+                                errorMsg.includes('already been registered') ||
+                                errorMsg.includes('duplicate key value') ||
+                                errorMsg.includes('email address is already registered') ||
+                                errorMsg.includes('user with this email already exists')
+        
+        if (isDuplicateEmail) {
+          // Show error toast for duplicate email - do NOT show success message
+          setErrors({ auth: 'Email already registered. Please sign in instead.' })
+          // Auto-switch to sign in tab
           setTimeout(() => setMode('signin'), 2000)
+        } else {
+          // Other errors
+          setErrors({ auth: result.error || 'An error occurred during signup' })
         }
         return
       }
 
+      // Only show success message if signup was actually successful
       setSuccessMessage('Check your email to confirm your account!')
       setFormData({
         name: '',
