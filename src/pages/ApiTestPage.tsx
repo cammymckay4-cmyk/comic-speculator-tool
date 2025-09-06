@@ -12,38 +12,17 @@ const API_KEY = import.meta.env.VITE_GOCOLLECT_API_KEY || 'demo-key'
 
 const ApiTestPage: React.FC = () => {
   const [results, setResults] = useState<Record<string, TestResult | null>>({
-    test1: null,
-    test2: null,
-    test3: null,
-    test4: null
+    test1: null
   })
   const [loading, setLoading] = useState<Record<string, boolean>>({
-    test1: false,
-    test2: false,
-    test3: false,
-    test4: false
+    test1: false
   })
 
   const testEndpoints = [
     {
       key: 'test1',
-      label: 'Test 1: Search Comics',
-      url: 'https://api.gocollect.com/v1/comics/search?q=Amazing Spider-Man 1'
-    },
-    {
-      key: 'test2',
-      label: 'Test 2: Comics by Title/Issue',
-      url: 'https://api.gocollect.com/v1/comics?title=Amazing Spider-Man&issue=1'
-    },
-    {
-      key: 'test3',
-      label: 'Test 3: Search Comics Alt',
-      url: 'https://api.gocollect.com/v1/search/comics?query=Amazing Spider-Man 1'
-    },
-    {
-      key: 'test4',
-      label: 'Test 4: General Search',
-      url: 'https://api.gocollect.com/api/v1/search?q=Amazing Spider-Man 1'
+      label: 'Test 1: GoCollect Collectibles Search (Incredible Hulk 181)',
+      url: 'https://gocollect.com/api/collectibles/v1/item/search?query=Incredible+Hulk+181&cam=Comics'
     }
   ]
 
@@ -86,13 +65,20 @@ const ApiTestPage: React.FC = () => {
     } catch (error) {
       console.error(`Error in ${testKey}:`, error)
       
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      
+      // Check if it's a CORS error
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        errorMessage = 'CORS blocked - API must be called from backend'
+      }
+      
       setResults(prev => ({ 
         ...prev, 
         [testKey]: {
           url,
           success: false,
           data: null,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: errorMessage,
           timestamp: new Date().toISOString()
         }
       }))
@@ -103,10 +89,7 @@ const ApiTestPage: React.FC = () => {
 
   const clearResults = () => {
     setResults({
-      test1: null,
-      test2: null,
-      test3: null,
-      test4: null
+      test1: null
     })
   }
 
@@ -122,6 +105,17 @@ const ApiTestPage: React.FC = () => {
           </p>
           <p className="text-sm text-gray-500 mt-1">
             Set VITE_GOCOLLECT_API_KEY in your .env file to use a real API key.
+          </p>
+        </div>
+
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h2 className="font-semibold mb-2">Important Note</h2>
+          <p className="text-sm text-gray-700">
+            The GoCollect API is working but browser security prevents direct calls due to CORS (Cross-Origin Resource Sharing) restrictions.
+            When you see a "CORS blocked" error, this is expected behavior.
+          </p>
+          <p className="text-sm text-gray-700 mt-2">
+            <strong>Solution:</strong> We need to create a backend proxy to call the GoCollect API from our server instead of directly from the browser.
           </p>
         </div>
 
