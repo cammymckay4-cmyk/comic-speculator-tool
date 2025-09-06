@@ -12,7 +12,8 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "gen:types": "supabase gen types typescript --linked > src/lib/database.types.ts",
-    "db:seed": "tsx scripts/import-comics-data.ts"
+    "db:seed": "tsx scripts/import-comics-data.ts",
+    "populate:market-values": "tsx scripts/populate-market-values.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.56.1",

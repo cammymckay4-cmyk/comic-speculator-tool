@@ -76,6 +76,11 @@ export interface Comic {
   tags?: string[];
   prices: ComicPrice[];
   marketValue?: number;
+  gocollectId?: string;
+  marketValueLow?: number;
+  marketValueMedium?: number;
+  marketValueHigh?: number;
+  marketValueUpdatedAt?: string;
   lastUpdated: string;
   ebayStatus?: EbayStatus;
 }
