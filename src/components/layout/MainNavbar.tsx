@@ -116,14 +116,18 @@ const MainNavbar: React.FC<MainNavbarProps> = ({
           <div className="flex items-center justify-center">
             <button
               onClick={() => handleNavClick('/')}
-              className="flex items-center justify-center"
+              className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200 
+                         bg-ink-black rounded-lg px-3 py-2 shadow-comic-sm"
             >
               <img 
                 src="/trace.svg" 
                 alt="ComicScout UK Logo" 
-                className="h-[50px] w-auto hover:scale-105 transition-transform duration-200"
-                style={{ filter: 'drop-shadow(0 0 2px rgba(255, 255, 255, 0.8))' }}
+                className="h-[50px] w-auto"
+                style={{ background: 'transparent' }}
               />
+              <span className="text-golden-age-yellow font-bangers text-2xl tracking-wider uppercase">
+                COMICSCOUT UK
+              </span>
             </button>
           </div>
 
