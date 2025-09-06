@@ -60,9 +60,9 @@ const AuthPage: React.FC = () => {
           avatar: data.user.user_metadata?.avatar_url || null,
         })
         
-        // Check for redirect parameter and navigate to it, otherwise go to home
+        // Check for redirect parameter and navigate to it, otherwise go to account page
         const redirectTo = searchParams.get('redirect')
-        navigate(redirectTo || '/')
+        navigate(redirectTo || '/account')
       }
     } catch (error) {
       setErrors({ auth: 'An unexpected error occurred' })
