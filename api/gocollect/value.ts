@@ -75,7 +75,13 @@ async function handleSingleGradeRequest(
   grade: string, 
   response: VercelResponse
 ): Promise<void> {
-  const API_KEY = process.env.VITE_GOCOLLECT_API_KEY || '7GnRRxsw3JMYnZF9rW8fF7VU8gJVK5q71KKvURNwd2a24cf0';
+  const API_KEY = process.env.VITE_GOCOLLECT_API_KEY;
+  if (!API_KEY) {
+    return response.status(500).json({
+      error: 'GoCollect API key not configured',
+      message: 'VITE_GOCOLLECT_API_KEY environment variable is required'
+    });
+  }
   const USD_TO_GBP_RATE = 0.79;
 
   try {
@@ -118,7 +124,13 @@ async function handleTieredGradeRequest(
   item_id: string | string[] | undefined,
   response: VercelResponse
 ): Promise<void> {
-  const API_KEY = process.env.VITE_GOCOLLECT_API_KEY || '7GnRRxsw3JMYnZF9rW8fF7VU8gJVK5q71KKvURNwd2a24cf0';
+  const API_KEY = process.env.VITE_GOCOLLECT_API_KEY;
+  if (!API_KEY) {
+    return response.status(500).json({
+      error: 'GoCollect API key not configured',
+      message: 'VITE_GOCOLLECT_API_KEY environment variable is required'
+    });
+  }
   const USD_TO_GBP_RATE = 0.79;
   const GRADES = ['6.0', '8.0', '9.4'];
 
