@@ -75,11 +75,11 @@ async function handleSingleGradeRequest(
   grade: string, 
   response: VercelResponse
 ): Promise<void> {
-  const API_KEY = process.env.VITE_GOCOLLECT_API_KEY;
+  const API_KEY = process.env.GOCOLLECT_API_KEY;
   if (!API_KEY) {
     return response.status(500).json({
       error: 'GoCollect API key not configured',
-      message: 'VITE_GOCOLLECT_API_KEY environment variable is required'
+      message: 'GOCOLLECT_API_KEY environment variable is required'
     });
   }
   const USD_TO_GBP_RATE = 0.79;
@@ -124,11 +124,11 @@ async function handleTieredGradeRequest(
   item_id: string | string[] | undefined,
   response: VercelResponse
 ): Promise<void> {
-  const API_KEY = process.env.VITE_GOCOLLECT_API_KEY;
+  const API_KEY = process.env.GOCOLLECT_API_KEY;
   if (!API_KEY) {
     return response.status(500).json({
       error: 'GoCollect API key not configured',
-      message: 'VITE_GOCOLLECT_API_KEY environment variable is required'
+      message: 'GOCOLLECT_API_KEY environment variable is required'
     });
   }
   const USD_TO_GBP_RATE = 0.79;
