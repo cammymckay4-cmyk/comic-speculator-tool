@@ -63,13 +63,7 @@ const AuthPage: React.FC = () => {
     try {
       const result = await signUp({ email, password, name })
 
-      // Debug logs after signUp call
-      console.log('Signup error:', result.success ? null : result.error);
-      console.log('Error type:', typeof result.error);
-      console.log('Error message:', result.error);
-
       if (!result.success) {
-        // Any error means we should show error message, NOT success message
         setErrors({ auth: result.error || 'An error occurred during signup' })
         setSuccessMessage('') // Clear any success message
         
@@ -90,13 +84,53 @@ const AuthPage: React.FC = () => {
         return
       }
 
-      // Debug log before setting success message
-      console.log('About to show success - should not reach here if error');
+      // Check if user actually needs to confirm or if they're already registered
+      // Supabase returns success for duplicate emails as security feature
+      if (result.user) {
+        // Use the raw Supabase response to check if this is actually a new user
+        const { data } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: { full_name: name },
+          },
+        })
+        
+        // If data.user exists but confirmed_at is already set, they're already registered
+        if (data.user?.confirmed_at) {
+          setErrors({ auth: 'This email is already registered. Please sign in.' })
+          setSuccessMessage('') // Clear any success message
+          setTimeout(() => setMode('signin'), 2000)
+          return
+        }
+        
+        // If data.user exists but no session, confirmation email was sent (new user)
+        if (data.user && !data.session) {
+          setErrors({}) // Clear any errors
+          setSuccessMessage('Check your email to confirm your account!')
+          setFormData({
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            rememberMe: false,
+            agreeToTerms: false,
+          })
+          return
+        }
+        
+        // If data.user and data.session exist, they're already confirmed (existing user)
+        if (data.user && data.session) {
+          setErrors({ auth: 'This email is already registered. Please sign in.' })
+          setSuccessMessage('') // Clear any success message
+          setTimeout(() => setMode('signin'), 2000)
+          return
+        }
+      }
 
-      // Only show success message if signup was actually successful (no error)
+      // Fallback - show success message
       setErrors({}) // Clear any errors
       setSuccessMessage('Check your email to confirm your account!')
-      console.log('Success message set:', 'Check your email to confirm your account!');
       setFormData({
         name: '',
         email: '',
