@@ -30,6 +30,19 @@ function App() {
   const { data: alertsCount = 0 } = useAlertsCount()
   const navigate = useNavigate()
 
+  // Detect email confirmation parameters on mount (before Supabase redirect)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const hasToken = urlParams.has('token_hash')
+    const hasType = urlParams.has('type')
+    const hasError = urlParams.has('error_code')
+    
+    if (hasToken || hasType || hasError) {
+      console.log('[APP] Email confirmation detected - setting redirect flag')
+      sessionStorage.setItem('shouldRedirectToAccount', 'true')
+    }
+  }, [])
+
   // Check for existing session on app load
   useEffect(() => {
     const checkSession = async () => {
@@ -65,8 +78,11 @@ function App() {
         })
         
         if (event === 'SIGNED_OUT' || !session) {
-          console.log('[APP] User signed out or no session - clearing user state')
+          console.log('[APP] User signed out or no session - clearing user state and flags')
           setUser(null)
+          // Clear redirect flags on logout
+          sessionStorage.removeItem('shouldRedirectToAccount')
+          sessionStorage.removeItem('hasNavigatedAfterAuth')
         } else if (event === 'SIGNED_IN' && session?.user) {
           console.log('[APP] User signed in - setting user state:', {
             userId: session.user.id,
@@ -81,26 +97,17 @@ function App() {
             avatar: session.user.user_metadata?.avatar_url || null,
           })
           
-          // Handle email confirmation redirects
-          if (!sessionStorage.getItem('hasNavigatedAfterAuth')) {
+          // Check if we should redirect to account page after email confirmation
+          const shouldRedirect = sessionStorage.getItem('shouldRedirectToAccount')
+          if (shouldRedirect && !sessionStorage.getItem('hasNavigatedAfterAuth')) {
+            console.log('[APP] Email confirmation redirect flag found - redirecting to account page')
             sessionStorage.setItem('hasNavigatedAfterAuth', 'true')
-            
-            // Check if this is from email confirmation
-            const urlParams = new URLSearchParams(window.location.search)
-            const isEmailConfirm = urlParams.get('type') === 'signup' || 
-                                  urlParams.get('type') === 'recovery'
-            
-            if (isEmailConfirm && window.location.pathname === '/') {
-              // Redirect new signups to account page
-              console.log('[APP] Email confirmation detected - redirecting to account page')
-              navigate('/account')
-              return
-            }
+            sessionStorage.removeItem('shouldRedirectToAccount')
+            navigate('/account')
+            return
           }
           
-          // Check if this auth change is causing an unwanted redirect
-          console.log('[APP] User set in store, current location:', window.location.pathname)
-          console.log('[APP] No automatic redirect triggered from App.tsx auth listener')
+          console.log('[APP] User authenticated, current location:', window.location.pathname)
         }
       }
     )
