@@ -23,18 +23,9 @@ export interface AuthResult {
 
 export const signIn = async (credentials: LoginCredentials, rememberMe = true): Promise<AuthResult> => {
   try {
-    // Set session persistence to 'local' (30 days) by default, 'session' only if explicitly not remember me
-    const persistence = rememberMe ? 'local' : 'session'
-    
     const { data, error } = await supabase.auth.signInWithPassword({
       email: credentials.email,
       password: credentials.password,
-      options: {
-        // This affects the session duration
-        data: {
-          persistence: persistence
-        }
-      }
     })
 
     if (error) {
