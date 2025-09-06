@@ -40,7 +40,13 @@ export default async function handler(
     }
 
     // GoCollect API configuration
-    const API_KEY = '7GnRRxsw3JMYnZF9rW8fF7VU8gJVK5q71KKvURNwd2a24cf0';
+    const API_KEY = process.env.GOCOLLECT_API_KEY;
+    if (!API_KEY) {
+      return response.status(500).json({
+        error: 'GoCollect API key not configured',
+        message: 'GOCOLLECT_API_KEY environment variable is required'
+      });
+    }
     const API_BASE_URL = 'https://gocollect.com/api/collectibles/v1/item/search';
     
     // Build GoCollect API URL with query parameters
