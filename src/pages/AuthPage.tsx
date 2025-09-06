@@ -202,9 +202,10 @@ const AuthPage: React.FC = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <img 
-            src="/Logo.svg" 
-            alt="ComicScout UK" 
+            src="/trace.svg" 
+            alt="ComicScout UK Logo" 
             className="h-[60px] w-auto mx-auto mb-4"
+            style={{ filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.8))' }}
           />
           <h1 className="font-super-squad text-5xl text-parchment mb-2">
             {selectedEffect}
