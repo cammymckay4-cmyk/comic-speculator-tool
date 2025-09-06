@@ -17,11 +17,16 @@ const AuthConfirmPage: React.FC = () => {
   useEffect(() => {
     const confirmUser = async () => {
       try {
+        // Get redirect parameter from URL
+        const redirectTo = searchParams.get('redirect')
+        console.log('Auth confirmation - redirect parameter:', redirectTo)
+        
         // First check if user is already authenticated (no token needed)
         const { data: { session } } = await supabase.auth.getSession()
         if (session) {
-          // User is already verified, redirect to account page
-          navigate('/account')
+          // User is already verified, redirect to intended destination or account page
+          console.log('User already authenticated, redirecting to:', redirectTo || '/account')
+          navigate(redirectTo || '/account')
           return
         }
 
@@ -35,6 +40,7 @@ const AuthConfirmPage: React.FC = () => {
           token: searchParams.get('token'),
           finalToken: token,
           type,
+          redirectTo,
           allParams: Object.fromEntries(searchParams.entries()),
           hasSession: !!session
         })
@@ -70,9 +76,11 @@ const AuthConfirmPage: React.FC = () => {
           setStatus('success')
           setMessage('Your email has been confirmed successfully!')
           
-          // Redirect to account page after a short delay
+          // Redirect to intended destination or account page after a short delay
+          const finalDestination = redirectTo || '/account'
+          console.log('Email confirmed successfully, redirecting to:', finalDestination)
           setTimeout(() => {
-            navigate('/account')
+            navigate(finalDestination)
           }, 2000)
         } else {
           setStatus('error')
@@ -125,7 +133,7 @@ const AuthConfirmPage: React.FC = () => {
                 {message}
               </p>
               <p className="font-persona-aura text-sm text-gray-500">
-                Redirecting you to your account page...
+                Redirecting you to {searchParams.get('redirect') ? 'your destination' : 'your account page'}...
               </p>
             </div>
           )}

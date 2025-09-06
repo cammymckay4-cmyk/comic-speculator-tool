@@ -79,8 +79,9 @@ const AuthPage: React.FC = () => {
           data: {
             full_name: name,
           },
-          // Let our custom trigger handle email confirmation
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          // Let our custom trigger handle email confirmation  
+          // Pass the current redirect parameter to preserve original destination
+          emailRedirectTo: `${window.location.origin}/auth/confirm${searchParams.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`,
         },
       })
 
