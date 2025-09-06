@@ -11,7 +11,8 @@ import {
   Package,
   Clock,
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  LogIn
 } from 'lucide-react'
 import { useAlertsQuery, useUpdateAlertStatus, useDeleteAlert } from '@/hooks/useAlertsQuery'
 import CreateAlertModal from '@/components/features/CreateAlertModal'
@@ -19,6 +20,8 @@ import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { toast } from '@/store/toastStore'
 import { formatDistanceToNow } from 'date-fns'
+import { useUserStore } from '@/store/userStore'
+import { useNavigate } from 'react-router-dom'
 
 // Helper function to format alert criteria display
 const formatAlertCriteria = (alert: any) => {
@@ -65,6 +68,8 @@ const alertTypeConfig = {
 }
 
 const AlertsPage: React.FC = () => {
+  const navigate = useNavigate()
+  const { user } = useUserStore()
   const [selectedAlerts, setSelectedAlerts] = useState<string[]>([])
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
@@ -256,6 +261,27 @@ const AlertsPage: React.FC = () => {
     } else {
       setSelectedAlerts(alerts.map(alert => alert.id))
     }
+  }
+
+  // Show login prompt if user is not logged in
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-parchment flex items-center justify-center">
+        <div className="bg-white comic-border shadow-comic p-8 max-w-md text-center">
+          <h2 className="font-super-squad text-2xl text-stan-lee-blue mb-4">Login Required</h2>
+          <p className="font-persona-aura text-ink-black mb-6">
+            You need to be logged in to manage your price alerts.
+          </p>
+          <button 
+            onClick={() => navigate('/auth?redirect=/alerts')}
+            className="comic-button flex items-center space-x-2 mx-auto"
+          >
+            <LogIn size={18} />
+            <span>Login to Continue</span>
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
