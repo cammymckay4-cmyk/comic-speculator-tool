@@ -68,7 +68,7 @@ export const signUp = async (signupData: SignupData): Promise<AuthResult> => {
         data: {
           full_name: signupData.name,
         },
-        emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        emailRedirectTo: `${window.location.origin}/auth/confirm?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`,
       },
     })
 
