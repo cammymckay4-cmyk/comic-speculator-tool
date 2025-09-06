@@ -119,9 +119,9 @@ const MainNavbar: React.FC<MainNavbarProps> = ({
               className="flex items-center space-x-2"
             >
               <img 
-                src="/Logo.png" 
+                src="/Logo.svg" 
                 alt="ComicScout UK" 
-                className="w-[150px] md:w-[150px] sm:w-[100px] h-auto"
+                className="h-[40px] w-auto hover:scale-105 transition-transform duration-200"
               />
             </button>
           </div>

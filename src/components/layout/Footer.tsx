@@ -48,9 +48,9 @@ const Footer: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="flex items-center mb-4">
               <img 
-                src="/Logo.png" 
+                src="/Logo.svg" 
                 alt="ComicScout UK" 
-                className="w-[80px] h-auto mr-4"
+                className="h-[30px] w-auto mr-4"
               />
               <h3 className="font-super-squad text-3xl text-golden-age-yellow">
                 COMICSCOUT UK
